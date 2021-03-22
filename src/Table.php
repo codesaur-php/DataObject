@@ -13,9 +13,9 @@ class Table
     protected $name;    // Table name
     protected $columns; // Table columns
     
-    function __construct(PDO $pdo)
+    function __construct(PDO $conn)
     {
-        $this->pdo = $pdo;
+        $this->pdo = $conn;
     }
     
     function __destruct()

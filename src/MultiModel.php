@@ -9,11 +9,11 @@ class MultiModel extends Model
 {
     public $content; // Content table
     
-    function __construct(PDO $pdo)
+    function __construct(PDO $conn)
     {
-        parent::__construct($pdo);
+        parent::__construct($conn);
         
-        $this->content = new Table($pdo);
+        $this->content = new Table($conn);
     }
     
     final public function getKeyColumn(): Column
