@@ -2,7 +2,7 @@
 
 namespace codesaur\DataObject;
 
-class InitableModel extends Model implements InitableInterface
+class InitableModel extends Model
 {
     public function setTable(?string $name = null): bool
     {
