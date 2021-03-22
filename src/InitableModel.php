@@ -15,8 +15,5 @@ class InitableModel extends Model
         return true;
     }
     
-    public function initial(): bool
-    {
-        return false;
-    }
+    public function initial() {}
 }
