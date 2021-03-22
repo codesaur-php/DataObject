@@ -31,7 +31,7 @@ class Model extends Table
                 && $this->hasColumn('created_by')
                 && !isset($record['created_by'])
         ) {
-            $record['created_by'] = (int)getenv('CODESAUR_ACCOUNT_ID', true);
+            $record['created_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }
 
         return parent::insert($record);
@@ -52,7 +52,7 @@ class Model extends Table
                 && $this->hasColumn('updated_by')
                 && !isset($record['updated_by'])
         ) {
-            $record['updated_by'] = (int)getenv('CODESAUR_ACCOUNT_ID', true);
+            $record['updated_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
         return parent::update($record, $where, $condition);
