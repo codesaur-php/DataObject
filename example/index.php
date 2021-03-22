@@ -56,7 +56,7 @@ class TranslationModel extends MultiModel
         parent::__construct($conn);
         
         $this->setMainColumns(array(
-           (new Column('_keyword_', 'varchar', 128))->unique(),
+           (new Column('keyword', 'varchar', 128))->unique(),
             new Column('type', 'int', 4, 0),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
@@ -74,20 +74,20 @@ class TranslationModel extends MultiModel
     
     public function initial()
     {
-        $this->inserts(array('_keyword_' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));
-        $this->inserts(array('_keyword_' => 'account'), array('mn' => array('title' => 'Хэрэглэгч'), 'en' => array('title' => 'Account')));
-        $this->inserts(array('_keyword_' => 'actions'), array('mn' => array('title' => 'Үйлдлүүд'), 'en' => array('title' => 'Actions')));
-        $this->inserts(array('_keyword_' => 'active'), array('mn' => array('title' => 'Идэвхитэй'), 'en' => array('title' => 'Active')));
-        $this->inserts(array('_keyword_' => 'add'), array('mn' => array('title' => 'Нэмэх'), 'en' => array('title' => 'Add')));
-        $this->inserts(array('_keyword_' => 'address'), array('mn' => array('title' => 'Хаяг'), 'en' => array('title' => 'Address')));
-        $this->inserts(array('_keyword_' => 'alerts'), array('mn' => array('title' => 'Мэдэгдлүүд'), 'en' => array('title' => 'Alerts')));
-        $this->inserts(array('_keyword_' => 'back'), array('mn' => array('title' => 'Буцах'), 'en' => array('title' => 'Back')));
-        $this->inserts(array('_keyword_' => 'banner'), array('mn' => array('title' => 'Баннер'), 'en' => array('title' => 'Banner')));
-        $this->inserts(array('_keyword_' => 'boxed'), array('mn' => array('title' => 'Хайрцагласан'), 'en' => array('title' => 'Boxed')));
-        $this->inserts(array('_keyword_' => 'cancel'), array('mn' => array('title' => 'Болих'), 'en' => array('title' => 'Cancel')));
-        $this->inserts(array('_keyword_' => 'category'), array('mn' => array('title' => 'Ангилал'), 'en' => array('title' => 'Category')));
-        $this->inserts(array('_keyword_' => 'change'), array('mn' => array('title' => 'Өөрчлөх'), 'en' => array('title' => 'Change')));
-        $this->inserts(array('_keyword_' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
+        $this->inserts(array('keyword' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
+        $this->inserts(array('keyword' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));
+        $this->inserts(array('keyword' => 'account'), array('mn' => array('title' => 'Хэрэглэгч'), 'en' => array('title' => 'Account')));
+        $this->inserts(array('keyword' => 'actions'), array('mn' => array('title' => 'Үйлдлүүд'), 'en' => array('title' => 'Actions')));
+        $this->inserts(array('keyword' => 'active'), array('mn' => array('title' => 'Идэвхитэй'), 'en' => array('title' => 'Active')));
+        $this->inserts(array('keyword' => 'add'), array('mn' => array('title' => 'Нэмэх'), 'en' => array('title' => 'Add')));
+        $this->inserts(array('keyword' => 'address'), array('mn' => array('title' => 'Хаяг'), 'en' => array('title' => 'Address')));
+        $this->inserts(array('keyword' => 'alerts'), array('mn' => array('title' => 'Мэдэгдлүүд'), 'en' => array('title' => 'Alerts')));
+        $this->inserts(array('keyword' => 'back'), array('mn' => array('title' => 'Буцах'), 'en' => array('title' => 'Back')));
+        $this->inserts(array('keyword' => 'banner'), array('mn' => array('title' => 'Баннер'), 'en' => array('title' => 'Banner')));
+        $this->inserts(array('keyword' => 'boxed'), array('mn' => array('title' => 'Хайрцагласан'), 'en' => array('title' => 'Boxed')));
+        $this->inserts(array('keyword' => 'cancel'), array('mn' => array('title' => 'Болих'), 'en' => array('title' => 'Cancel')));
+        $this->inserts(array('keyword' => 'category'), array('mn' => array('title' => 'Ангилал'), 'en' => array('title' => 'Category')));
+        $this->inserts(array('keyword' => 'change'), array('mn' => array('title' => 'Өөрчлөх'), 'en' => array('title' => 'Change')));
     }
 }
 
@@ -137,9 +137,9 @@ $rows = $translation->getRows();
 
 $texts = array();
 foreach ($rows as $row) {
-    $texts[$row['_keyword_']] = array_merge($texts[$row['_keyword_']] ?? [], $row['title']);
+    $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['title']);
 }
 
-echo "Translation of [boxed] in mongolian => {$texts['boxed']['mn']}<br/>";
+echo "chat in mongolian => {$texts['chat']['mn']}<br/>";
 
 var_dump($texts);

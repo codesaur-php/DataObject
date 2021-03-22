@@ -18,7 +18,7 @@ class MultiModel extends Model
     
     final public function getKeyColumn(): Column
     {
-        return $this->content->getColumn('key_id');
+        return $this->content->getColumn('parent_id');
     }    
 
     final public function getCodeColumn(): Column
@@ -63,10 +63,15 @@ class MultiModel extends Model
 
     final public function setContentColumns(array $columns)
     {
-        $this->content->setColumns(array_merge(array(
-           (new Column('key_id', 'bigint', 20))->notNull(),
-            new Column('code', 'varchar', 6)
-        ), $columns));
+        $this->content->setColumns($columns);
+        
+        if (!isset($this->content->columns['parent_id'])) {
+            $this->content->columns['parent_id'] = (new Column('parent_id', 'bigint', 20))->notNull();
+        }
+
+        if (!isset($this->content->columns['code'])) {
+            $this->content->columns['code'] = new Column('code', 'varchar', 6);
+        }
     }
 
     public function inserts(
@@ -118,25 +123,7 @@ class MultiModel extends Model
         
         return $id;
     }
-
-    public function replaces(
-            array  $main,
-            array  $content,
-            string $keywordName = '_keyword_'
-    ) {
-        $idName = $this->getIdColumn()->getName();
-        if (isset($main[$keywordName])) {
-            $existing = $this->getBy($keywordName, $main[$keywordName]);
-            if ($existing) {
-                $main[$idName] = $existing[$idName];
-
-                return $this->updates($main, $content);
-            }
-        }
-        
-        return $this->inserts($main, $content);
-    }
-
+    
     public function writeContent(
             array $content,
             array $where,

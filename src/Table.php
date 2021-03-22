@@ -8,38 +8,38 @@ use PDOStatement;
 
 class Table
 {
-    protected $_pdo;     // PHP Data Object
+    protected $pdo;     // PHP Data Object
     
-    protected $_name;    // Table name
-    protected $_columns; // Table columns
+    protected $name;    // Table name
+    protected $columns; // Table columns
     
     function __construct(PDO $pdo)
     {
-        $this->_pdo = $pdo;
+        $this->pdo = $pdo;
     }
     
     function __destruct()
     {
-        $this->_pdo = null;
+        $this->pdo = null;
     }
     
     public function getDriverName(): string
     {
-        return $this->_pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     }
     
     public function getName()
     {
-        if (empty($this->_name)) {
+        if (empty($this->name)) {
             throw new Exception('Table name must be set!');
         }
         
-        return $this->_name;
+        return $this->name;
     }
 
     public function setName(string $name)
     {
-        $this->_name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+        $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
     }
 
     final public function getVersionName()
@@ -49,22 +49,22 @@ class Table
     
     final public function getColumns(): array
     {
-        return $this->_columns;
+        return $this->columns;
     }
     
     public function setColumns(array $columns)
     {
-        if (!isset($columns['id'])) {
-            $columns = array_merge(array((new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull()), $columns);
-        }
-        
-        $this->_columns = array();
+        $this->columns = array();
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
                 throw new Exception('Column should have been instance of Column class!');
             }
             
-            $this->_columns[$column->getName()] = $column;
+            $this->columns[$column->getName()] = $column;
+        }
+        
+        if (!isset($this->columns['id'])) {
+            $this->columns['id'] = (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull();
         }
     }
     
@@ -431,26 +431,26 @@ class Table
     
     public function quote(string $string, int $parameter_type = PDO::PARAM_STR): string
     {
-        return $this->_pdo->quote($string, $parameter_type);
+        return $this->pdo->quote($string, $parameter_type);
     }
 
     public function prepare(string $statement, array $driver_options = array()): PDOStatement
     {
-        return $this->_pdo->prepare($statement, $driver_options);
+        return $this->pdo->prepare($statement, $driver_options);
     }
 
     public function exec(string $statement)
     {
-        return $this->_pdo->exec($statement);
+        return $this->pdo->exec($statement);
     }
 
     public function query(string $statement): PDOStatement
     {
-        return $this->_pdo->query($statement);
+        return $this->pdo->query($statement);
     }
 
     public function lastInsertId(string $name = NULL): string
     {
-        return $this->_pdo->lastInsertId($name);
+        return $this->pdo->lastInsertId($name);
     }
 }
