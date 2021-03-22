@@ -36,7 +36,7 @@ class AccountModel extends InitableModel
         $this->setTable('user');
     }
     
-    public function initial() : bool
+    public function initial()
     {
         $now_date = date('Y-m-d H:i:s');
         
@@ -45,7 +45,7 @@ class AccountModel extends InitableModel
         $query = "INSERT INTO $table (created_at,username,password,first_name,last_name,email)" .
                 " VALUES ('$now_date','admin',$password,'John','Doe','admin@example.com')";
 
-        return $this->exec($query) !== false;
+        return $this->exec($query);
     }
 }
 
@@ -72,7 +72,7 @@ class TranslationModel extends MultiModel
         $this->setTable('default_translation');
     }
     
-    public function initial(): bool
+    public function initial()
     {
         $this->inserts(array('_keyword_' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));
         $this->inserts(array('_keyword_' => 'account'), array('mn' => array('title' => 'Хэрэглэгч'), 'en' => array('title' => 'Account')));
@@ -88,8 +88,6 @@ class TranslationModel extends MultiModel
         $this->inserts(array('_keyword_' => 'category'), array('mn' => array('title' => 'Ангилал'), 'en' => array('title' => 'Category')));
         $this->inserts(array('_keyword_' => 'change'), array('mn' => array('title' => 'Өөрчлөх'), 'en' => array('title' => 'Change')));
         $this->inserts(array('_keyword_' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
-        
-        return true;
     }
 }
 
