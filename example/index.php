@@ -7,11 +7,11 @@
 
 require_once '../vendor/autoload.php';
 
+use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
 use codesaur\DataObject\MultiModel;
-use codesaur\DataObject\InitableModel;
 
-class AccountModel extends InitableModel
+class AccountModel extends Model
 {
     function __construct(PDO $pdo)
     {

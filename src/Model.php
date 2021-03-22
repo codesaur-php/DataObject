@@ -4,6 +4,21 @@ namespace codesaur\DataObject;
 
 class Model extends Table
 {
+    public function setTable(?string $name = null): bool
+    {
+        if (!parent::setTable($name)) {
+            return false;
+        }
+
+        $this->initial();
+        
+        return true;
+    }
+    
+    public function initial()
+    {
+    }
+
     public function insert(array $record)
     {
         if ($this->hasColumn('created_at')

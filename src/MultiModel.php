@@ -5,7 +5,7 @@ namespace codesaur\DataObject;
 use PDO;
 use PDOStatement;
 
-class MultiModel extends InitableModel
+class MultiModel extends Model
 {
     public $content; // Content table
     
