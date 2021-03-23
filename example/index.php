@@ -42,8 +42,8 @@ class AccountModel extends Model
         
         $table = $this->getName();
         $password = $this->quote(password_hash('secret', PASSWORD_BCRYPT));
-        $query = "INSERT INTO $table (created_at,username,password,first_name,last_name,email)" .
-                " VALUES ('$now_date','admin',$password,'John','Doe','admin@example.com')";
+        $query = "INSERT INTO $table (created_at,username,password,first_name,last_name,email)"
+                . " VALUES ('$now_date','admin',$password,'John','Doe','admin@example.com')";
 
         return $this->exec($query);
     }
