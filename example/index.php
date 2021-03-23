@@ -39,7 +39,7 @@ class AccountModel extends Model
         $this->createTable('user');
     }
     
-    public function initial()
+    function initial()
     {
         $now_date = date('Y-m-d H:i:s');
         
@@ -75,7 +75,7 @@ class TranslationModel extends MultiModel
         $this->createTable('default_translation');
     }
     
-    public function initial()
+    function initial()
     {
         $this->inserts(array('keyword' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
         $this->inserts(array('keyword' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));

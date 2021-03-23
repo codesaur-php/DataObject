@@ -15,7 +15,7 @@ class Model extends Table
         return true;
     }
     
-    public function initial()
+    function initial()
     {
     }
 
