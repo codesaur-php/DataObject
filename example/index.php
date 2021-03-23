@@ -145,5 +145,5 @@ try {
 
     var_dump($texts);
 } catch (Exception $ex) {
-    die($ex->getMessage());
+    die('[' . date('Y-m-d H:i:s'). ' Error] ' . $ex->getMessage());
 }

@@ -89,16 +89,16 @@ class Table
             $this->setName($name);
         }
         
+        if (empty($this->columns)) {
+            throw new Exception('Must define columns before table creation!');
+        }
+
         $exists = $this->query('SHOW TABLES LIKE ' .  $this->quote($this->getName()));
         if ($exists->rowCount() > 0) {
             // Table already exists, no need to create new one
             return false;
         }
         
-        if (empty($this->columns)) {
-            throw new Exception('Must define columns before table creation!');
-        }
-
         $columns = array();
         $attributes = array();
         $hasForeignKey = false;        
