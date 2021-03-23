@@ -109,38 +109,38 @@ try {
 
     $pdo->exec("USE $database");
     echo 'started using example database!<br/>';
-} catch (Exception $ex) {
-    die('MySQL error => ' . $ex->getMessage());
-}
-
-$account = new AccountModel($pdo);
-$admin = $account->getBy('username', 'admin');
-if ($admin) {
-    putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
     
-    var_dump(array('admin' => $admin));
+    $account = new AccountModel($pdo);
+    $admin = $account->getBy('username', 'admin');
+    if ($admin) {
+        putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
+
+        var_dump(array('admin' => $admin));
+    }
+
+    $uniq_account = uniqid('account');
+    $new_account_id = $account->insert(array(
+        'username' => $uniq_account,
+        'password' => password_hash('pass', PASSWORD_BCRYPT),
+        'first_name' => 'Random Guy',
+        'phone' => uniqid(),
+        'address' => 'Somewhere in Earth',
+        'email' => "$uniq_account@example.com"
+    ));
+
+    var_dump(array('newly created account id: ' => $new_account_id));
+
+    $translation = new TranslationModel($pdo);
+    $rows = $translation->getRows();
+
+    $texts = array();
+    foreach ($rows as $row) {
+        $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['title']);
+    }
+
+    echo "chat in mongolian => {$texts['chat']['mn']}<br/>";
+
+    var_dump($texts);
+} catch (Exception $ex) {
+    die($ex->getMessage());
 }
-
-$uniq_account = uniqid('account');
-$new_account_id = $account->insert(array(
-    'username' => $uniq_account,
-    'password' => password_hash('pass', PASSWORD_BCRYPT),
-    'first_name' => 'Random Guy',
-    'phone' => uniqid(),
-    'address' => 'Somewhere in Earth',
-    'email' => "$uniq_account@example.com"
-));
-
-var_dump(array('newly created account id: ' => $new_account_id));
-
-$translation = new TranslationModel($pdo);
-$rows = $translation->getRows();
-
-$texts = array();
-foreach ($rows as $row) {
-    $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['title']);
-}
-
-echo "chat in mongolian => {$texts['chat']['mn']}<br/>";
-
-var_dump($texts);
