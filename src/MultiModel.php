@@ -3,7 +3,6 @@
 namespace codesaur\DataObject;
 
 use PDO;
-use Exception;
 use PDOStatement;
 
 class MultiModel extends Model
