@@ -30,7 +30,7 @@ class MultiModel extends Model
     {
         parent::setName($name);
         
-        $this->content->setName("{$name}_content");
+        $this->content->setName($this->getName() . '_content');
     }
 
     public function createTable(?string $name = null): bool
