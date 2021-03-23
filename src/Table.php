@@ -83,7 +83,7 @@ class Table
         return $this->getColumn('id');
     }
     
-    public function setTable(?string $name = null): bool
+    public function createTable(?string $name = null): bool
     {
         if (!empty($name)) {
             $this->setName($name);
@@ -91,38 +91,25 @@ class Table
         
         $exists = $this->query('SHOW TABLES LIKE ' .  $this->quote($this->getName()));
         if ($exists->rowCount() > 0) {
+            // Table already exists, no need to create new one
             return false;
         }
         
-        return $this->create();
-    }
-    
-    public function setVersionTable()
-    {
-        $version = $this->quote($this->getVersionName());        
-        $exists = $this->query("SHOW TABLES LIKE $version");
-        if ($exists->rowCount() === 0) {
-            if ($this->exec("CREATE TABLE $version LIKE {$this->quote($this->getName())}") !== false) {
-                return $this->exec("ALTER TABLE $version ADD v_id bigint(20) NOT NULL, ADD v_number int(11) NOT NULL") !== false;
-            }
+        if (empty($this->columns)) {
+            throw new Exception('Must define columns before table creation!');
         }
-        
-        return false;
-    }
-    
-    final public function create(): bool
-    {
+
         $columns = array();
         $attributes = array();
         $hasForeignKey = false;        
-        foreach ($this->getColumns() as $name => $column) {
+        foreach ($this->getColumns() as $key => $column) {
             $columns[] = $column->getSyntax();
             
             if ($column->isPrimary()) {
-                $attributes[] = "PRIMARY KEY (`$name`)";
+                $attributes[] = "PRIMARY KEY (`$key`)";
             }            
             if ($column->isUnique()) {
-                $attributes[] = "UNIQUE (`$name`)";
+                $attributes[] = "UNIQUE (`$key`)";
             }            
             if ($column->isAuto() && $column->isIntType()) {
                 $auto_increment = 1;
@@ -134,15 +121,11 @@ class Table
                     $foreign_key = key($foreign);
                     $foreign_ref = current($foreign);
                 } else {
-                    $foreign_key = $name;
+                    $foreign_key = $key;
                     $foreign_ref = $foreign;
                 }                
                 $attributes[] = "FOREIGN KEY (`$foreign_key`) REFERENCES $foreign_ref";
             }
-        }
-        
-        if (empty($columns)) {
-            throw new Exception('Must define columns before table creation!');
         }
         
         $query = "CREATE TABLE `{$this->getName()}` (";        
@@ -164,6 +147,19 @@ class Table
         }
         
         return $this->exec($query) !== false;
+    }
+    
+    public function createVersionTable()
+    {
+        $version = $this->quote($this->getVersionName());        
+        $exists = $this->query("SHOW TABLES LIKE $version");
+        if ($exists->rowCount() === 0) {
+            if ($this->exec("CREATE TABLE $version LIKE {$this->quote($this->getName())}") !== false) {
+                return $this->exec("ALTER TABLE $version ADD v_id bigint(20) NOT NULL, ADD v_number int(11) NOT NULL") !== false;
+            }
+        }
+        
+        return false;
     }
     
     final public function select(string $selection = '*', array $by_record = [], array $condition = []): PDOStatement

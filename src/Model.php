@@ -4,9 +4,9 @@ namespace codesaur\DataObject;
 
 class Model extends Table
 {
-    public function setTable(?string $name = null): bool
+    public function createTable(?string $name = null): bool
     {
-        if (!parent::setTable($name)) {
+        if (!parent::createTable($name)) {
             return false;
         }
 

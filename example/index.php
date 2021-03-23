@@ -33,7 +33,7 @@ class AccountModel extends Model
            (new Column('updated_by', 'bigint', 20))->foreignKey('user(id)')
         ));
         
-        $this->setTable('user');
+        $this->createTable('user');
     }
     
     public function initial()
@@ -69,7 +69,7 @@ class TranslationModel extends MultiModel
             new Column('title', 'varchar', 255)
         ));
         
-        $this->setTable('default_translation');
+        $this->createTable('default_translation');
     }
     
     public function initial()

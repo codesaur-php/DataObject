@@ -3,6 +3,7 @@
 namespace codesaur\DataObject;
 
 use PDO;
+use Exception;
 use PDOStatement;
 
 class MultiModel extends Model
@@ -33,17 +34,15 @@ class MultiModel extends Model
         $this->content->setName("{$name}_content");
     }
 
-    public function setTable(?string $name = null): bool
+    public function createTable(?string $name = null): bool
     {
         if (!empty($name)) {
             $this->setName($name);
         }
 
-        if ($this->content->setTable()) {
-            return parent::setTable();
-        }
+        $this->content->createTable();
         
-        return false;
+        return parent::createTable();
     }
 
     final public function getMainColumns(): array
