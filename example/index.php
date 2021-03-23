@@ -11,6 +11,9 @@ use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
 use codesaur\DataObject\MultiModel;
 
+ini_set('display_errors', 'On');
+error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
+
 class AccountModel extends Model
 {
     function __construct(PDO $pdo)
