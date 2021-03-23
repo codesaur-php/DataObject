@@ -28,6 +28,11 @@ class Table
         return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     }
     
+    public function getDatabaseName(): ?string
+    {
+        return $this->query('select database()')->fetchColumn();
+    }    
+    
     public function getName()
     {
         if (empty($this->name)) {
