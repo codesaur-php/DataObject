@@ -33,15 +33,15 @@ class MultiModel extends Model
         $this->content->setName($this->getName() . '_content');
     }
 
-    public function createTable(?string $name = null): bool
+    public function setCreateTable(?string $name = null, $collate = null): bool
     {
         if (!empty($name)) {
             $this->setName($name);
         }
 
-        $this->content->createTable();
+        $this->content->setCreateTable(null, $collate);
         
-        return parent::createTable();
+        return parent::setCreateTable(null, $collate);
     }
 
     final public function getMainColumns(): array
@@ -72,15 +72,13 @@ class MultiModel extends Model
         }
     }
 
-    public function inserts(
-            array $main,
-            array $content
-    ) {
-        $keyName = $this->getKeyColumn()->getName();
-        $codeName = $this->getCodeColumn()->getName();
-
-        $id = parent::insert($main);
+    public function insertContent(array $record, array $content)
+    {
+        $id = parent::insert($record);
         if ($id !== false) {
+            $keyName = $this->getKeyColumn()->getName();
+            $codeName = $this->getCodeColumn()->getName();
+            
             foreach ($content as $code => $value) {
                 $value[$keyName] = $id;
                 $value[$codeName] = $code;
@@ -93,27 +91,22 @@ class MultiModel extends Model
         return $id;
     }
     
-    public function updates(
-            array  $main,
-            array  $content,
-            array  $where_main = [],
-            string $condition = '',
-            array  $where_content = []
-    ) {
+    public function updateContent(array $record, array $content, array $where_main = [], string $condition = '', array $where_content = [])
+    {
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
         $codeName = $this->getCodeColumn()->getName();
         
-        $id = parent::update($main, $where_main, $condition);
+        $id = parent::update($record, $where_main, $condition);
         if ($id !== false) {
             if (empty($where_content)) {
                 $where_content = array($keyName, $codeName);
             }
             
             foreach ($content as $code => $value) {
-                $value[$keyName] = $main[$idName];
+                $value[$keyName] = $record[$idName];
                 $value[$codeName] = $code;
-                if ($this->writeContent($value, $where_content) === false) {
+                if ($this->insert_or_update_content($value, $where_content) === false) {
                     // Should we roll back update from main table & in content codes? since it's failed
                 }
             }
@@ -122,187 +115,7 @@ class MultiModel extends Model
         return $id;
     }
     
-    public function writeContent(
-            array $content,
-            array $where,
-            bool  $replace = true
-    ) {
-        $by_record = array();
-        foreach ($where as $name) {
-            if ($this->content->hasColumn($name)) {
-                $by_record[$name] = $content[$name];
-            }
-        }
-        
-        $stmt = $this->content->select('*', $by_record);
-        if ($stmt->rowCount()) {
-            if ($replace) {
-                return $this->content->update($content, $where);
-            }            
-        } else {
-            return $this->content->insert($content);
-        }
-        
-        return false;
-    }
-    
-    public function selectJoin($selection, array $condition = []): PDOStatement
-    {
-        $contentName = $this->content->getName();
-        $idName = $this->getIdColumn()->getName();
-        $keyName = $this->getKeyColumn()->getName();
-        
-        $condition['JOIN'] = "p INNER JOIN $contentName c ON p.$idName=c.$keyName";
-        
-        return parent::select($selection, [], $condition);
-    }
-    
-    public function statement(
-            array $main = [],
-            array $content = [],
-            array $condition = []
-    ): PDOStatement {
-        if (empty($main) && empty($content)) {
-            $selection = '*';
-        } else {
-            $selection = '';
-            
-            if (empty($main)) {
-                $main = array_keys($this->getMainColumns());
-            }
-            
-            if (empty($content)) {
-                $content = array_keys($this->getContentColumns());
-            }
-            
-            foreach ($main as $name) {
-                if (!$this->hasColumn($name)) {
-                    // should throw Exception not found main column!
-                    continue;
-                }
-                if ($selection != '') {
-                    $selection .= ', ';
-                }
-                $selection .= 'p.' . $name;
-            }
-            
-            foreach ($content as $name) {
-                if (!$this->content->hasColumn($name)) {
-                    // should throw Exception not found content column!
-                    continue;
-                }
-                if ($selection != '') {
-                    $selection .= ', ';
-                }
-                $selection .= 'c.' . $name;
-            }
-        }
-        
-        return $this->selectJoin($selection, $condition);
-    }
-
-    public function statementBy($id, string $language_code =  null): PDOStatement
-    {
-        $idColumn = $this->getIdColumn();
-        if (!$idColumn->isNumericType()) {
-            $id = $this->quote($id);
-        }
-        
-        $clause = "p.{$idColumn->getName()}=$id";
-        if (isset($language_code)) {
-            $clause .= ' AND c.' . $this->getCodeColumn()->getName() . '=' . $this->quote($language_code);
-        }
-        
-        return $this->selectJoin('*', ['WHERE' => $clause]);
-    }
-
-    public function getBy(string $name, string $value)
-    {
-        if ($this->hasColumn($name)) {
-            $column = $this->getColumn($name);
-
-            $stmt = $this->prepare('SELECT * FROM ' . $this->getName()
-                    . ' WHERE ' . $column->getName() . '=' . $column->getBindName());
-            
-            $stmt->bindParam($column->getBindName(), $value, $column->getDataType(),
-                    !in_array($column->getType(), array('text', 'datetime')) ? $column->getLength(): null);
-            
-            $stmt->execute();
-            
-            if ($stmt->rowCount() == 1) {
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                return $this->getByID($result[$this->getIdColumn()->getName()]);
-            }
-        }
-        
-        return null;
-    }
-
-    public function getByID($value, $language_code = null): array
-    {
-        $idName = $this->getIdColumn()->getName();
-        $keyName = $this->getKeyColumn()->getName();
-        $codeName = $this->getCodeColumn()->getName();
-
-        $record = array();
-        $pdostmt = $this->statementBy($value, $language_code);
-        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
-            if (!isset($record[$idName])) {
-                foreach ($this->getMainColumns() as $column) {
-                    $record[$column->getName()] = $data[$column->getName()] ?? $column->getDefault();
-                }
-            }
-            
-            foreach ($this->getContentColumns() as $ccolumn) {                
-                if ($ccolumn->getName() != $idName
-                        && $ccolumn->getName() != $keyName
-                        && $ccolumn->getName() != $codeName
-                ) {
-                    $record[$ccolumn->getName()][$data[$codeName]] = $data[$ccolumn->getName()] ?? $ccolumn->getDefault();
-                }
-            }
-        }
-        
-        return $record;
-    }
-    
-    public function getRows(array $condition = []): array
-    {
-        if (empty($condition)) {
-            $condition = ['ORDER BY' => 'p.' . $this->getIdColumn()->getName()];
-        }
-        
-        return $this->getStatementRows($this->selectJoin('*', $condition));
-    }
-    
-    public function getStatementRows(PDOStatement $pdostmt): array
-    {
-        $idName = $this->getIdColumn()->getName();
-        $keyName = $this->getKeyColumn()->getName();
-        $codeName = $this->getCodeColumn()->getName();
-
-        $rows = array();
-        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
-            if (!isset($rows[$data[$idName]][$idName])) {
-                foreach ($this->getMainColumns() as $column) {
-                    $rows[$data[$idName]][$column->getName()] = $data[$column->getName()] ?? $column->getDefault();
-                }
-            }
-            
-            foreach ($this->getContentColumns() as $ccolumn) {
-                if ($ccolumn->getName() != $idName
-                        && $ccolumn->getName() != $keyName
-                        && $ccolumn->getName() != $codeName
-                ) {
-                    $rows[$data[$idName]][$ccolumn->getName()][$data[$codeName]] = $data[$ccolumn->getName()] ?? $ccolumn->getDefault();
-                }
-            }
-        }
-        
-        return $rows;
-    }
-
-    public function deletes(array $by_record, array $language_codes)
+    public function deleteContent(array $by_record, array $content_codes)
     {
         $idColumn = $this->getIdColumn();
         $keyName = $this->getKeyColumn()->getName();
@@ -316,11 +129,10 @@ class MultiModel extends Model
                 if ($idColumn->isNumeric()) {
                     $old_id = $result[$idColumn->getName()];
                 } else {
-                    $old_id = $this->quote(substr($result[$idColumn->getName()], strlen(uniqid()) + 3));
-                    
+                    $old_id = $this->quote(substr($result[$idColumn->getName()], strlen(uniqid()) + 3));                    
                 }
 
-                foreach ($language_codes as $code) {
+                foreach ($content_codes as $code) {
                     $record = [$keyName => $result[$idColumn->getName()]];
                     $condition = "$keyName=$old_id AND ";
                     $condition .= "$codeName=" . $this->quote($code);
@@ -332,7 +144,7 @@ class MultiModel extends Model
         } else {
             $pdostmt = $this->select('*', $by_record);
             $row = $pdostmt->fetch(PDO::FETCH_ASSOC);
-            foreach ($language_codes as $code) {
+            foreach ($content_codes as $code) {
                 $this->content->delete(array($keyName => $row[$idColumn->getName()], $codeName => $code));
             }
             
@@ -341,39 +153,173 @@ class MultiModel extends Model
         
         return false;
     }
+
+    public function getByID($value, $language_code = null): array
+    {
+        $idColumn = $this->getIdColumn();
+        $idColumnName = $idColumn->getName();
+        $keyName = $this->getKeyColumn()->getName();
+        $codeName = $this->getCodeColumn()->getName();
+
+        if (!$idColumn->isNumericType()) {
+            $value = $this->quote($value);
+        }
+        
+        $c_codeName = "c_$codeName";
+        $c_idName = $this->content->getIdColumn()->getName();
+        $content_KeyColumns = array($c_idName, $keyName, $codeName);
+
+        $clause = "p.$idColumnName=$value";
+        if (isset($language_code)) {
+           $clause .= " AND c.$codeName=" . $this->quote($language_code);
+        }        
+        $pdostmt = $this->join_select('*', ['WHERE' => $clause]);
+
+        $record = array();
+        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!isset($record[$idColumnName])) {
+                foreach ($this->getMainColumns() as $column) {
+                    $columnName = $column->getName();
+                    $record[$columnName] = $data["p_$columnName"] ?? $column->getDefault();
+                }
+            }
+            
+            foreach ($this->getContentColumns() as $ccolumn) {
+                $ccolumnName = $ccolumn->getName();                
+                if (!in_array($ccolumnName, $content_KeyColumns)) {
+                    $record['content'][$ccolumnName][$data[$c_codeName]] = $data["c_$ccolumnName"] ?? $ccolumn->getDefault();
+                }
+            }
+        }
+        
+        return $record;
+    }    
     
-    public function duplicateCodeContent(string $source_code, string $destination_code)
+    public function getRow(array $by_record)
+    {
+        $idName = $this->getIdColumn()->getName();
+        
+        $row = parent::getRow($by_record);        
+        if (isset($row[$idName])) {
+            return $this->getByID($row[$idName]);
+        }
+        
+        return null;
+    }
+
+    public function getRows(array $condition = []): array
     {
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
         $codeName = $this->getCodeColumn()->getName();
 
-        $content_cols = [];
-        foreach ($this->getContentColumns() as $column) {
-            if ($column->getName() != $idName) {
-                $content_cols[] = $column->getName();
+        if (empty($condition)) {
+            $condition = ['ORDER BY' => "p.$idName"];
+        }
+
+        $p_idName = "p_$idName";
+        $c_codeName = "c_$codeName";
+        $c_idName = $this->content->getIdColumn()->getName();
+        $content_KeyColumns = array($c_idName, $keyName, $codeName);
+        
+        $rows = array();
+        $pdostmt = $this->join_select();
+        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!isset($rows[$data[$p_idName]][$p_idName])) {
+                foreach ($this->getMainColumns() as $column) {
+                    $columnName = $column->getName();
+                    $rows[$data[$p_idName]][$columnName] = $data["p_$columnName"] ?? $column->getDefault();
+                }
+            }
+            
+            foreach ($this->getContentColumns() as $ccolumn) {
+                $ccolumnName = $ccolumn->getName();
+                if (!in_array($ccolumnName, $content_KeyColumns)) {
+                    $rows[$data[$p_idName]]['content'][$ccolumnName][$data[$c_codeName]] = $data["c_$ccolumnName"] ?? $ccolumn->getDefault();
+                }
             }
         }
         
-        $pdostmt = $this->statement(
-                array($idName), $content_cols,
+        return $rows;
+    }
+
+    public function duplicateContentByCode(string $source_code, string $destination_code)
+    {
+        $idName = $this->getIdColumn()->getName();
+        $keyName = $this->getKeyColumn()->getName();
+        $codeName = $this->getCodeColumn()->getName();
+
+        $contentColumns = $this->getContentColumns();
+        $selections = array("p.$idName as p_$idName");
+        foreach ($contentColumns as $key => $column) {
+            if ($key != $idName) {
+                $selections[] = "c.$key as c_$key";
+            } else {
+                unset($contentColumns[$key]);
+            }
+        }
+        
+        $pdostmt = $this->join_select(implode(',', $selections),
                 array('WHERE' => "c.$codeName=" . $this->quote($source_code)));
         $pdostmt->execute();
         
         if ($pdostmt->rowCount() > 0) {
-            unset($content_cols[$keyName]);
-            unset($content_cols[$codeName]);
+            unset($contentColumns[$keyName]);
+            unset($contentColumns[$codeName]);
             
             $content = array();
             while ($row = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
-                foreach ($content_cols as $column) {
+                foreach ($contentColumns as $column) {
                     $content[$column] = $row[$column] ?? '';
                 }
                 $content[$keyName] = $row[$keyName];
                 $content[$codeName] = $destination_code;
                 
-                $this->writeContent($content, array($keyName, $codeName));
+                $this->insert_or_update_content($content, array($keyName, $codeName));
             }
         }
+    }
+    
+    private function insert_or_update_content(array $content, array $where)
+    {
+        $by_record = array();
+        foreach ($where as $name) {
+            if ($this->content->hasColumn($name)) {
+                $by_record[$name] = $content[$name];
+            }
+        }
+        
+        $stmt = $this->content->select('*', $by_record);
+        if ($stmt->rowCount()) {
+            return $this->content->update($content, $where);
+        } else {
+            return $this->content->insert($content);
+        }
+        
+        return false;
+    }
+    
+    private function join_select($selection = '*', array $condition = []): PDOStatement
+    {
+        $contentName = $this->content->getName();
+        $idName = $this->getIdColumn()->getName();
+        $keyName = $this->getKeyColumn()->getName();
+
+        if ($selection === '*') {
+            $selections = array();
+            foreach (array_keys($this->getMainColumns()) as $column) {
+                $selections[] = "p.$column as p_$column";
+            }
+            
+            foreach (array_keys($this->getContentColumns()) as $column) {
+                $selections[] = "c.$column as c_$column";
+            }
+            
+            $selection = implode(',', $selections);
+        }
+        
+        $condition['JOIN'] = "p INNER JOIN $contentName c ON p.$idName=c.$keyName";
+        
+        return parent::select($selection, [], $condition);
     }
 }

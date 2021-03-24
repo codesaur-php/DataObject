@@ -4,19 +4,15 @@ namespace codesaur\DataObject;
 
 class Model extends Table
 {
-    public function createTable(?string $name = null): bool
+    public function setCreateTable(?string $name = null, $collate = null): bool
     {
-        if (!parent::createTable($name)) {
+        if (!parent::setCreateTable($name, $collate)) {
             return false;
         }
 
         $this->initial();
         
         return true;
-    }
-    
-    function initial()
-    {
     }
 
     public function insert(array $record)
@@ -37,11 +33,8 @@ class Model extends Table
         return parent::insert($record);
     }
     
-    public function update(
-            array  $record,
-            array  $where = [],
-            string $condition = ''
-    ) {
+    public function update(array $record, array $where = [], string $condition = '')
+    {
         if ($this->hasColumn('updated_at')
                 && !isset($record['updated_at'])
         ) {
@@ -56,5 +49,9 @@ class Model extends Table
         }
         
         return parent::update($record, $where, $condition);
+    }
+    
+    function initial()
+    {
     }
 }

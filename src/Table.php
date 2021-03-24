@@ -88,7 +88,7 @@ class Table
         return $this->getColumn('id');
     }
     
-    public function createTable(?string $name = null): bool
+    public function setCreateTable(?string $name = null, $collate = null): bool
     {
         if (!empty($name)) {
             $this->setName($name);
@@ -143,6 +143,9 @@ class Table
         if (strtolower($this->getDriverName()) === 'mysql') {
              $query .= ' ENGINE=InnoDB';
         }
+        if ($collate) {
+            $query .= " COLLATE=$collate";
+        }
         if (isset($auto_increment)) {
             $query .= " AUTO_INCREMENT=$auto_increment";
         }
@@ -154,7 +157,7 @@ class Table
         return $this->exec($query) !== false;
     }
     
-    public function createVersionTable()
+    public function setVersionTable()
     {
         $version = $this->quote($this->getVersionName());        
         $exists = $this->query("SHOW TABLES LIKE $version");
@@ -327,8 +330,86 @@ class Table
         return $pdostmt->execute();
     }
     
-    public function deactivate(array $by_record)
+    public function getByID($value)
     {
+        return $this->getRow(array($this->getIdColumn()->getName() => $value));
+    }
+
+    public function getRow(array $by_record)
+    {
+        foreach (array_keys($by_record) as $column) {
+            if (!$this->hasColumn($column)) {
+                unset($by_record[$column]);
+            }
+        }
+        
+        if (!empty($by_record)) {
+            $pdostmt = $this->select('*', $by_record);
+            if ($pdostmt->rowCount() === 1) {
+                return $pdostmt->fetch(PDO::FETCH_ASSOC);
+            }
+        }
+        
+        return null;
+    }
+
+    public function getRows(array $condition = []): array
+    {
+        if (empty($condition)) {
+            $condition['ORDER BY'] =  $this->getIdColumn()->getName();
+        }
+        
+        $count = 0;
+        $rows = array();
+        $idName = $this->getIdColumn()->getName();
+        $pdostmt = $this->select('*', array(), $condition);
+        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
+            foreach ($this->getColumns() as $column) {
+                $value = $data[$column->getName()] ?? $column->getDefault();
+                $rows[$data[$idName] ?? ++$count][$column->getName()] = $value;
+            }
+        }
+        
+        return $rows;
+    }
+    
+    public function quote(string $string, int $parameter_type = PDO::PARAM_STR): string
+    {
+        return $this->pdo->quote($string, $parameter_type);
+    }
+
+    public function prepare(string $statement, array $driver_options = array()): PDOStatement
+    {
+        return $this->pdo->prepare($statement, $driver_options);
+    }
+
+    public function exec(string $statement)
+    {
+        return $this->pdo->exec($statement);
+    }
+
+    public function query(string $statement): PDOStatement
+    {
+        return $this->pdo->query($statement);
+    }
+
+    public function lastInsertId(string $name = NULL): string
+    {
+        return $this->pdo->lastInsertId($name);
+    }
+    
+    private function deactivate(array $by_record)
+    {
+        foreach (array_keys($by_record) as $column) {
+            if (!$this->hasColumn($column)) {
+                unset($by_record[$column]);
+            }
+        }
+        
+        if (empty($by_record)) {
+            return false;
+        }
+        
         $pdostmt = $this->select('*', $by_record);
         $result = $pdostmt->fetch(PDO::FETCH_ASSOC);
         if ($result === false) {
@@ -360,98 +441,5 @@ class Table
         }
 
         return $this->update($result, array(), $idColumn->getName() . '=' . $id);    
-    }
-
-    public function getRows(array $condition = []): array
-    {
-        if (empty($condition)) {
-            $condition['ORDER BY'] =  $this->getIdColumn()->getName();
-        }
-        
-        return $this->getStatementRows($this->select('*', array(), $condition));
-    }
-    
-    public function getStatementRows(PDOStatement $pdostmt): array
-    {
-        $count = 0;
-        $rows = array();
-        $idName = $this->getIdColumn()->getName();
-        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
-            foreach ($this->getColumns() as $column) {
-                $value = $data[$column->getName()] ?? $column->getDefault();
-                $rows[$data[$idName] ?? ++$count][$column->getName()] = $value;
-            }
-        }
-        
-        return $rows;
-    }
-    
-    public function getBy(string $name, string $value)
-    {
-        if ($this->hasColumn($name)) {
-            return $this->getRowBy(array($name => $value));
-        }
-        
-        return null;
-    }
-
-    public function getByID($value)
-    {
-        return $this->getBy($this->getIdColumn()->getName(), $value);
-    }
-
-    public function getRowBy(array $by_record)
-    {
-        $pdostmt = $this->select('*', $by_record);
-        if ($pdostmt->rowCount() === 1) {
-            return $pdostmt->fetch(PDO::FETCH_ASSOC);
-        }
-        
-        return null;
-    }
-    
-    public function checkBy(string $name, $value)
-    {
-        if ($this->hasColumn($name)) {
-            $pdostmt = $this->select('*', array($name => $value));            
-            return $pdostmt->rowCount();
-        }
-        
-        return false;
-    }
-
-    public function checkByID($value)
-    {
-        return $this->checkBy($this->getIdColumn()->getName(), $value);
-    }
-    
-    public function deleteByID($value)
-    {
-        return $this->delete(array($this->getIdColumn()->getName() => $value));
-    }
-    
-    public function quote(string $string, int $parameter_type = PDO::PARAM_STR): string
-    {
-        return $this->pdo->quote($string, $parameter_type);
-    }
-
-    public function prepare(string $statement, array $driver_options = array()): PDOStatement
-    {
-        return $this->pdo->prepare($statement, $driver_options);
-    }
-
-    public function exec(string $statement)
-    {
-        return $this->pdo->exec($statement);
-    }
-
-    public function query(string $statement): PDOStatement
-    {
-        return $this->pdo->query($statement);
-    }
-
-    public function lastInsertId(string $name = NULL): string
-    {
-        return $this->pdo->lastInsertId($name);
     }
 }
