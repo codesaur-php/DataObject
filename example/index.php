@@ -31,9 +31,9 @@ class AccountModel extends Model
            (new Column('email', 'varchar', 65))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-           (new Column('created_by', 'bigint', 20))->foreignKey('user(id)'),
+           (new Column('created_by', 'bigint', 20))->foreignKey('example_user(id)'),
             new Column('updated_at', 'datetime'),
-           (new Column('updated_by', 'bigint', 20))->foreignKey('user(id)')
+           (new Column('updated_by', 'bigint', 20))->foreignKey('example_user(id)')
         ));
         
         $this->setTable('example_user');
@@ -62,9 +62,9 @@ class TranslationModel extends MultiModel
            (new Column('keyword', 'varchar', 128))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-           (new Column('created_by', 'bigint', 20))->foreignKey('user(id)'),
+           (new Column('created_by', 'bigint', 20))->foreignKey('example_user(id)'),
             new Column('updated_at', 'datetime'),
-           (new Column('updated_by', 'bigint', 20))->foreignKey('user(id)')
+           (new Column('updated_by', 'bigint', 20))->foreignKey('example_user(id)')
         ));
         $this->setContentColumns(array(
             new Column('title', 'varchar', 255)
