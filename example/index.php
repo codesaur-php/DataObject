@@ -36,10 +36,10 @@ class AccountModel extends Model
            (new Column('updated_by', 'bigint', 20))->foreignKey('user(id)')
         ));
         
-        $this->setCreateTable('user');
+        $this->setTable('user');
     }
     
-    function initial()
+    function __initial()
     {
         $now_date = date('Y-m-d H:i:s');
         
@@ -58,8 +58,7 @@ class TranslationModel extends MultiModel
     {
         parent::__construct($conn);
         
-        $this->setMainColumns(array(
-           (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull(),
+        $this->setColumns(array(
            (new Column('keyword', 'varchar', 128))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
@@ -67,30 +66,29 @@ class TranslationModel extends MultiModel
             new Column('updated_at', 'datetime'),
            (new Column('updated_by', 'bigint', 20))->foreignKey('user(id)')
         ));
-        
         $this->setContentColumns(array(
             new Column('title', 'varchar', 255)
         ));
-        
-        $this->setCreateTable('default_translation');
+
+        $this->setTable('default_translation');
     }
     
-    function initial()
+    function __initial()
     {
-        $this->insertContent(array('keyword' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
-        $this->insertContent(array('keyword' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));
-        $this->insertContent(array('keyword' => 'account'), array('mn' => array('title' => 'Хэрэглэгч'), 'en' => array('title' => 'Account')));
-        $this->insertContent(array('keyword' => 'actions'), array('mn' => array('title' => 'Үйлдлүүд'), 'en' => array('title' => 'Actions')));
-        $this->insertContent(array('keyword' => 'active'), array('mn' => array('title' => 'Идэвхитэй'), 'en' => array('title' => 'Active')));
-        $this->insertContent(array('keyword' => 'add'), array('mn' => array('title' => 'Нэмэх'), 'en' => array('title' => 'Add')));
-        $this->insertContent(array('keyword' => 'address'), array('mn' => array('title' => 'Хаяг'), 'en' => array('title' => 'Address')));
-        $this->insertContent(array('keyword' => 'alerts'), array('mn' => array('title' => 'Мэдэгдлүүд'), 'en' => array('title' => 'Alerts')));
-        $this->insertContent(array('keyword' => 'back'), array('mn' => array('title' => 'Буцах'), 'en' => array('title' => 'Back')));
-        $this->insertContent(array('keyword' => 'banner'), array('mn' => array('title' => 'Баннер'), 'en' => array('title' => 'Banner')));
-        $this->insertContent(array('keyword' => 'boxed'), array('mn' => array('title' => 'Хайрцагласан'), 'en' => array('title' => 'Boxed')));
-        $this->insertContent(array('keyword' => 'cancel'), array('mn' => array('title' => 'Болих'), 'en' => array('title' => 'Cancel')));
-        $this->insertContent(array('keyword' => 'category'), array('mn' => array('title' => 'Ангилал'), 'en' => array('title' => 'Category')));
-        $this->insertContent(array('keyword' => 'change'), array('mn' => array('title' => 'Өөрчлөх'), 'en' => array('title' => 'Change')));
+        $this->insert(array('keyword' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
+        $this->insert(array('keyword' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));
+        $this->insert(array('keyword' => 'account'), array('mn' => array('title' => 'Хэрэглэгч'), 'en' => array('title' => 'Account')));
+        $this->insert(array('keyword' => 'actions'), array('mn' => array('title' => 'Үйлдлүүд'), 'en' => array('title' => 'Actions')));
+        $this->insert(array('keyword' => 'active'), array('mn' => array('title' => 'Идэвхитэй'), 'en' => array('title' => 'Active')));
+        $this->insert(array('keyword' => 'add'), array('mn' => array('title' => 'Нэмэх'), 'en' => array('title' => 'Add')));
+        $this->insert(array('keyword' => 'address'), array('mn' => array('title' => 'Хаяг'), 'en' => array('title' => 'Address')));
+        $this->insert(array('keyword' => 'alerts'), array('mn' => array('title' => 'Мэдэгдлүүд'), 'en' => array('title' => 'Alerts')));
+        $this->insert(array('keyword' => 'back'), array('mn' => array('title' => 'Буцах'), 'en' => array('title' => 'Back')));
+        $this->insert(array('keyword' => 'banner'), array('mn' => array('title' => 'Баннер'), 'en' => array('title' => 'Banner')));
+        $this->insert(array('keyword' => 'boxed'), array('mn' => array('title' => 'Хайрцагласан'), 'en' => array('title' => 'Boxed')));
+        $this->insert(array('keyword' => 'cancel'), array('mn' => array('title' => 'Болих'), 'en' => array('title' => 'Cancel')));
+        $this->insert(array('keyword' => 'category'), array('mn' => array('title' => 'Ангилал'), 'en' => array('title' => 'Category')));
+        $this->insert(array('keyword' => 'change'), array('mn' => array('title' => 'Өөрчлөх'), 'en' => array('title' => 'Change')));
     }
 }
 
@@ -111,10 +109,10 @@ try {
     }
 
     $pdo->exec("USE $database");
-    echo 'started using example database!<br/>';
+    echo 'started using example database!<br/>';    
     
     $account = new AccountModel($pdo);
-    $admin = $account->getRow(array('username' =>'admin'));
+    $admin = $account->getRowBy(array('username' =>'admin'));
     if ($admin) {
         putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
 
@@ -132,19 +130,35 @@ try {
     ));
 
     var_dump(array('newly created account id: ' => $new_account_id));
-
+    var_dump(array('newly created account: ' => $account->getById($new_account_id)));
+    var_dump(array('delete account 3: ' => $account->deleteById(3)));
+    putenv('CODESAUR_DB_KEEP_DELETE=true');
+    var_dump(array('deactivate account 7: ' => $account->deleteById(7)));
+    
+    var_dump($account->update(array('address' => 'Tokyo'), array('WHERE' => 'is_active=1')));
+    var_dump($account->updateById(15, array('first_name' => 'Not so randoms', 'id' => 1500)));
+    
     $translation = new TranslationModel($pdo);
-    $rows = $translation->getRows();
+    echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
 
+    var_dump($translation->getById(3, 'mn'));
+    putenv('CODESAUR_DB_KEEP_DELETE');
+    var_dump($translation->deleteById(7));
+    putenv('CODESAUR_DB_KEEP_DELETE=true');
+    var_dump($translation->deleteById(10));    
+    var_dump($translation->update(['keyword' => 'golio', 'is_active' => 2], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']], array('WHERE' => 'p.id=4')));
+    var_dump($translation->updateById(5, [], ['en' => ['title' => 'Hyperactive']]));
+    
+    $rows = $translation->getRows();
     $texts = array();
     foreach ($rows as $row) {
         $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['content']['title']);
     }
-
-    echo "chat in mongolian => {$texts['chat']['mn']}<br/>";
-
+    echo "<br/><hr><br/>List of Translation texts<br/>";
     var_dump($texts, $rows);
-    var_dump($translation->getByID(3));
+    
+    echo "<br/><hr><br/><br/>";
+    var_dump(array('list of accounts: ' => $account->getRows()));
 } catch (Exception $ex) {
-    die('[' . date('Y-m-d H:i:s'). ' Error] ' . $ex->getMessage());
+    die('[' . date('Y-m-d H:i:s') . ' Error] ' . $ex->getMessage());
 }

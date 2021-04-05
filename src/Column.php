@@ -77,11 +77,6 @@ class Column
     {
         $this->_name = $name;
     }
-    
-    final public function getBindName(): string
-    {
-        return ':' . $this->getName();
-    }
 
     public function getType(): string
     {
