@@ -14,7 +14,7 @@ use codesaur\DataObject\MultiModel;
 ini_set('display_errors', 'On');
 error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
 
-class AccountModel extends Model
+class ExampleAccountModel extends Model
 {
     function __construct(PDO $pdo)
     {
@@ -52,7 +52,7 @@ class AccountModel extends Model
     }
 }
 
-class TranslationModel extends MultiModel
+class ExampleTranslationModel extends MultiModel
 {
     function __construct(PDO $conn)
     {
@@ -111,7 +111,7 @@ try {
     $pdo->exec("USE $database");
     echo 'started using example database!<br/>';    
     
-    $account = new AccountModel($pdo);
+    $account = new ExampleAccountModel($pdo);
     $admin = $account->getRowBy(array('username' =>'admin'));
     if ($admin) {
         putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
@@ -138,7 +138,7 @@ try {
     var_dump($account->update(array('address' => 'Tokyo'), array('WHERE' => 'is_active=1')));
     var_dump($account->updateById(15, array('first_name' => 'Not so randoms', 'id' => 1500)));
     
-    $translation = new TranslationModel($pdo);
+    $translation = new ExampleTranslationModel($pdo);
     echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
 
     var_dump($translation->getById(3, 'mn'));
