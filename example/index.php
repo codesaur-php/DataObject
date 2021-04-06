@@ -155,7 +155,11 @@ try {
         $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['content']['title']);
     }
     echo "<br/><hr><br/>List of Translation texts<br/>";
-    var_dump($texts, $rows);
+    var_dump($texts);
+    
+    foreach ($rows as $row) {
+        var_dump($row);
+    }
     
     echo "<br/><hr><br/><br/>";
     var_dump(array('list of accounts: ' => $account->getRows()));
