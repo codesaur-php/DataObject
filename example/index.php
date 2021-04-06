@@ -1,11 +1,16 @@
 <?php
 
+namespace codesaur\DataObject\Example;
+
 /* DEV: v1.2021.03.15
  * 
  * This is an example script!
  */
 
 require_once '../vendor/autoload.php';
+
+use PDO;
+use Exception;
 
 use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
