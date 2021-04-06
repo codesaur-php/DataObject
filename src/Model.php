@@ -15,9 +15,9 @@ class Model
     private $_name;    // Table name
     private $_columns; // Table columns
 
-    function __construct(PDO $conn)
+    function __construct(PDO $pdo)
     {
-        $this->pdo = $conn;
+        $this->pdo = $pdo;
     }
     
     public function setTable(string $name, $collate = null): bool

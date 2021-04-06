@@ -16,9 +16,9 @@ class MultiModel
     private $_columns;         // Record table columns
     private $_contentColumns;  // Content table columns
 
-    function __construct(PDO $conn)
+    function __construct(PDO $pdo)
     {
-        $this->pdo = $conn;
+        $this->pdo = $pdo;
     }
 
     public function setTable(string $name, $collate = null): bool
