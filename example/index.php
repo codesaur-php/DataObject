@@ -36,9 +36,9 @@ class ExampleAccountModel extends Model
            (new Column('email', 'varchar', 65))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-           (new Column('created_by', 'bigint', 20))->foreignKey('example_user(id)'),
+            new Column('created_by', 'bigint', 20) ,
             new Column('updated_at', 'datetime'),
-           (new Column('updated_by', 'bigint', 20))->foreignKey('example_user(id)')
+            new Column('updated_by', 'bigint', 20)
         ));
         
         $this->setTable('example_user');
@@ -67,9 +67,9 @@ class ExampleTranslationModel extends MultiModel
            (new Column('keyword', 'varchar', 128))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-           (new Column('created_by', 'bigint', 20))->foreignKey('example_user(id)'),
+           (new Column('created_by', 'bigint', 20))->foreignKey('example_user', 'id'),
             new Column('updated_at', 'datetime'),
-           (new Column('updated_by', 'bigint', 20))->foreignKey('example_user(id)')
+           (new Column('updated_by', 'bigint', 20))->foreignKey('example_user', 'id')
         ));
         $this->setContentColumns(array(
             new Column('title', 'varchar', 255)
@@ -106,7 +106,7 @@ try {
     $pdo = new PDO($dsn, $username, $passwd, $options);
     echo 'connected to mysql...<br/>';
     
-    $database = 'dataobject_example';    
+    $database = 'dataobject_example';
     if ($_SERVER['HTTP_HOST'] === 'localhost'
             && in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))
     ) {
@@ -114,9 +114,9 @@ try {
     }
 
     $pdo->exec("USE $database");
-    echo 'started using example database!<br/>';    
+    echo 'started using example database!<br/>';
     
-    $account = new ExampleAccountModel($pdo);
+    $account = new ExampleAccountModel($pdo);var_dump($account->updateById(1, array('first_name' => 'NAR')));
     $admin = $account->getRowBy(array('username' =>'admin'));
     if ($admin) {
         putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
@@ -140,19 +140,20 @@ try {
     putenv('CODESAUR_DB_KEEP_DELETE=true');
     var_dump(array('deactivate account 7: ' => $account->deleteById(7)));
     
-    var_dump($account->update(array('address' => 'Tokyo'), array('WHERE' => 'is_active=1')));
-    var_dump($account->updateById(15, array('first_name' => 'Not so randoms', 'id' => 1500)));
+    var_dump($account->update(array('address' => 'Ulaanbaatar'), array('WHERE' => 'is_active=1')));
+    var_dump($account->updateById(15, array('first_name' => 'Not so random', 'id' => 1500)));
     
     $translation = new ExampleTranslationModel($pdo);
-    echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
 
+    echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
     var_dump($translation->getById(3, 'mn'));
+    
     putenv('CODESAUR_DB_KEEP_DELETE');
     var_dump($translation->deleteById(7));
     putenv('CODESAUR_DB_KEEP_DELETE=true');
-    var_dump($translation->deleteById(10));    
+    var_dump($translation->deleteById(10));
     var_dump($translation->update(['keyword' => 'golio', 'is_active' => 2], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']], array('WHERE' => 'p.id=4')));
-    var_dump($translation->updateById(5, [], ['en' => ['title' => 'Hyperactive']]));
+    var_dump($translation->updateById(5, ['id' => 500], ['en' => ['title' => 'Hyperactive']]));
     
     $rows = $translation->getRows();
     $texts = array();

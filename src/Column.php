@@ -57,13 +57,18 @@ class Column
         return $this;
     }
 
-    public function foreignKey(string $references, $name = null): Column
-    {
-        if (isset($name)) {
-            $this->_foreign_key = array($name => $references);
-        } else {
-            $this->_foreign_key = $references;
-        }
+    public function foreignKey(
+            string $tableName,
+            string $columnName,
+            string $onDelete = 'SET NULL',
+            string $onUpdate = 'CASCADE'
+    ): Column {
+        $this->_foreign_key = new ForeignKey();
+        $this->_foreign_key->name = $this->getName();
+        $this->_foreign_key->table = $tableName;
+        $this->_foreign_key->column = $columnName;
+        $this->_foreign_key->onDelete = $onDelete;
+        $this->_foreign_key->onUpdate = $onUpdate;
         
         return $this;
     }
@@ -90,13 +95,13 @@ class Column
     
     public function getDataType(): int
     {
-        return $this->isIntType() ? PDO::PARAM_INT : PDO::PARAM_STR;
+        return $this->isInt() ? PDO::PARAM_INT : PDO::PARAM_STR;
     }
 
     public function getLength()
     {
         if ($this->isUnique()
-                && $this->getType() === 'varchar'
+                && $this->getType() == 'varchar'
         ) {
             return $this->_length - 15;
         }
@@ -130,16 +135,16 @@ class Column
         return $this->_is_auto;
     }
 
-    public function isIntType(): bool
+    public function isInt(): bool
     {
-        return $this->getType() === 'int'
-                || $this->getType() === 'tinyint'
-                || $this->getType() === 'bigint';
+        return $this->getType() == 'int'
+                || $this->getType() == 'tinyint'
+                || $this->getType() == 'bigint';
     }
 
-    public function isNumericType(): bool
+    public function isNumeric(): bool
     {
-        return $this->isIntType() || $this->getType() === 'decimal';
+        return $this->isInt() || $this->getType() == 'decimal';
     }
 
     public function isNull(): bool
@@ -157,14 +162,9 @@ class Column
         return $this->_is_unique;
     }
     
-    public function getForeignKey()
+    public function getForeignKey(): string
     {
-        return $this->_foreign_key;
-    }
-    
-    public function hasForeignKey(): bool
-    {
-        return isset($this->_foreign_key);
+        return (string)$this->_foreign_key;
     }
     
     public function getSyntax(): string
@@ -187,7 +187,7 @@ class Column
         
         $default = ' DEFAULT ';
         if ($this->_default !== null) {
-            if ($this->isNumericType()) {
+            if ($this->isNumeric()) {
                 $default .= $this->_default;
             } else {
                 $default .= "'$this->_default'";
@@ -210,5 +210,19 @@ class Column
         }
         
         return $str;
+    }
+}
+
+class ForeignKey
+{
+    public $name;
+    public $table;
+    public $column;
+    public $onDelete;
+    public $onUpdate;
+    
+    function __toString()
+    {
+        return "FOREIGN KEY (`$this->name`) REFERENCES $this->table($this->column) ON DELETE $this->onDelete ON UPDATE $this->onUpdate";
     }
 }
