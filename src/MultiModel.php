@@ -371,7 +371,7 @@ class MultiModel extends Table
         return $rows;
     }
     
-    public function getRowBy(array $values)
+    public function getRowBy(array $values, $orderBy = null)
     {
         $count = 1;
         $params = array();
@@ -384,7 +384,14 @@ class MultiModel extends Table
         $clause = implode(' AND ', $wheres);
         
         if (!empty($wheres)) {
-            $stmt = $this->select('*', array('WHERE' => $clause, 'PARAM' => $params));
+            $condition = array(
+                'WHERE' => $clause,
+                'PARAM' => $params
+            );
+            if (!empty($orderBy)) {
+                $condition['ORDER BY'] = $orderBy;
+            }
+            $stmt = $this->select('*', $condition);
             
             $idName = $this->getIdColumn()->getName();
             $codeName = $this->getCodeColumn()->getName();
