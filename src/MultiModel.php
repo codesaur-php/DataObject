@@ -151,7 +151,7 @@ class MultiModel extends Table
             }
             
             if (!$content_stmt->execute()) {
-                // Should we roll back insertion from main table & in content codes? since it's failed
+                // TODO: Since it's failed, we should roll back insertion from main table
             }
         }
         
@@ -258,7 +258,7 @@ class MultiModel extends Table
                     }
                     
                     if (!$content_stmt->execute()) {
-                        // Should we roll back update from record table & in content codes? 
+                        // TODO: Since it's failed, we should roll back update from main table
                     }
                     
                     $contentIds[] = (int)($content_row['id'] ?? $this->lastInsertId());
