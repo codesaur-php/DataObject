@@ -181,7 +181,7 @@ class Model extends Table
         $clause = implode(' AND ', $where);
         
         if (!empty($clause)) {
-            $stmt = $this->select('*', array('WHERE' => $clause, 'PARAM' => $params));
+            $stmt = $this->select('*', array('WHERE' => $clause, 'LIMIT' => 1,'PARAM' => $params));
             if ($stmt->rowCount() == 1) {
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
                 foreach ($this->getColumns() as $column) {
