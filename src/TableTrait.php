@@ -82,16 +82,36 @@ trait TableTrait
     public function selectStatement(string $name, string $selection, array $condition): PDOStatement
     {
         $select = "SELECT $selection FROM $name";
-        if (isset($condition['JOIN'])) { $select .= ' JOIN ' . $condition['JOIN']; } 
-        if (isset($condition['CROSS JOIN'])) { $select .= ' CROSS JOIN ' . $condition['CROSS JOIN']; }
-        if (isset($condition['INNER JOIN'])) { $select .= ' INNER JOIN ' . $condition['INNER JOIN']; }
-        if (isset($condition['LEFT JOIN'])) { $select .= ' LEFT JOIN ' . $condition['LEFT JOIN']; }
-        if (isset($condition['RIGHT JOIN'])) { $select .= ' RIGHT JOIN ' . $condition['RIGHT JOIN']; }
-        if (isset($condition['WHERE'])) { $select .= ' WHERE ' . $condition['WHERE']; }
-        if (isset($condition['GROUP BY'])) { $select .= ' GROUP BY ' . $condition['ORDER BY']; }
-        if (isset($condition['HAVING'])) { $select .= ' HAVING ' . $condition['ORDER BY']; }
-        if (isset($condition['ORDER BY'])) { $select .= ' ORDER BY ' . $condition['ORDER BY']; }
-        if (isset($condition['LIMIT'])) { $select .= ' LIMIT ' . $condition['LIMIT']; }
+        if (isset($condition['JOIN'])) {
+            $select .= ' JOIN ' . $condition['JOIN'];
+        }
+        if (isset($condition['CROSS JOIN'])) {
+            $select .= ' CROSS JOIN ' . $condition['CROSS JOIN'];
+        }
+        if (isset($condition['INNER JOIN'])) {
+            $select .= ' INNER JOIN ' . $condition['INNER JOIN'];
+        }
+        if (isset($condition['LEFT JOIN'])) {
+            $select .= ' LEFT JOIN ' . $condition['LEFT JOIN'];
+        }
+        if (isset($condition['RIGHT JOIN'])) {
+            $select .= ' RIGHT JOIN ' . $condition['RIGHT JOIN'];
+        }
+        if (isset($condition['WHERE'])) {
+            $select .= ' WHERE ' . $condition['WHERE'];
+        }
+        if (isset($condition['GROUP BY'])) {
+            $select .= ' GROUP BY ' . $condition['ORDER BY'];
+        }
+        if (isset($condition['HAVING'])) {
+            $select .= ' HAVING ' . $condition['ORDER BY'];
+        }
+        if (isset($condition['ORDER BY'])) {
+            $select .= ' ORDER BY ' . $condition['ORDER BY'];
+        }
+        if (isset($condition['LIMIT'])) {
+            $select .= ' LIMIT ' . $condition['LIMIT'];
+        }
 
         $stmt = $this->prepare($select);
         if (!empty($condition['PARAM'])) {
