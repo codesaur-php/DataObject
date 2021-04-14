@@ -114,10 +114,10 @@ class Model extends Table
     
     public function updateById($id, array $record)
     {
-        $idColumn = $this->getIdColumn();
+        $idColumnName = $this->getIdColumn()->getName();
         $condition = array(
-            'WHERE' => $idColumn->getName() . '=:id',
-            'PARAM' => array(':id' => ['value' => $id, 'data_type' => $idColumn->getDataType()])
+            'WHERE' => "$idColumnName=:id",
+            'PARAM' => array(':id' => $id)
         );
         
         return $this->update($record, $condition);
@@ -173,10 +173,7 @@ class Model extends Table
         $params = array();
         foreach ($values as $key => $value) {
             $where[] = "$key=:$key";
-            $params[":$key"] = array(
-                'value' => $value,
-                'data_type' => $this->getColumn($key)->getDataType()
-            );
+            $params[":$key"] = $value;
         }
         $clause = implode(' AND ', $where);
         

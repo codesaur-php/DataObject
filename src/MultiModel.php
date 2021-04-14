@@ -295,11 +295,10 @@ class MultiModel extends Table
     
     public function updateById($id, array $record, array $content)
     {
-        $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();
+        $idColumnName = $this->getIdColumn()->getName();
         $condition = array(
-            'WHERE' => "p.$idColumnName=:$idColumnName",
-            'PARAM' => array(":$idColumnName" => ['value' => $id, 'data_type' => $idColumn->getDataType()])
+            'WHERE' => "p.$idColumnName=:p_$idColumnName",
+            'PARAM' => array(":p_$idColumnName" => $id)
         );
         
         return $this->update($record, $content, $condition);

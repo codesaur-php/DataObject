@@ -114,12 +114,7 @@ trait TableTrait
         }
 
         $stmt = $this->prepare($select);
-        if (!empty($condition['PARAM'])) {
-            foreach ($condition['PARAM'] as $parameter => $value) {
-                $stmt->bindValue($parameter, $value['value'] ?? $value, $value['data_type'] ?? PDO::PARAM_STR);
-            }
-        }
-        if ($stmt->execute()) {
+        if ($stmt->execute($condition['PARAM'] ?? null)) {
             return $stmt;
         }
 

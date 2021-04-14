@@ -148,10 +148,10 @@ abstract class Table
     
     public function deleteById($id)
     {
-        $idColumn = $this->getIdColumn();
+        $idColumnName = $this->getIdColumn()->getName();
         $condition = array(
-            'WHERE' => $idColumn->getName() . '=:id',
-            'PARAM' => array(':id' => ['value' => $id, 'data_type' => $idColumn->getDataType()])
+            'WHERE' => "$idColumnName=:id",
+            'PARAM' => array(':id' => $id)
         );
         
         return $this->delete($condition);
