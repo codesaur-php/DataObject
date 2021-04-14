@@ -124,7 +124,8 @@ class MultiModel extends Table
         }
         
         $idColumn = $this->getIdColumn();
-        $idRaw = $record[$idColumn->getName()] ?? $this->lastInsertId();
+        $idColumnName = $idColumn->getName();
+        $idRaw = $record[$idColumnName] ?? $this->lastInsertId();
         $insertId = $idColumn->isInt() ? (int)$idRaw : $idRaw;
         
         $contentTable = $this->getContentName();
@@ -150,8 +151,14 @@ class MultiModel extends Table
                 $content_stmt->bindValue(":$key", $value, $this->getContentColumn($key)->getDataType());
             }
             
-            if (!$content_stmt->execute()) {
-                // TODO: Since it's failed, we should roll back insertion from main table
+            try {
+                if (!$content_stmt->execute()) {
+                    throw new Exception(implode(': ', $content_stmt->errorInfo()));
+                }
+            } catch (Exception $e) {
+                $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
+                $delete->execute(array(':id' => $insertId));
+                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable]! " . $e->getMessage());
             }
         }
         
@@ -175,11 +182,15 @@ class MultiModel extends Table
         
         $table = $this->getName();
         $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();        
+        $idColumnName = $idColumn->getName();
+        $selection = "p.$idColumnName as $idColumnName";
         if (!empty($record)) {
             $set = array();
             foreach (array_keys($record) as $name) {
                 $set[] = "$name=:$name";
+                if ($name != $idColumnName) {
+                    $selection .= ", p.$name as $name";
+                }
             }
             $sets = implode(', ', $set);
             $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:old_$idColumnName");
@@ -194,8 +205,8 @@ class MultiModel extends Table
             $content_select = $this->prepare("SELECT id FROM $contentTable WHERE $keyName=:key AND $codeName=:code LIMIT 1");
         }
         
-        $ids = array();
-        $select = $this->selectStatement("$table p", "p.$idColumnName as $idColumnName", $condition);
+        $ids = array();        
+        $select = $this->selectStatement("$table p", $selection, $condition);
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {            
             $p_id = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
             if (!isset($ids[$p_id])) {
@@ -257,8 +268,19 @@ class MultiModel extends Table
                         $content_stmt->bindValue(":$key", $value, $this->getContentColumn($key)->getDataType());
                     }
                     
-                    if (!$content_stmt->execute()) {
-                        // TODO: Since it's failed, we should roll back update from main table
+                    try {
+                        if (!$content_stmt->execute()) {
+                            throw new Exception(implode(': ', $content_stmt->errorInfo()));
+                        }
+                    } catch (Exception $e) {
+                        if (isset($update)) {
+                            $update->bindValue(":old_$idColumnName", $newId, $idColumn->getDataType());
+                            foreach (array_keys($record) as $name) {
+                                $update->bindValue(":$name", $row[$name], $this->getColumn($name)->getDataType());
+                            }
+                            $update->execute();
+                        }                        
+                        throw new Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage());
                     }
                     
                     $contentIds[] = (int)($content_row['id'] ?? $this->lastInsertId());

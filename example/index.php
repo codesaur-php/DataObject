@@ -151,8 +151,8 @@ try {
     putenv('CODESAUR_DB_KEEP_DELETE');
     var_dump($translation->deleteById(7));
     putenv('CODESAUR_DB_KEEP_DELETE=true');
-    var_dump($translation->deleteById(10));
-    var_dump($translation->update(['keyword' => 'golio', 'is_active' => 2], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']], array('WHERE' => 'p.id=4')));
+    var_dump($translation->deleteById(8));
+    var_dump($translation->update(['keyword' => 'golio'], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']], array('WHERE' => 'p.id=4')));
     var_dump($translation->updateById(5, ['id' => 500], ['en' => ['title' => 'Hyperactive']]));
     
     $rows = $translation->getRows();
