@@ -114,7 +114,7 @@ class MultiModel extends Table
         $columns = implode(', ', $column);
         $values = implode(', ', $param);
         
-        $insert = $this->prepare("INSERT INTO $table ($columns) VALUES ($values)");
+        $insert = $this->prepare("INSERT INTO $table($columns) VALUES($values)");
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
@@ -146,7 +146,7 @@ class MultiModel extends Table
 
             $fields = implode(', ', $content_field);
             $values = implode(', ', $content_value);
-            $content_stmt = $this->prepare("INSERT INTO $contentTable ($fields) VALUES ($values)");
+            $content_stmt = $this->prepare("INSERT INTO $contentTable($fields) VALUES($values)");
             foreach ($data as $key => $value) {
                 $content_stmt->bindValue(":$key", $value, $this->getContentColumn($key)->getDataType());
             }
@@ -259,7 +259,7 @@ class MultiModel extends Table
                         }
                         $content_cols = implode(', ', $content_col) . ", $keyName, $codeName";
                         $content_binds = implode(', ', $content_bind) . ", :$keyName, :$codeName";
-                        $content_stmt = $this->prepare("INSERT INTO $contentTable ($content_cols) VALUES ($content_binds)");
+                        $content_stmt = $this->prepare("INSERT INTO $contentTable($content_cols) VALUES($content_binds)");
                         $content_stmt->bindValue(":$keyName", $p_id, $keyColumn->getDataType());
                         $content_stmt->bindValue(":$codeName", $code, $codeColumn->getDataType());
                     }

@@ -52,7 +52,7 @@ class Model extends Table
         $columns = implode(', ', $column);
         $params = implode(', ', $param);
         
-        $insert = $this->prepare("INSERT INTO $table ($columns) VALUES ($params)");
+        $insert = $this->prepare("INSERT INTO $table($columns) VALUES($params)");
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
