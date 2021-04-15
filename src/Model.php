@@ -5,27 +5,13 @@ namespace codesaur\DataObject;
 use PDO;
 use PDOStatement;
 
-use Exception;
-
-class Model extends Table
+class Model
 {
-    public function setTable(string $name, $collate = null)
+    use TableTrait;
+    
+    function __construct(PDO $pdo)
     {
-        $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
-        
-        $table = $this->getName();
-        $columns = $this->getColumns();
-        if (empty($columns)) {
-            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!");
-        }
-        
-        if ($this->hasTable($table)) {
-            return;
-        }
-        
-        $this->create($table, $columns, $collate);
-        
-        $this->__initial();
+        $this->pdo = $pdo;
     }
     
     public function insert(array $record)
@@ -125,7 +111,7 @@ class Model extends Table
     
     public function select(string $selection = '*', array $condition = []): PDOStatement
     {
-        return $this->selectStatement($this->getName(), $selection, $condition);
+        return $this->selectFrom($this->getName(), $selection, $condition);
     }
     
     public function getRows(array $condition = []): array

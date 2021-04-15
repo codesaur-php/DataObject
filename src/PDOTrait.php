@@ -6,7 +6,14 @@ use PDO;
 use PDOStatement;
 
 trait PDOTrait
-{   
+{
+    /**
+     * The PHP Data Object instance.
+     *
+     * @var PDO|null
+     */
+    protected $pdo;
+    
     function __destruct()
     {
         if ($this->pdo instanceof PDO) {
@@ -49,9 +56,9 @@ trait PDOTrait
         return $this->pdo->lastInsertId($name);
     }
     
-    public function hasTable(string $name): bool
+    public function hasTable(string $table): bool
     {
-        return $this->query('SHOW TABLES LIKE ' .  $this->quote($name))->rowCount() > 0;
+        return $this->query('SHOW TABLES LIKE ' .  $this->quote($table))->rowCount() > 0;
     }
     
     public function setForeignKeyChecks(bool $enable = true)

@@ -3,121 +3,180 @@
 namespace codesaur\DataObject;
 
 use PDO;
-use PDOStatement;
 
 use Exception;
 
 trait TableTrait
 {
-    use PDOTrait;
+    use StatementTrait;
     
-    public function create(string $name, array $columns, $collate)
+    /**
+     * The sql table name.
+     *
+     * @var string|null
+     */
+    protected $name;
+    
+    /**
+     * The sql table columns definitions.
+     *
+     * @var array
+     */
+    protected $columns = array();
+    
+    function __initial()
     {
-        $attributes = array();
-        $hasForeignKey = false;
-        $columnSyntaxes = array();
-        foreach ($columns as $key => $column) {
+    }
+    
+    public function getName(): string
+    {
+        if (empty($this->name)) {
+            throw new Exception(__CLASS__ . ': Table name must be provided!');
+        }
+        
+        return $this->name;
+    }
+    
+    public function setTable(string $name, $collate = null)
+    {
+        $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+        
+        $table = $this->getName();
+        $columns = $this->getColumns();
+        if (empty($columns)) {
+            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!");
+        }
+        
+        if ($this->hasTable($table)) {
+            return;
+        }
+        
+        $this->createTable($table, $columns, $collate);
+        
+        $this->__initial();
+    }
+    
+    public function getVersionName(): string
+    {
+        return $this->getName() . '_version';
+    }
+    
+    public function getColumns(): array
+    {
+        return $this->columns;
+    }
+    
+    public function setColumns(array $columns)
+    {
+        $columnSets = array();
+        if (!isset($columns['id'])) {
+            $columnSets['id'] = (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull();
+        }
+
+        foreach ($columns as $column) {
             if (!$column instanceof Column) {
-                continue;
+                throw new Exception(__CLASS__ . ': Column should have been instance of Column class!');
             }
             
-            $columnSyntaxes[] = $column->getSyntax();
-            
-            if ($column->isPrimary()) {
-                $attributes[] = "PRIMARY KEY (`$key`)";
-            }            
-            if ($column->isUnique()) {
-                $attributes[] = "UNIQUE (`$key`)";
-            }            
-            if ($column->isAuto() && $column->isInt()) {
-                $auto_increment = 1;
-            }
-            
-            $foreignKey = $column->getForeignKey();
-            if (!empty($foreignKey)) {
-                $hasForeignKey = true;        
-                $attributes[] = $foreignKey;
-            }
-        }
-        
-        $create = "CREATE TABLE `$name` (";
-        $create .= implode(', ', $columnSyntaxes);
-        if (!empty($attributes)) {
-            $create .= ', ';
-            $create .= implode(', ', $attributes);
-        }        
-        $create .= ')';
-        if (strtolower($this->driverName()) === 'mysql') {
-             $create .= ' ENGINE=InnoDB';
-        }
-        if (!empty($collate)) {
-            $create .= " COLLATE=$collate";
-        }
-        if (isset($auto_increment)) {
-            $create .= " AUTO_INCREMENT=$auto_increment";
-        }
-        
-        if ($hasForeignKey) {
-            $this->setForeignKeyChecks(false);
-        }
-        
-        if ($this->exec($create) === false) {
-            throw new Exception(__CLASS__ . ": Table [$name] creation failed!");
-        } elseif ($hasForeignKey) {
-            $this->setForeignKeyChecks();
-        }
-    }
-    
-    public function createVersion(string $originalName, string $versionName)
-    {
-        if ($this->exec("CREATE TABLE $versionName LIKE " . $this->quote($originalName)) === false) {
-            throw new Exception(__CLASS__ . ": Version table [$versionName] creation failed!");
-        }
-        
-        if ($this->exec("ALTER TABLE $versionName ADD v_id bigint(20) NOT NULL, ADD v_number int(11) NOT NULL") === false) {
-            throw new Exception(__CLASS__ . ": Table [$versionName] version columns creation failed!");
-        }
-    }
-    
-    public function selectStatement(string $name, string $selection, array $condition): PDOStatement
-    {
-        $select = "SELECT $selection FROM $name";
-        if (isset($condition['JOIN'])) {
-            $select .= ' JOIN ' . $condition['JOIN'];
-        }
-        if (isset($condition['CROSS JOIN'])) {
-            $select .= ' CROSS JOIN ' . $condition['CROSS JOIN'];
-        }
-        if (isset($condition['INNER JOIN'])) {
-            $select .= ' INNER JOIN ' . $condition['INNER JOIN'];
-        }
-        if (isset($condition['LEFT JOIN'])) {
-            $select .= ' LEFT JOIN ' . $condition['LEFT JOIN'];
-        }
-        if (isset($condition['RIGHT JOIN'])) {
-            $select .= ' RIGHT JOIN ' . $condition['RIGHT JOIN'];
-        }
-        if (isset($condition['WHERE'])) {
-            $select .= ' WHERE ' . $condition['WHERE'];
-        }
-        if (isset($condition['GROUP BY'])) {
-            $select .= ' GROUP BY ' . $condition['ORDER BY'];
-        }
-        if (isset($condition['HAVING'])) {
-            $select .= ' HAVING ' . $condition['ORDER BY'];
-        }
-        if (isset($condition['ORDER BY'])) {
-            $select .= ' ORDER BY ' . $condition['ORDER BY'];
-        }
-        if (isset($condition['LIMIT'])) {
-            $select .= ' LIMIT ' . $condition['LIMIT'];
+            $columnSets[$column->getName()] = $column;
         }
 
-        $stmt = $this->prepare($select);
-        if ($stmt->execute($condition['PARAM'] ?? null)) {
-            return $stmt;
+        $this->columns = $columnSets;
+    }
+    
+    public function getColumn(string $name): Column
+    {
+        if ($this->hasColumn($name)) {
+            return $this->columns[$name];
+        }
+        
+        throw new Exception(__CLASS__ . ": Table [{$this->getName()}] definition doesn't have column named [$name]!");
+    }
+
+    public function hasColumn(string $name): bool
+    {
+        return isset($this->columns[$name]);
+    }
+    
+    public function getIdColumn(): Column
+    {
+        return $this->getColumn('id');
+    }
+    
+    public function delete(array $condition)
+    {
+        $ids = array();
+        $table = $this->getName();
+        $idColumn = $this->getIdColumn();
+        $idColumnName = $idColumn->getName();
+
+        if (getenv('CODESAUR_DB_KEEP_DELETE', true) == 'true'
+                && $this->hasColumn('is_active')
+        ) {
+            $selection = "$idColumnName, is_active";
+        
+            $uniques = array();
+            $set = array('is_active=:is_active');
+            foreach ($this->getColumns() as $column) {
+                $uniqueName = $column->getName();
+                if ($column->isUnique()
+                        && $uniqueName != $idColumnName
+                ) {
+                    $uniques[] = $column;
+                    $selection .= ", $uniqueName";
+                    $set[] = "$uniqueName=:$uniqueName";
+                }
+            }
+            $sets = implode(', ', $set);
+            $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:$idColumnName");
+            $select = $this->selectFrom($table, $selection, $condition);
+            while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
+                if (!$row['is_active']) {
+                    continue;
+                }
+
+                $update->bindValue(":$idColumnName", $row[$idColumnName], $idColumn->getDataType());
+                $update->bindValue(':is_active', 0, PDO::PARAM_INT);
+                foreach ($uniques as $unique) {
+                    $uniqueName = $unique->getName();
+                    if ($unique->isNumeric()) {
+                        $row[$uniqueName] = PHP_INT_MAX - $row[$uniqueName];
+                    } else {
+                        $row[$uniqueName] = '[' . uniqid() . '] ' . $row[$uniqueName];
+                    }
+
+                    $update->bindValue(":$uniqueName", $row[$uniqueName], $unique->getDataType());
+                }
+
+                if ($update->execute()) {
+                    $ids[] = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
+                }
+            }
+        } else {
+            $select = $this->selectFrom($table, $idColumnName, $condition);
+            $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
+            while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
+                $delete->bindValue(':id', $row[$idColumnName]);
+                $delete_executed = $delete->execute();
+                if ($delete->rowCount()
+                        || ($delete_executed && $this->driverName() !== 'mysql')
+                ) {
+                    $ids[] = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
+                }
+            }
         }
 
-        throw new Exception(__CLASS__ . ": Can't select from [$name]");
+        return empty($ids) ? false : $ids;
+    }
+    
+    public function deleteById($id)
+    {
+        $idColumnName = $this->getIdColumn()->getName();
+        $condition = array(
+            'WHERE' => "$idColumnName=:id",
+            'PARAM' => array(':id' => $id)
+        );
+        
+        return $this->delete($condition);
     }
 }

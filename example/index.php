@@ -163,7 +163,7 @@ try {
     echo "<br/><hr><br/>List of Translation texts<br/>";
     var_dump($texts);
     
-    foreach ($rows as $row) {
+    foreach ($translation->getRows(['ORDER BY' => 'p.keyword']) as $row) {
         var_dump($row);
     }
     

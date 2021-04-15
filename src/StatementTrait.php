@@ -1,0 +1,122 @@
+<?php
+
+namespace codesaur\DataObject;
+
+use PDOStatement;
+
+use Exception;
+
+trait StatementTrait
+{
+    use PDOTrait;
+    
+    public function createTable(string $table, array $columns, $collate)
+    {
+        $attributes = array();
+        $hasForeignKey = false;
+        $columnSyntaxes = array();
+        foreach ($columns as $key => $column) {
+            if (!$column instanceof Column) {
+                continue;
+            }
+            
+            $columnSyntaxes[] = $column->getSyntax();
+            
+            if ($column->isPrimary()) {
+                $attributes[] = "PRIMARY KEY (`$key`)";
+            }            
+            if ($column->isUnique()) {
+                $attributes[] = "UNIQUE (`$key`)";
+            }            
+            if ($column->isAuto() && $column->isInt()) {
+                $auto_increment = 1;
+            }
+            
+            $foreignKey = $column->getForeignKey();
+            if (!empty($foreignKey)) {
+                $hasForeignKey = true;        
+                $attributes[] = $foreignKey;
+            }
+        }
+        
+        $create = "CREATE TABLE `$table` (";
+        $create .= implode(', ', $columnSyntaxes);
+        if (!empty($attributes)) {
+            $create .= ', ';
+            $create .= implode(', ', $attributes);
+        }        
+        $create .= ')';
+        if (strtolower($this->driverName()) === 'mysql') {
+             $create .= ' ENGINE=InnoDB';
+        }
+        if (!empty($collate)) {
+            $create .= " COLLATE=$collate";
+        }
+        if (isset($auto_increment)) {
+            $create .= " AUTO_INCREMENT=$auto_increment";
+        }
+        
+        if ($hasForeignKey) {
+            $this->setForeignKeyChecks(false);
+        }
+        
+        if ($this->exec($create) === false) {
+            throw new Exception(__CLASS__ . ": Table [$table] creation failed!");
+        } elseif ($hasForeignKey) {
+            $this->setForeignKeyChecks();
+        }
+    }
+    
+    public function createTableVersion(string $originalTable, string $versionTable)
+    {
+        if ($this->exec("CREATE TABLE $versionTable LIKE " . $this->quote($originalTable)) === false) {
+            throw new Exception(__CLASS__ . ": Version table [$versionTable] creation failed!");
+        }
+        
+        if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(20) NOT NULL, ADD v_number int(11) NOT NULL") === false) {
+            throw new Exception(__CLASS__ . ": Table [$versionTable] version columns creation failed!");
+        }
+    }
+    
+    public function selectFrom(string $table, string $selection, array $condition): PDOStatement
+    {
+        $select = "SELECT $selection FROM $table";
+        if (isset($condition['JOIN'])) {
+            $select .= ' JOIN ' . $condition['JOIN'];
+        }
+        if (isset($condition['CROSS JOIN'])) {
+            $select .= ' CROSS JOIN ' . $condition['CROSS JOIN'];
+        }
+        if (isset($condition['INNER JOIN'])) {
+            $select .= ' INNER JOIN ' . $condition['INNER JOIN'];
+        }
+        if (isset($condition['LEFT JOIN'])) {
+            $select .= ' LEFT JOIN ' . $condition['LEFT JOIN'];
+        }
+        if (isset($condition['RIGHT JOIN'])) {
+            $select .= ' RIGHT JOIN ' . $condition['RIGHT JOIN'];
+        }
+        if (isset($condition['WHERE'])) {
+            $select .= ' WHERE ' . $condition['WHERE'];
+        }
+        if (isset($condition['GROUP BY'])) {
+            $select .= ' GROUP BY ' . $condition['ORDER BY'];
+        }
+        if (isset($condition['HAVING'])) {
+            $select .= ' HAVING ' . $condition['ORDER BY'];
+        }
+        if (isset($condition['ORDER BY'])) {
+            $select .= ' ORDER BY ' . $condition['ORDER BY'];
+        }
+        if (isset($condition['LIMIT'])) {
+            $select .= ' LIMIT ' . $condition['LIMIT'];
+        }
+
+        $stmt = $this->prepare($select);
+        if ($stmt->execute($condition['PARAM'] ?? null)) {
+            return $stmt;
+        }
+
+        throw new Exception(__CLASS__ . ": Can't select from [$table]");
+    }
+}

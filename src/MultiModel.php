@@ -7,10 +7,17 @@ use PDOStatement;
 
 use Exception;
 
-class MultiModel extends Table
+class MultiModel
 {
+    use TableTrait;
+    
     protected $contentColumns = array(); // Content table columns
 
+    function __construct(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
+    
     public function setTable(string $name, $collate = null)
     {
         $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
@@ -25,12 +32,12 @@ class MultiModel extends Table
             return;
         }
         
-        $this->create($table, $columns, $collate);
+        $this->createTable($table, $columns, $collate);
 
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
         $this->contentColumns[$keyName]->foreignKey($table, $idName, 'CASCADE');
-        $this->create($this->getContentName(), $this->contentColumns, $collate);
+        $this->createTable($this->getContentName(), $this->contentColumns, $collate);
 
         $this->__initial();
     }
@@ -206,7 +213,7 @@ class MultiModel extends Table
         }
         
         $ids = array();        
-        $select = $this->selectStatement("$table p", $selection, $condition);
+        $select = $this->selectFrom("$table p", $selection, $condition);
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {            
             $p_id = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
             if (!isset($ids[$p_id])) {
@@ -325,7 +332,7 @@ class MultiModel extends Table
         $keyName = $this->getKeyColumn()->getName();
         $condition['INNER JOIN'] = "$contentTable c ON p.$idName=c.$keyName";
         
-        return $this->selectStatement("$table p", $selection, $condition);
+        return $this->selectFrom("$table p", $selection, $condition);
     }
 
     public function getRows(array $condition = []): array
