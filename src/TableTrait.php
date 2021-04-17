@@ -45,14 +45,11 @@ trait TableTrait
         $columns = $this->getColumns();
         if (empty($columns)) {
             throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!");
-        }
-        
-        if ($this->hasTable($table)) {
+        } elseif ($this->hasTable($table)) {
             return;
         }
         
-        $this->createTable($table, $columns, $collate);
-        
+        $this->createTable($table, $columns, $collate);        
         $this->__initial();
     }
     
@@ -76,11 +73,9 @@ trait TableTrait
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
                 throw new Exception(__CLASS__ . ': Column should have been instance of Column class!');
-            }
-            
+            }            
             $columnSets[$column->getName()] = $column;
         }
-
         $this->columns = $columnSets;
     }
     
@@ -175,8 +170,7 @@ trait TableTrait
         $condition = array(
             'WHERE' => "$idColumnName=:id",
             'PARAM' => array(':id' => $id)
-        );
-        
+        );        
         return $this->delete($condition);
     }
 }

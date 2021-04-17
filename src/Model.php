@@ -41,15 +41,13 @@ class Model
         $insert = $this->prepare("INSERT INTO $table($columns) VALUES($params)");
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
-        }
-        
+        }        
         if (!$insert->execute()) {
             return false;
         }
         
         $idColumn = $this->getIdColumn();
-        $insertId = $record[$idColumn->getName()] ?? $this->lastInsertId();
-        
+        $insertId = $record[$idColumn->getName()] ?? $this->lastInsertId();        
         return $idColumn->isInt() ? (int)$insertId : $insertId;
     }
     
@@ -74,11 +72,10 @@ class Model
         }
         $sets = implode(', ', $set);
         
+        $ids = array();
         $table = $this->getName();
         $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
-        
-        $ids = array();
         $select = $this->select($idColumnName, $condition);
         $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:old_$idColumnName");
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
@@ -104,8 +101,7 @@ class Model
         $condition = array(
             'WHERE' => "$idColumnName=:id",
             'PARAM' => array(':id' => $id)
-        );
-        
+        );        
         return $this->update($record, $condition);
     }
     

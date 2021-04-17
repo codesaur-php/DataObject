@@ -26,9 +26,7 @@ class MultiModel
         $columns = $this->getColumns();
         if (empty($columns) || empty($this->contentColumns)) {
             throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!");
-        }
-        
-        if ($this->hasTable($table)) {
+        } elseif ($this->hasTable($table)) {
             return;
         }
         
@@ -73,15 +71,15 @@ class MultiModel
 
     public function setContentColumns(array $columns)
     {
-        $contentColumns = array('id' => (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull());
-        
         $parent_id = clone $this->getIdColumn();
         $parent_id->primary(false)->auto(false)->unique(false)->setName('parent_id');
-        $contentColumns[$parent_id->getName()] = $parent_id;
-        
-        $code = new Column('code', 'varchar', 6);        
-        $contentColumns[$code->getName()] = $code;
 
+        $contentColumns = array(
+            'id' => (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull(),
+            $parent_id->getName() => $parent_id,
+            'code' => new Column('code', 'varchar', 6)
+        );
+        
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
                 throw new Exception(__CLASS__ . ': Column should have been instance of Column class!');
@@ -218,12 +216,11 @@ class MultiModel
             $p_id = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
             if (!isset($ids[$p_id])) {
                 if (isset($update)) {
-                    $update->bindValue(":old_$idColumnName", $p_id, $idColumn->getDataType());
-
                     foreach ($record as $name => $value) {
                         $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
                     }
 
+                    $update->bindValue(":old_$idColumnName", $p_id, $idColumn->getDataType());
                     if (!$update->execute()) {
                         throw new Exception(__CLASS__ . ": Error while updating record on table [$table:$p_id]!");
                     }
@@ -306,8 +303,7 @@ class MultiModel
         $condition = array(
             'WHERE' => "p.$idColumnName=:p_$idColumnName",
             'PARAM' => array(":p_$idColumnName" => $id)
-        );
-        
+        );        
         return $this->update($record, $content, $condition);
     }
     
@@ -317,12 +313,10 @@ class MultiModel
             $fields = array();
             foreach (array_keys($this->getColumns()) as $column) {
                 $fields[] = "p.$column as p_$column";
-            }
-            
+            }            
             foreach (array_keys($this->getContentColumns()) as $column) {
                 $fields[] = "c.$column as c_$column";
-            }
-            
+            }            
             $selection = implode(', ', $fields);
         }
         
@@ -330,8 +324,7 @@ class MultiModel
         $contentTable = $this->getContentName();
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
-        $condition['INNER JOIN'] = "$contentTable c ON p.$idName=c.$keyName";
-        
+        $condition['INNER JOIN'] = "$contentTable c ON p.$idName=c.$keyName";        
         return $this->selectFrom("$table p", $selection, $condition);
     }
 
@@ -342,8 +335,7 @@ class MultiModel
         $codeName = $this->getCodeColumn()->getName();
 
         if (empty($condition)) {
-            $condition = ['ORDER BY' => "p.$idColumnName"];
-            
+            $condition = ['ORDER BY' => "p.$idColumnName"];            
             if ($this->hasColumn('is_active')
                     && $this->getColumn('is_active')->isInt()
             ) {
