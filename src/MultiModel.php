@@ -25,7 +25,7 @@ class MultiModel
         $table = $this->getName();
         $columns = $this->getColumns();
         if (empty($columns) || empty($this->contentColumns)) {
-            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!");
+            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!", 1113);
         } elseif ($this->hasTable($table)) {
             return;
         }
@@ -56,7 +56,7 @@ class MultiModel
             return $this->contentColumns[$name];
         }
         
-        throw new Exception(__CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have content column named [$name]!");
+        throw new Exception(__CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have content column named [$name]!", 1054);
     }
 
     public function getKeyColumn(): Column
@@ -158,12 +158,13 @@ class MultiModel
             
             try {
                 if (!$content_stmt->execute()) {
-                    throw new Exception(implode(': ', $content_stmt->errorInfo()));
+                    throw new Exception(implode(': ', $content_stmt->errorInfo()),
+                            is_int($content_stmt->errorInfo()[1] ?? null) ? $content_stmt->errorInfo()[1] : $content_stmt->errorCode());
                 }
             } catch (Exception $e) {
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
                 $delete->execute(array(':id' => $insertId));
-                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable]! " . $e->getMessage());
+                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable]! " . $e->getMessage(), $e->errorCode());
             }
         }
         
@@ -222,7 +223,8 @@ class MultiModel
 
                     $update->bindValue(":old_$idColumnName", $p_id, $idColumn->getDataType());
                     if (!$update->execute()) {
-                        throw new Exception(__CLASS__ . ": Error while updating record on table [$table:$p_id]!");
+                        throw new Exception(__CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $update->errorInfo()),
+                                is_int($update->errorInfo()[1] ?? null) ? $update->errorInfo()[1] : $update->errorCode());
                     }
                 }
                 
@@ -274,7 +276,8 @@ class MultiModel
                     
                     try {
                         if (!$content_stmt->execute()) {
-                            throw new Exception(implode(': ', $content_stmt->errorInfo()));
+                            throw new Exception(implode(': ', $content_stmt->errorInfo()),
+                                    is_int($content_stmt->errorInfo()[1] ?? null) ? $content_stmt->errorInfo()[1] : $content_stmt->errorCode());
                         }
                     } catch (Exception $e) {
                         if (isset($update)) {
@@ -284,7 +287,7 @@ class MultiModel
                             }
                             $update->execute();
                         }                        
-                        throw new Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage());
+                        throw new Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage(), $e->getCode());
                     }
                     
                     $contentIds[] = (int)($content_row['id'] ?? $this->lastInsertId());

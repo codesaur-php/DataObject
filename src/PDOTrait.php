@@ -5,6 +5,8 @@ namespace codesaur\DataObject;
 use PDO;
 use PDOStatement;
 
+use Exception;
+
 trait PDOTrait
 {
     /**
@@ -38,7 +40,14 @@ trait PDOTrait
 
     public function prepare(string $statement, array $driver_options = array()): PDOStatement
     {
-        return $this->pdo->prepare($statement, $driver_options);
+        $stmt =  $this->pdo->prepare($statement, $driver_options);
+        
+        if ($stmt !== false) {
+            return $stmt;
+        }
+        
+        throw new Exception(__CLASS__ . ": PDO error! " .  implode(': ', $this->pdo->errorInfo()),
+                is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
     }
 
     public function exec(string $statement)
@@ -48,7 +57,14 @@ trait PDOTrait
 
     public function query(string $statement): PDOStatement
     {
-        return $this->pdo->query($statement);
+        $stmt =  $this->pdo->query($statement);
+        
+        if ($stmt !== false) {
+            return $stmt;
+        }
+        
+        throw new Exception(__CLASS__ . ": PDO error! " .  implode(': ', $this->pdo->errorInfo()),
+                is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
     }
 
     public function lastInsertId(string $name = NULL): string

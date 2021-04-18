@@ -61,7 +61,8 @@ trait StatementTrait
         }
         
         if ($this->exec($create) === false) {
-            throw new Exception(__CLASS__ . ": Table [$table] creation failed!");
+            throw new Exception(__CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $this->pdo->errorInfo()),
+                    is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
         } elseif ($hasForeignKey) {
             $this->setForeignKeyChecks();
         }
@@ -70,11 +71,13 @@ trait StatementTrait
     public function createTableVersion(string $originalTable, string $versionTable)
     {
         if ($this->exec("CREATE TABLE $versionTable LIKE " . $this->quote($originalTable)) === false) {
-            throw new Exception(__CLASS__ . ": Version table [$versionTable] creation failed!");
+            throw new Exception(__CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $this->pdo->errorInfo()),
+                    is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
         }
         
         if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(20) NOT NULL, ADD v_number int(11) NOT NULL") === false) {
-            throw new Exception(__CLASS__ . ": Table [$versionTable] version columns creation failed!");
+            throw new Exception(__CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $this->pdo->errorInfo()),
+                    is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
         }
     }
     
@@ -116,7 +119,7 @@ trait StatementTrait
         if ($stmt->execute($condition['PARAM'] ?? null)) {
             return $stmt;
         }
-
-        throw new Exception(__CLASS__ . ": Can't select from [$table]");
+        
+        throw new Exception(__CLASS__ . ": Can't select from [$table]! " .  implode(': ', $stmt->errorInfo()), is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode());
     }
 }

@@ -114,9 +114,9 @@ try {
     }
 
     $pdo->exec("USE $database");
-    echo 'started using example database!<br/>';
+    echo "starting to use database [$database]!<br/>";
     
-    $account = new ExampleAccountModel($pdo);var_dump($account->updateById(1, array('first_name' => 'NAR')));
+    $account = new ExampleAccountModel($pdo);
     $admin = $account->getRowBy(array('username' =>'admin'));
     if ($admin) {
         putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
@@ -170,5 +170,5 @@ try {
     echo "<br/><hr><br/><br/>";
     var_dump(array('list of accounts: ' => $account->getRows()));
 } catch (Exception $ex) {
-    die('[' . date('Y-m-d H:i:s') . ' Error] ' . $ex->getMessage());
+    die('<br/>{' . date('Y-m-d H:i:s') . '} Exception[' . $ex->getCode() . '] => ' . $ex->getMessage());
 }
