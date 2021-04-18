@@ -25,7 +25,7 @@ class MultiModel
         $table = $this->getName();
         $columns = $this->getColumns();
         if (empty($columns) || empty($this->contentColumns)) {
-            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!", 1113);
+            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
         }
@@ -56,7 +56,7 @@ class MultiModel
             return $this->contentColumns[$name];
         }
         
-        throw new Exception(__CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have content column named [$name]!", 1054);
+        throw new Exception(__CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have content column named [$name]", 1054);
     }
 
     public function getKeyColumn(): Column
@@ -86,7 +86,7 @@ class MultiModel
             } elseif (isset($contentColumns[$column->getName()])) {
                 continue;
             } elseif ($column->isUnique()) {
-                throw new Exception(__CLASS__ . ": Content table forbidden to contain unique column [{$column->getName()}]!");
+                throw new Exception(__CLASS__ . ": Content table forbidden to contain unique column [{$column->getName()}]");
             }
             
             $contentColumns[$column->getName()] = $column;
@@ -164,7 +164,7 @@ class MultiModel
             } catch (Exception $e) {
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
                 $delete->execute(array(':id' => $insertId));
-                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable]! " . $e->getMessage(), $e->errorCode());
+                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $e->getMessage(), $e->errorCode());
             }
         }
         

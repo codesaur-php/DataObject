@@ -114,7 +114,7 @@ try {
     }
 
     $pdo->exec("USE $database");
-    echo "starting to use database [$database]!<br/>";
+    echo "starting to use database [$database]<br/>";
     
     $account = new ExampleAccountModel($pdo);
     $admin = $account->getRowBy(array('username' =>'admin'));

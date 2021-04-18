@@ -31,7 +31,7 @@ trait TableTrait
     public function getName(): string
     {
         if (empty($this->name)) {
-            throw new Exception(__CLASS__ . ': Table name must be provided!', 1103);
+            throw new Exception(__CLASS__ . ': Table name must be provided', 1103);
         }
         
         return $this->name;
@@ -44,7 +44,7 @@ trait TableTrait
         $table = $this->getName();
         $columns = $this->getColumns();
         if (empty($columns)) {
-            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set!", 1113);
+            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
         }
@@ -72,7 +72,7 @@ trait TableTrait
 
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
-                throw new Exception(__CLASS__ . ': Column should have been instance of Column class!');
+                throw new Exception(__CLASS__ . ': Column should have been instance of Column class');
             }            
             $columnSets[$column->getName()] = $column;
         }
@@ -85,7 +85,7 @@ trait TableTrait
             return $this->columns[$name];
         }
         
-        throw new Exception(__CLASS__ . ": Table [{$this->getName()}] definition doesn't have column named [$name]!", 1054);
+        throw new Exception(__CLASS__ . ": Table [{$this->getName()}] definition doesn't have column named [$name]", 1054);
     }
 
     public function hasColumn(string $name): bool
