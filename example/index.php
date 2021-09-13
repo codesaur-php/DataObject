@@ -7,6 +7,9 @@ namespace codesaur\DataObject\Example;
  * This is an example script!
  */
 
+ini_set('display_errors', 'On');
+error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
+
 require_once '../vendor/autoload.php';
 
 use PDO;
@@ -15,9 +18,6 @@ use Exception;
 use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
 use codesaur\DataObject\MultiModel;
-
-ini_set('display_errors', 'On');
-error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
 
 class ExampleAccountModel extends Model
 {
