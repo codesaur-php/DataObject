@@ -34,7 +34,7 @@ class MultiModel
 
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
-        $reference = "FOREIGN KEY (`{$this->contentColumns[$keyName]}`) REFERENCES $table($idName) ON DELETE CASCADE ON UPDATE CASCADE";
+        $reference = "FOREIGN KEY (`{$this->contentColumns[$keyName]->getName()}`) REFERENCES $table($idName) ON DELETE CASCADE ON UPDATE CASCADE";
         $this->contentColumns[$keyName]->foreignKey($reference);
         $this->createTable($this->getContentName(), $this->contentColumns, $collate);
 
