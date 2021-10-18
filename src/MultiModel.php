@@ -394,12 +394,12 @@ class MultiModel
         return $rows;
     }
     
-    public function getRowBy(array $values, $orderBy = null)
+    public function getRowBy(array $with_values)
     {
         $count = 1;
         $params = array();
         $wheres = array();
-        foreach ($values as $key => $value) {
+        foreach ($with_values as $key => $value) {
             $params[":$count"] = $value;
             $wheres[] = "$key=:$count";
             $count++;
@@ -411,9 +411,6 @@ class MultiModel
                 'WHERE' => $clause,
                 'PARAM' => $params
             );
-            if (!empty($orderBy)) {
-                $condition['ORDER BY'] = $orderBy;
-            }
             $stmt = $this->select('*', $condition);
             
             $idName = $this->getIdColumn()->getName();

@@ -149,11 +149,11 @@ class Model
         return $rows;
     }
     
-    public function getRowBy(array $values, $orderBy = null)
+    public function getRowBy(array $with_values)
     {
         $where = array();
         $params = array();
-        foreach ($values as $key => $value) {
+        foreach ($with_values as $key => $value) {
             $where[] = "$key=:$key";
             $params[":$key"] = $value;
         }
@@ -165,9 +165,6 @@ class Model
                 'LIMIT' => 1,
                 'PARAM' => $params
             );
-            if (!empty($orderBy)) {
-                $condition['ORDER BY'] = $orderBy;
-            }
             $stmt = $this->select('*', $condition);
             if ($stmt->rowCount() == 1) {
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
