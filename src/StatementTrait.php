@@ -12,8 +12,8 @@ trait StatementTrait
     
     public function createTable(string $table, array $columns, $collate)
     {
-        $attributes = array();
-        $hasForeignKey = false;
+        $references = array();
+        $setForeignKey = false;
         $columnSyntaxes = array();
         foreach ($columns as $key => $column) {
             if (!$column instanceof Column) {
@@ -23,10 +23,10 @@ trait StatementTrait
             $columnSyntaxes[] = $column->getSyntax();
             
             if ($column->isPrimary()) {
-                $attributes[] = "PRIMARY KEY (`$key`)";
+                $references[] = "PRIMARY KEY (`$key`)";
             }            
             if ($column->isUnique()) {
-                $attributes[] = "UNIQUE (`$key`)";
+                $references[] = "UNIQUE (`$key`)";
             }            
             if ($column->isAuto() && $column->isInt()) {
                 $auto_increment = 1;
@@ -34,16 +34,16 @@ trait StatementTrait
             
             $foreignKey = $column->getForeignKey();
             if (!empty($foreignKey)) {
-                $hasForeignKey = true;        
-                $attributes[] = $foreignKey;
+                $setForeignKey = true;        
+                $references[] = $foreignKey;
             }
         }
         
         $create = "CREATE TABLE `$table` (";
         $create .= implode(', ', $columnSyntaxes);
-        if (!empty($attributes)) {
+        if (!empty($references)) {
             $create .= ', ';
-            $create .= implode(', ', $attributes);
+            $create .= implode(', ', $references);
         }        
         $create .= ')';
         if (strtolower($this->driverName()) === 'mysql') {
@@ -56,15 +56,15 @@ trait StatementTrait
             $create .= " AUTO_INCREMENT=$auto_increment";
         }
         
-        if ($hasForeignKey) {
+        if ($setForeignKey) {
             $this->setForeignKeyChecks(false);
         }
         
         if ($this->exec($create) === false) {
             throw new Exception(__CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $this->pdo->errorInfo()),
                     is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
-        } elseif ($hasForeignKey) {
-            $this->setForeignKeyChecks();
+        } elseif ($setForeignKey) {
+            $this->setForeignKeyChecks(true);
         }
     }
     

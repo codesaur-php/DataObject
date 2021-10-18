@@ -10,7 +10,7 @@ class Column
     private $_type;
     private $_length;
     private $_default = null;
-    private $_foreign_key = null;
+    private $_foreignKey = null;
 
     private $_is_null = true;
     private $_is_auto = false;
@@ -56,19 +56,10 @@ class Column
         
         return $this;
     }
-
-    public function foreignKey(
-            string $tableName,
-            string $columnName,
-            string $onDelete = 'SET NULL',
-            string $onUpdate = 'CASCADE'
-    ): Column {
-        $this->_foreign_key = new ForeignKey();
-        $this->_foreign_key->name = $this->getName();
-        $this->_foreign_key->table = $tableName;
-        $this->_foreign_key->column = $columnName;
-        $this->_foreign_key->onDelete = $onDelete;
-        $this->_foreign_key->onUpdate = $onUpdate;
+    
+    public function foreignKey(string $reference): Column
+    {
+        $this->_foreignKey = $reference;
         
         return $this;
     }
@@ -162,9 +153,9 @@ class Column
         return $this->_is_unique;
     }
     
-    public function getForeignKey(): string
+    public function getForeignKey()
     {
-        return (string)$this->_foreign_key;
+        return $this->_foreignKey;
     }
     
     public function getSyntax(): string
@@ -210,19 +201,5 @@ class Column
         }
         
         return $str;
-    }
-}
-
-class ForeignKey
-{
-    public $name;
-    public $table;
-    public $column;
-    public $onDelete;
-    public $onUpdate;
-    
-    function __toString()
-    {
-        return "FOREIGN KEY (`$this->name`) REFERENCES $this->table($this->column) ON DELETE $this->onDelete ON UPDATE $this->onUpdate";
     }
 }

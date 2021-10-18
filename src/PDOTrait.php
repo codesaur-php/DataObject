@@ -77,7 +77,7 @@ trait PDOTrait
         return $this->query('SHOW TABLES LIKE ' .  $this->quote($table))->rowCount() > 0;
     }
     
-    public function setForeignKeyChecks(bool $enable = true)
+    public function setForeignKeyChecks(bool $enable)
     {
         $this->exec('set foreign_key_checks=' . ($enable ? 1 : 0));
     }
