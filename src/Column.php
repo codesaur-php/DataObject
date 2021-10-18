@@ -10,7 +10,7 @@ class Column
     private $_type;
     private $_length;
     private $_default = null;
-    private $_foreignKey = null;
+    private $_constraints = null;
 
     private $_is_null = true;
     private $_is_auto = false;
@@ -57,9 +57,9 @@ class Column
         return $this;
     }
     
-    public function foreignKey(string $reference): Column
+    public function constraints(string $reference): Column
     {
-        $this->_foreignKey = $reference;
+        $this->_constraints = $reference;
         
         return $this;
     }
@@ -153,14 +153,14 @@ class Column
         return $this->_is_unique;
     }
     
-    public function getForeignKey()
+    public function getConstraints()
     {
-        return $this->_foreignKey;
+        return $this->_constraints;
     }
     
     public function getSyntax(): string
     {
-        $str = "`$this->_name` $this->_type";
+        $str = "$this->_name $this->_type";
         
         if (!in_array($this->_type, array('text', 'datetime'))) {
             if (is_array($this->_length)) {

@@ -67,9 +67,9 @@ class ExampleTranslationModel extends MultiModel
            (new Column('keyword', 'varchar', 128))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-           (new Column('created_by', 'bigint', 20))->foreignKey('example_user', 'id'),
+           (new Column('created_by', 'bigint', 20))->constraints('FOREIGN KEY (created_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE'),
             new Column('updated_at', 'datetime'),
-           (new Column('updated_by', 'bigint', 20))->foreignKey('example_user', 'id')
+           (new Column('updated_by', 'bigint', 20))->constraints('FOREIGN KEY (updated_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE')
         ));
         $this->setContentColumns(array(
             new Column('title', 'varchar', 255)

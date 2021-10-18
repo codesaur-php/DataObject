@@ -23,23 +23,23 @@ trait StatementTrait
             $columnSyntaxes[] = $column->getSyntax();
             
             if ($column->isPrimary()) {
-                $references[] = "PRIMARY KEY (`$key`)";
+                $references[] = "PRIMARY KEY ($key)";
             }            
             if ($column->isUnique()) {
-                $references[] = "UNIQUE (`$key`)";
+                $references[] = "UNIQUE ($key)";
             }            
             if ($column->isAuto() && $column->isInt()) {
                 $auto_increment = 1;
             }
             
-            $foreignKey = $column->getForeignKey();
-            if (!empty($foreignKey)) {
+            $constraints = $column->getConstraints();
+            if (!empty($constraints)) {
                 $setForeignKey = true;        
-                $references[] = $foreignKey;
+                $references[] = $constraints;
             }
         }
         
-        $create = "CREATE TABLE `$table` (";
+        $create = "CREATE TABLE $table (";
         $create .= implode(', ', $columnSyntaxes);
         if (!empty($references)) {
             $create .= ', ';

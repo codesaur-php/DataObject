@@ -24,7 +24,7 @@ class MultiModel
         
         $table = $this->getName();
         $columns = $this->getColumns();
-        if (empty($columns) || empty($this->contentColumns)) {
+        if (empty($columns) || empty($this->getContentColumns())) {
             throw new Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
@@ -32,12 +32,11 @@ class MultiModel
         
         $this->createTable($table, $columns, $collate);
 
+        $contentTable = $this->getContentName();
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
-        $reference = "FOREIGN KEY (`{$this->contentColumns[$keyName]->getName()}`) REFERENCES $table($idName) ON DELETE CASCADE ON UPDATE CASCADE";
-        $this->contentColumns[$keyName]->foreignKey($reference);
-        $this->createTable($this->getContentName(), $this->contentColumns, $collate);
-
+        $this->createTable($contentTable, $this->getContentColumns(), $collate);        
+        $this->exec("ALTER TABLE $contentTable ADD FOREIGN KEY ($keyName) REFERENCES $table($idName) ON DELETE CASCADE ON UPDATE CASCADE");        
         $this->__initial();
     }
 
