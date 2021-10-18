@@ -34,7 +34,7 @@ trait StatementTrait
             
             $constraints = $column->getConstraints();
             if (!empty($constraints)) {
-                $setForeignKey = true;        
+                $setForeignKey = true;
                 $references[] = $constraints;
             }
         }
@@ -44,7 +44,7 @@ trait StatementTrait
         if (!empty($references)) {
             $create .= ', ';
             $create .= implode(', ', $references);
-        }        
+        }
         $create .= ')';
         if (strtolower($this->driverName()) === 'mysql') {
              $create .= ' ENGINE=InnoDB';

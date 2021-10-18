@@ -49,7 +49,7 @@ trait TableTrait
             return;
         }
         
-        $this->createTable($table, $columns, $collate);        
+        $this->createTable($table, $columns, $collate);
         $this->__initial();
     }
     
@@ -73,7 +73,7 @@ trait TableTrait
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
                 throw new Exception(__CLASS__ . ': Column should have been instance of Column class');
-            }            
+            }
             $columnSets[$column->getName()] = $column;
         }
         $this->columns = $columnSets;

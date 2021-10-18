@@ -35,8 +35,8 @@ class MultiModel
         $contentTable = $this->getContentName();
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
-        $this->createTable($contentTable, $this->getContentColumns(), $collate);        
-        $this->exec("ALTER TABLE $contentTable ADD FOREIGN KEY ($keyName) REFERENCES $table($idName) ON DELETE CASCADE ON UPDATE CASCADE");        
+        $this->createTable($contentTable, $this->getContentColumns(), $collate);
+        $this->exec("ALTER TABLE $contentTable ADD FOREIGN KEY ($keyName) REFERENCES $table($idName) ON DELETE CASCADE ON UPDATE CASCADE");
         $this->__initial();
     }
 
@@ -286,7 +286,7 @@ class MultiModel
                                 $update->bindValue(":$name", $row[$name], $this->getColumn($name)->getDataType());
                             }
                             $update->execute();
-                        }                        
+                        }
                         throw new Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage(), $e->getCode());
                     }
                     
@@ -306,7 +306,7 @@ class MultiModel
         $condition = array(
             'WHERE' => "p.$idColumnName=:p_$idColumnName",
             'PARAM' => array(":p_$idColumnName" => $id)
-        );        
+        );
         return $this->update($record, $content, $condition);
     }
     
@@ -316,10 +316,10 @@ class MultiModel
             $fields = array();
             foreach (array_keys($this->getColumns()) as $column) {
                 $fields[] = "p.$column as p_$column";
-            }            
+            }
             foreach (array_keys($this->getContentColumns()) as $column) {
                 $fields[] = "c.$column as c_$column";
-            }            
+            }
             $selection = implode(', ', $fields);
         }
         
@@ -327,7 +327,7 @@ class MultiModel
         $contentTable = $this->getContentName();
         $idName = $this->getIdColumn()->getName();
         $keyName = $this->getKeyColumn()->getName();
-        $condition['INNER JOIN'] = "$contentTable c ON p.$idName=c.$keyName";        
+        $condition['INNER JOIN'] = "$contentTable c ON p.$idName=c.$keyName";
         return $this->selectFrom("$table p", $selection, $condition);
     }
 
