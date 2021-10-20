@@ -46,9 +46,11 @@ class ExampleAccountModel extends Model
     
     function __initial()
     {
-        $now_date = date('Y-m-d H:i:s');
-        
         $table = $this->getName();
+        $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_created_by FOREIGN KEY (created_by) REFERENCES $table(id) ON DELETE SET NULL ON UPDATE CASCADE");
+        $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_updated_by FOREIGN KEY (updated_by) REFERENCES $table(id) ON DELETE SET NULL ON UPDATE CASCADE");
+
+        $now_date = date('Y-m-d H:i:s');
         $password = $this->quote(password_hash('secret', PASSWORD_BCRYPT));
         $query = "INSERT INTO $table(created_at,username,password,first_name,last_name,email)"
                 . " VALUES('$now_date','admin',$password,'John','Doe','admin@example.com')";
@@ -67,9 +69,9 @@ class ExampleTranslationModel extends MultiModel
            (new Column('keyword', 'varchar', 128))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-           (new Column('created_by', 'bigint', 20))->constraints('FOREIGN KEY (created_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE'),
+            new Column('created_by', 'bigint', 20),
             new Column('updated_at', 'datetime'),
-           (new Column('updated_by', 'bigint', 20))->constraints('FOREIGN KEY (updated_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE')
+            new Column('updated_by', 'bigint', 20)
         ));
         $this->setContentColumns(array(
             new Column('title', 'varchar', 255)
@@ -80,6 +82,12 @@ class ExampleTranslationModel extends MultiModel
     
     function __initial()
     {
+        $this->setForeignKeyChecks(false);
+        $table = $this->getName();
+        $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_created_by FOREIGN KEY (created_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE");
+        $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_updated_by FOREIGN KEY (updated_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE");
+        $this->setForeignKeyChecks(true);
+
         $this->insert(array('keyword' => 'chat'), array('mn' => array('title' => 'Харилцан яриа'), 'en' => array('title' => 'Chat')));
         $this->insert(array('keyword' => 'accordion'), array('mn' => array('title' => 'Аккордеон'), 'en' => array('title' => 'Accordion')));
         $this->insert(array('keyword' => 'account'), array('mn' => array('title' => 'Хэрэглэгч'), 'en' => array('title' => 'Account')));

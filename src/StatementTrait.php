@@ -13,7 +13,6 @@ trait StatementTrait
     public function createTable(string $table, array $columns, $collate)
     {
         $references = array();
-        $setForeignKey = false;
         $columnSyntaxes = array();
         foreach ($columns as $key => $column) {
             if (!$column instanceof Column) {
@@ -30,12 +29,6 @@ trait StatementTrait
             }            
             if ($column->isAuto() && $column->isInt()) {
                 $auto_increment = 1;
-            }
-            
-            $constraints = $column->getConstraints();
-            if (!empty($constraints)) {
-                $setForeignKey = true;
-                $references[] = $constraints;
             }
         }
         
@@ -56,15 +49,9 @@ trait StatementTrait
             $create .= " AUTO_INCREMENT=$auto_increment";
         }
         
-        if ($setForeignKey) {
-            $this->setForeignKeyChecks(false);
-        }
-        
         if ($this->exec($create) === false) {
             throw new Exception(__CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $this->pdo->errorInfo()),
                     is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
-        } elseif ($setForeignKey) {
-            $this->setForeignKeyChecks(true);
         }
     }
     

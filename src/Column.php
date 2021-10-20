@@ -10,7 +10,6 @@ class Column
     private $_type;
     private $_length;
     private $_default = null;
-    private $_constraints = null;
 
     private $_is_null = true;
     private $_is_auto = false;
@@ -53,13 +52,6 @@ class Column
     public function notNull(bool $not_null = true): Column
     {
         $this->_is_null = !$not_null;
-        
-        return $this;
-    }
-    
-    public function constraints(string $reference): Column
-    {
-        $this->_constraints = $reference;
         
         return $this;
     }
@@ -151,11 +143,6 @@ class Column
     public function isUnique(): bool
     {
         return $this->_is_unique;
-    }
-    
-    public function getConstraints()
-    {
-        return $this->_constraints;
     }
     
     public function getSyntax(): string
