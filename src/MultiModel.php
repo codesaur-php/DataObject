@@ -164,7 +164,7 @@ class MultiModel
             } catch (Exception $e) {
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
                 $delete->execute(array(':id' => $insertId));
-                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $e->getMessage(), $e->errorCode());
+                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $e->getMessage(), $e->getCode());
             }
         }
         
