@@ -41,7 +41,7 @@ class ExampleAccountModel extends Model
             new Column('updated_by', 'bigint', 20)
         ));
         
-        $this->setTable('example_user');
+        $this->setTable('example_user', 'utf8_unicode_ci');
     }
     
     function __initial()
@@ -77,7 +77,7 @@ class ExampleTranslationModel extends MultiModel
             new Column('title', 'varchar', 255)
         ));
 
-        $this->setTable('example_translation');
+        $this->setTable('example_translation', 'utf8_unicode_ci');
     }
     
     function __initial()
