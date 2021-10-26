@@ -464,11 +464,17 @@ class MultiModel
     
     public function getById($id, $code = null)
     {
-        $values = array('p.' . $this->getIdColumn()->getName() => $id);
-        if (!empty($code)) {
-            $values['c.' . $this->getCodeColumn()->getName()] = $code;
+        $with_values = array(
+            'p.' . $this->getIdColumn()->getName() => $id
+        );
+        if ($this->hasColumn('is_active')
+                && $this->getColumn('is_active')->isInt()
+        ) {
+            $with_values['p.is_active'] = 1;
         }
-        
-        return $this->getRowBy($values);
+        if (!empty($code)) {
+            $with_values['c.' . $this->getCodeColumn()->getName()] = $code;
+        }        
+        return $this->getRowBy($with_values);
     }
 }

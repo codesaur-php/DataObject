@@ -187,6 +187,14 @@ class Model
     
     public function getById($id)
     {
-        return $this->getRowBy(array($this->getIdColumn()->getName() => $id));
+        $with_values = array(
+            $this->getIdColumn()->getName() => $id
+        );
+        if ($this->hasColumn('is_active')
+                && $this->getColumn('is_active')->isInt()
+        ) {
+            $with_values['is_active'] = 1;
+        }
+        return $this->getRowBy($with_values);
     }
 }

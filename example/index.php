@@ -154,7 +154,7 @@ try {
     $translation = new ExampleTranslationModel($pdo);
 
     echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
-    var_dump($translation->getById(3, 'mn'));
+    var_dump($translation->getById(1, 'mn'));
     
     putenv('CODESAUR_DB_KEEP_DELETE');
     var_dump($translation->deleteById(7));
