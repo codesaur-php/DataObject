@@ -106,7 +106,7 @@ trait TableTrait
         $idColumnName = $idColumn->getName();
 
         if ($this->hasColumn('is_active')
-                && getenv('CODESAUR_DELETE_DEACTIVATE', true) == 'true'
+                && $_ENV['CODESAUR_DELETE_DEACTIVATE'] ?? false
         ) {
             $selection = "$idColumnName, is_active";
         
