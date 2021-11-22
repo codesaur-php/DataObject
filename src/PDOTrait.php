@@ -46,7 +46,7 @@ trait PDOTrait
             return $stmt;
         }
         
-        throw new Exception(__CLASS__ . ": PDO error! " .  implode(': ', $this->pdo->errorInfo()),
+        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $this->pdo->errorInfo()),
                 is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
     }
 
@@ -63,7 +63,7 @@ trait PDOTrait
             return $stmt;
         }
         
-        throw new Exception(__CLASS__ . ": PDO error! " .  implode(': ', $this->pdo->errorInfo()),
+        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $this->pdo->errorInfo()),
                 is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
     }
 
