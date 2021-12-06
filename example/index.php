@@ -13,7 +13,7 @@ error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
 require_once '../vendor/autoload.php';
 
 use PDO;
-use Exception;
+use Throwable;
 
 use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
@@ -177,6 +177,6 @@ try {
     
     echo "<br/><hr><br/><br/>";
     var_dump(array('list of accounts: ' => $account->getRows()));
-} catch (Exception $ex) {
+} catch (Throwable $ex) {
     die('<br/>{' . date('Y-m-d H:i:s') . '} Exception[' . $ex->getCode() . '] => ' . $ex->getMessage());
 }
