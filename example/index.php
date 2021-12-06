@@ -177,6 +177,6 @@ try {
     
     echo "<br/><hr><br/><br/>";
     var_dump(array('list of accounts: ' => $account->getRows()));
-} catch (Throwable $ex) {
-    die('<br/>{' . date('Y-m-d H:i:s') . '} Exception[' . $ex->getCode() . '] => ' . $ex->getMessage());
+} catch (Throwable $e) {
+    die('<br/>{' . date('Y-m-d H:i:s') . '} Exception[' . $e->getCode() . '] => ' . $e->getMessage());
 }
