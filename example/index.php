@@ -115,9 +115,7 @@ try {
     echo 'connected to mysql...<br/>';
     
     $database = 'dataobject_example';
-    if ($_SERVER['HTTP_HOST'] === 'localhost'
-            && in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))
-    ) {
+    if (in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) {
         $pdo->exec("CREATE DATABASE IF NOT EXISTS $database COLLATE " . $pdo->quote('utf8_unicode_ci'));
     }
 
