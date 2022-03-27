@@ -36,9 +36,9 @@ class ExampleAccountModel extends Model
            (new Column('email', 'varchar', 65))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-            new Column('created_by', 'bigint', 20) ,
+            new Column('created_by', 'bigint', 8) ,
             new Column('updated_at', 'datetime'),
-            new Column('updated_by', 'bigint', 20)
+            new Column('updated_by', 'bigint', 8)
         ));
         
         $this->setTable('example_user', 'utf8_unicode_ci');
@@ -69,9 +69,9 @@ class ExampleTranslationModel extends MultiModel
            (new Column('keyword', 'varchar', 128))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-            new Column('created_by', 'bigint', 20),
+            new Column('created_by', 'bigint', 8),
             new Column('updated_at', 'datetime'),
-            new Column('updated_by', 'bigint', 20)
+            new Column('updated_by', 'bigint', 8)
         ));
         $this->setContentColumns(array(
             new Column('title', 'varchar', 255)
