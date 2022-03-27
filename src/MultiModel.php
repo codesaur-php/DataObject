@@ -278,8 +278,9 @@ class MultiModel
                     
                     try {
                         if (!$content_stmt->execute()) {
+                            $error_info = $content_stmt->errorInfo();
                             throw new Exception(implode(': ', $content_stmt->errorInfo()),
-                                    is_int($content_stmt->errorInfo()[1] ?? null) ? $content_stmt->errorInfo()[1] : $content_stmt->errorCode());
+                                    is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode());
                         }
                     } catch (Exception $e) {
                         if (isset($update)) {
