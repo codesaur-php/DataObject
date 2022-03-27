@@ -50,8 +50,10 @@ trait StatementTrait
         }
         
         if ($this->exec($create) === false) {
-            throw new Exception(__CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $this->pdo->errorInfo()),
-                    is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
+            $error_info = $this->pdo->errorInfo();
+            throw new Exception(
+                    __CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $error_info),
+                    is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
         }
     }
     
