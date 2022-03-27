@@ -60,13 +60,15 @@ trait StatementTrait
     public function createTableVersion(string $originalTable, string $versionTable)
     {
         if ($this->exec("CREATE TABLE $versionTable LIKE " . $this->quote($originalTable)) === false) {
-            throw new Exception(__CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $this->pdo->errorInfo()),
-                    is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
+            $error_info = $this->pdo->errorInfo();
+            throw new Exception(__CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $error_info),
+                    is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
         }
         
-        if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(20) NOT NULL, ADD v_number int(11) NOT NULL") === false) {
-            throw new Exception(__CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $this->pdo->errorInfo()),
-                    is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
+        if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(8) NOT NULL, ADD v_number int(4) NOT NULL") === false) {
+            $error_info = $this->pdo->errorInfo();
+            throw new Exception(__CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $error_info),
+                    is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
         }
     }
     

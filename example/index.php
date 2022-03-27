@@ -26,7 +26,7 @@ class ExampleAccountModel extends Model
         parent::__construct($pdo);
         
         $this->setColumns(array(
-           (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull(),
+           (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull(),
            (new Column('username', 'varchar', 65))->unique(),
             new Column('password', 'varchar', 255, ''),
             new Column('first_name', 'varchar', 50),

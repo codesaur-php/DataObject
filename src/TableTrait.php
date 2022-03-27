@@ -67,7 +67,7 @@ trait TableTrait
     {
         $columnSets = array();
         if (!isset($columns['id'])) {
-            $columnSets['id'] = (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull();
+            $columnSets['id'] = (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull();
         }
 
         foreach ($columns as $column) {

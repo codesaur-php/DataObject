@@ -75,7 +75,7 @@ class MultiModel
         $parent_id->primary(false)->auto(false)->unique(false)->setName('parent_id');
 
         $contentColumns = array(
-            'id' => (new Column('id', 'bigint', 20))->auto()->primary()->unique()->notNull(),
+            'id' => (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull(),
             $parent_id->getName() => $parent_id,
             'code' => new Column('code', 'varchar', 6)
         );
@@ -158,8 +158,9 @@ class MultiModel
             
             try {
                 if (!$content_stmt->execute()) {
-                    throw new Exception(implode(': ', $content_stmt->errorInfo()),
-                            is_int($content_stmt->errorInfo()[1] ?? null) ? $content_stmt->errorInfo()[1] : $content_stmt->errorCode());
+                    $error_info = $content_stmt->errorInfo();
+                    throw new Exception(implode(': ', $error_info),
+                            is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode());
                 }
             } catch (Exception $e) {
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
@@ -223,8 +224,9 @@ class MultiModel
 
                     $update->bindValue(":old_$idColumnName", $p_id, $idColumn->getDataType());
                     if (!$update->execute()) {
-                        throw new Exception(__CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $update->errorInfo()),
-                                is_int($update->errorInfo()[1] ?? null) ? $update->errorInfo()[1] : $update->errorCode());
+                        $error_info = $update->errorInfo();
+                        throw new Exception(__CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $error_info),
+                                is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode());
                     }
                 }
                 

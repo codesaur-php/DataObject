@@ -46,8 +46,9 @@ trait PDOTrait
             return $stmt;
         }
         
-        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $this->pdo->errorInfo()),
-                is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
+        $error_info = $this->pdo->errorInfo();
+        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $error_info),
+                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
     }
 
     public function exec(string $statement)
@@ -63,8 +64,9 @@ trait PDOTrait
             return $stmt;
         }
         
-        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $this->pdo->errorInfo()),
-                is_int($this->pdo->errorInfo()[1] ?? null) ? $this->pdo->errorInfo()[1] : $this->pdo->errorCode());
+        $error_info = $this->pdo->errorInfo();
+        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $error_info),
+                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
     }
 
     public function lastInsertId(string $name = NULL): string
