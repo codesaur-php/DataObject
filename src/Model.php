@@ -17,14 +17,14 @@ class Model
     public function insert(array $record)
     {
         if ($this->hasColumn('created_at')
-                && !isset($record['created_at'])
+            && !isset($record['created_at'])
         ) {
             $record['created_at'] = date('Y-m-d H:i:s');
         }
 
         if ($this->hasColumn('created_by')
-                && !isset($record['created_by'])
-                && getenv('CODESAUR_ACCOUNT_ID', true)
+            && !isset($record['created_by'])
+            && getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
             $record['created_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }
@@ -54,14 +54,14 @@ class Model
     public function update(array $record, array $condition)
     {
         if ($this->hasColumn('updated_at')
-                && !isset($record['updated_at'])
+            && !isset($record['updated_at'])
         ) {
             $record['updated_at'] = date('Y-m-d H:i:s');
         }
         
         if ($this->hasColumn('updated_by')
-                && !isset($record['updated_by'])
-                && getenv('CODESAUR_ACCOUNT_ID', true)
+            && !isset($record['updated_by'])
+            && getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
             $record['updated_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }

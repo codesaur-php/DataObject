@@ -106,7 +106,7 @@ trait TableTrait
         $idColumnName = $idColumn->getName();
 
         if ($this->hasColumn('is_active')
-                && $_ENV['CODESAUR_DELETE_DEACTIVATE'] ?? false
+            && $_ENV['CODESAUR_DELETE_DEACTIVATE'] ?? false
         ) {
             $selection = "$idColumnName, is_active";
         
@@ -129,7 +129,7 @@ trait TableTrait
                 if (!$row['is_active']) {
                     continue;
                 }
-
+                
                 $update->bindValue(":$idColumnName", $row[$idColumnName], $idColumn->getDataType());
                 $update->bindValue(':is_active', 0, PDO::PARAM_INT);
                 foreach ($uniques as $unique) {

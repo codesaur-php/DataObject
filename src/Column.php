@@ -17,10 +17,10 @@ class Column
     private $_is_primary = false;
     
     function __construct(
-            string $name,
-            string $type = 'int',
-                   $length = 11,
-                   $default = null
+        string $name,
+        string $type = 'int',
+        $length = 11,
+        $default = null
     ) {
         $this->setName($name);
         $this->setType($type);
@@ -84,7 +84,7 @@ class Column
     public function getLength()
     {
         if ($this->isUnique()
-                && $this->getType() == 'varchar'
+            && $this->getType() == 'varchar'
         ) {
             return $this->_length - 15;
         }
@@ -121,8 +121,8 @@ class Column
     public function isInt(): bool
     {
         return $this->getType() == 'int'
-                || $this->getType() == 'tinyint'
-                || $this->getType() == 'bigint';
+            || $this->getType() == 'tinyint'
+            || $this->getType() == 'bigint';
     }
 
     public function isNumeric(): bool
