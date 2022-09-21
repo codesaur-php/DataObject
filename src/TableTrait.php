@@ -115,7 +115,7 @@ trait TableTrait
             foreach ($this->getColumns() as $column) {
                 $uniqueName = $column->getName();
                 if ($column->isUnique()
-                        && $uniqueName != $idColumnName
+                    && $uniqueName != $idColumnName
                 ) {
                     $uniques[] = $column;
                     $selection .= ", $uniqueName";
@@ -154,7 +154,7 @@ trait TableTrait
                 $delete->bindValue(':id', $row[$idColumnName]);
                 $delete_executed = $delete->execute();
                 if ($delete->rowCount()
-                        || ($delete_executed && $this->driverName() !== 'mysql')
+                    || ($delete_executed && $this->driverName() !== 'mysql')
                 ) {
                     $ids[] = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
                 }

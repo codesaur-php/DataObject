@@ -119,7 +119,7 @@ class Model
             $condition['ORDER BY'] = $idColumnName;
             
             if ($this->hasColumn('is_active')
-                    && $this->getColumn('is_active')->isInt()
+                && $this->getColumn('is_active')->isInt()
             ) {
                 $condition['WHERE'] = 'is_active=1';
             }
@@ -191,7 +191,7 @@ class Model
             $this->getIdColumn()->getName() => $id
         );
         if ($this->hasColumn('is_active')
-                && $this->getColumn('is_active')->isInt()
+            && $this->getColumn('is_active')->isInt()
         ) {
             $with_values['is_active'] = 1;
         }

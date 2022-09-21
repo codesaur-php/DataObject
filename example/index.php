@@ -82,8 +82,8 @@ class ExampleTranslationModel extends MultiModel
     
     function __initial()
     {
-        $this->setForeignKeyChecks(false);
         $table = $this->getName();
+        $this->setForeignKeyChecks(false);
         $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_created_by FOREIGN KEY (created_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE");
         $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_updated_by FOREIGN KEY (updated_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE");
         $this->setForeignKeyChecks(true);
@@ -126,7 +126,6 @@ try {
     $admin = $account->getRowBy(array('username' =>'admin'));
     if ($admin) {
         putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
-
         var_dump(array('admin' => $admin));
     }
 
@@ -143,6 +142,7 @@ try {
     var_dump(array('newly created account id: ' => $new_account_id));
     var_dump(array('newly created account: ' => $account->getById($new_account_id)));
     var_dump(array('delete account 3: ' => $account->deleteById(3)));
+    
     putenv('CODESAUR_DB_KEEP_DELETE=true');
     var_dump(array('deactivate account 7: ' => $account->deleteById(7)));
     

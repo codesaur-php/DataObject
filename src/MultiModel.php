@@ -24,7 +24,9 @@ class MultiModel
         
         $table = $this->getName();
         $columns = $this->getColumns();
-        if (empty($columns) || empty($this->getContentColumns())) {
+        if (empty($columns)
+            || empty($this->getContentColumns())
+        ) {
             throw new Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
@@ -343,7 +345,7 @@ class MultiModel
         if (empty($condition)) {
             $condition = ['ORDER BY' => "p.$idColumnName"];            
             if ($this->hasColumn('is_active')
-                    && $this->getColumn('is_active')->isInt()
+                && $this->getColumn('is_active')->isInt()
             ) {
                 $condition['WHERE'] = 'p.is_active=1';
             }
@@ -471,7 +473,7 @@ class MultiModel
             'p.' . $this->getIdColumn()->getName() => $id
         );
         if ($this->hasColumn('is_active')
-                && $this->getColumn('is_active')->isInt()
+            && $this->getColumn('is_active')->isInt()
         ) {
             $with_values['p.is_active'] = 1;
         }

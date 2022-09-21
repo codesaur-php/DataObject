@@ -52,8 +52,8 @@ trait StatementTrait
         if ($this->exec($create) === false) {
             $error_info = $this->pdo->errorInfo();
             throw new Exception(
-                    __CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $error_info),
-                    is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+                __CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $error_info),
+                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
         }
     }
     
@@ -61,14 +61,16 @@ trait StatementTrait
     {
         if ($this->exec("CREATE TABLE $versionTable LIKE " . $this->quote($originalTable)) === false) {
             $error_info = $this->pdo->errorInfo();
-            throw new Exception(__CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $error_info),
-                    is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+            throw new Exception(
+                __CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $error_info),
+                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
         }
         
         if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(8) NOT NULL, ADD v_number int(4) NOT NULL") === false) {
             $error_info = $this->pdo->errorInfo();
-            throw new Exception(__CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $error_info),
-                    is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+            throw new Exception(
+                __CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $error_info),
+                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
         }
     }
     
@@ -111,6 +113,8 @@ trait StatementTrait
             return $stmt;
         }
         
-        throw new Exception(__CLASS__ . ": Can't select from [$table]! " .  implode(': ', $stmt->errorInfo()), is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode());
+        throw new Exception(
+            __CLASS__ . ": Can't select from [$table]! " . 
+            implode(': ', $stmt->errorInfo()), is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode());
     }
 }

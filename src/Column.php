@@ -127,7 +127,8 @@ class Column
 
     public function isNumeric(): bool
     {
-        return $this->isInt() || $this->getType() == 'decimal';
+        return $this->isInt()
+            || $this->getType() == 'decimal';
     }
 
     public function isNull(): bool
