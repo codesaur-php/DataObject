@@ -2,10 +2,11 @@
 
 namespace codesaur\DataObject;
 
+use Exception;
+use InvalidArgumentException;
+
 use PDO;
 use PDOStatement;
-
-use Exception;
 
 class MultiModel
 {
@@ -99,6 +100,11 @@ class MultiModel
 
     public function insert(array $record, array $content)
     {
+        $contentTable = $this->getContentName();
+        if (empty($content)) {
+            throw new InvalidArgumentException(__CLASS__ . "[$contentTable}]: Can't insert record when content is empty!");
+        }
+
         if ($this->hasColumn('created_at')
             && !isset($record['created_at'])
         ) {
@@ -135,7 +141,6 @@ class MultiModel
         $idRaw = $record[$idColumnName] ?? $this->lastInsertId();
         $insertId = $idColumn->isInt() ? (int)$idRaw : $idRaw;
         
-        $contentTable = $this->getContentName();
         $keyName = $this->getKeyColumn()->getName();
         $codeName = $this->getCodeColumn()->getName();
         foreach ($content as $code => $data) {
