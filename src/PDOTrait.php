@@ -5,8 +5,6 @@ namespace codesaur\DataObject;
 use PDO;
 use PDOStatement;
 
-use Exception;
-
 trait PDOTrait
 {
     /**
@@ -14,7 +12,7 @@ trait PDOTrait
      *
      * @var PDO|null
      */
-    protected $pdo;
+    protected ?PDO $pdo = null;
     
     function __destruct()
     {
@@ -30,28 +28,37 @@ trait PDOTrait
     
     public function databaseName(): ?string
     {
-        return $this->query('select database()')->fetchColumn();
+        try {
+            return (string) $this->query('select database()')->fetchColumn();            
+        } catch (\Exception $ex) {
+            if (defined('CODESAUR_DEVELOPMENT')
+                    && CODESAUR_DEVELOPMENT
+            ) {
+                error_log($ex->getMessage());
+            }            
+            return null;
+        }
     }    
     
-    public function quote(string $string, int $parameter_type = PDO::PARAM_STR): string
+    public function quote(string $string, int $parameter_type = PDO::PARAM_STR): string|false
     {
         return $this->pdo->quote($string, $parameter_type);
     }
 
     public function prepare(string $statement, array $driver_options = array()): PDOStatement
     {
-        $stmt =  $this->pdo->prepare($statement, $driver_options);
+        $stmt = $this->pdo->prepare($statement, $driver_options);
         
-        if ($stmt !== false) {
+        if ($stmt != false) {
             return $stmt;
         }
         
         $error_info = $this->pdo->errorInfo();
-        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $error_info),
-            is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+        throw new \Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $error_info),
+            (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
     }
 
-    public function exec(string $statement)
+    public function exec(string $statement): int|false
     {
         return $this->pdo->exec($statement);
     }
@@ -60,16 +67,16 @@ trait PDOTrait
     {
         $stmt =  $this->pdo->query($statement);
         
-        if ($stmt !== false) {
+        if ($stmt != false) {
             return $stmt;
         }
         
         $error_info = $this->pdo->errorInfo();
-        throw new Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $error_info),
-            is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+        throw new \Exception(__CLASS__ . ': PDO error! ' .  implode(': ', $error_info),
+            (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
     }
 
-    public function lastInsertId(string $name = NULL): string
+    public function lastInsertId(string $name = null): string|false
     {
         return $this->pdo->lastInsertId($name);
     }
@@ -79,8 +86,8 @@ trait PDOTrait
         return $this->query('SHOW TABLES LIKE ' .  $this->quote($table))->rowCount() > 0;
     }
     
-    public function setForeignKeyChecks(bool $enable)
+    public function setForeignKeyChecks(bool $enable): int|false
     {
-        $this->exec('set foreign_key_checks=' . ($enable ? 1 : 0));
+        return $this->exec('set foreign_key_checks=' . ($enable ? 1 : 0));
     }
 }

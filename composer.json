@@ -2,21 +2,17 @@
     "name": "codesaur/dataobject",
     "description": "An elegant object-oriented application development framework component for PHP 7.2 or newer",
     "keywords": [
-        "data object", "pdo", "database", "mysql",
-        "mongol", "mongolia", "mongolian", "монгол",
-        "codesaur", "narankhuu", "coden", "кодзавр", "наранхүү", "коден",
-        "ololt", "ололт", "мөнхийн", "мөнхийн-ололт", "мөнхийн ололт", "munkhiin ololt"
+        "pdo", "database", "mysql", "dataobject", "mongol", "mongolia", "mongolian", "монгол", "codesaur", "кодзавр", "narankhuu", "наранхүү", "ololt", "ололт", "мөнхийн ололт", "munkhiin ololt"
     ],
     "homepage": "https://ololt.mn/codesaur",
     "authors": [
         {
             "name": "Narankhuu",
-            "email": "codesaur@gmail.com",
-            "homepage": "https://ololt.mn/narankhuu"
+            "email": "codesaur@gmail.com"
         }
     ],
     "require": {
-        "php": ">=7.2.0",
+        "php": ">=8.2.1",
         "ext-pdo": "*"
     },
     "autoload": {

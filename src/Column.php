@@ -2,25 +2,23 @@
 
 namespace codesaur\DataObject;
 
-use PDO;
-
 class Column
 {
-    private $_name;
-    private $_type;
-    private $_length;
-    private $_default = null;
+    private string $_name;
+    private string $_type;
+    private int|string|null $_length;
+    private string|int|float|bool|null $_default;
 
-    private $_is_null = true;
-    private $_is_auto = false;
-    private $_is_unique = false;
-    private $_is_primary = false;
+    private bool $_is_null = true;
+    private bool $_is_auto = false;
+    private bool $_is_unique = false;
+    private bool $_is_primary = false;
     
     function __construct(
         string $name,
-        string $type = 'int',
-        $length = 11,
-        $default = null
+        string $type,
+        int|string|null $length = null,
+        string|int|float|bool|null $default = null
     ) {
         $this->setName($name);
         $this->setType($type);
@@ -73,42 +71,30 @@ class Column
 
     public function setType(string $type)
     {
-        $this->_type = $type;
+        $this->_type = strtolower($type);
     }
     
     public function getDataType(): int
     {
-        return $this->isInt() ? PDO::PARAM_INT : PDO::PARAM_STR;
+        return $this->isInt() ? \PDO::PARAM_INT : \PDO::PARAM_STR;
     }
 
-    public function getLength()
+    public function getLength(): int|string|null
     {
-        if ($this->isUnique()
-            && $this->getType() == 'varchar'
-        ) {
-            return $this->_length - 15;
-        }
-        
         return $this->_length;
     }
 
-    public function setLength($length)
+    public function setLength(int|string|null $length)
     {
-        if (is_float($length)) {
-            $this->_length = array();
-            $this->_length['M'] = (int)$length;
-            $this->_length['D'] = (int)(($length - $this->_length['M']) * 10);
-        } else {
-            $this->_length = $length;
-        }
+        $this->_length = $length;
     }
 
-    public function getDefault()
+    public function getDefault(): string|int|float|bool|null
     {
         return $this->_default;
     }
 
-    public function setDefault($default)
+    public function setDefault(string|int|float|bool|null $default)
     {
         $this->_default = $default;
     }
@@ -117,18 +103,64 @@ class Column
     {
         return $this->_is_auto;
     }
-
+    
+    public function isString(): bool
+    {
+        return $this->getType() == 'varchar'
+            || $this->getType() == 'text'
+            || $this->getType() == 'blob'
+            || $this->getType() == 'binary'
+            || $this->getType() == 'varbinary'
+            || $this->getType() == 'char'
+            || $this->getType() == 'tinytext'
+            || $this->getType() == 'mediumtext'
+            || $this->getType() == 'longtext'
+            || $this->getType() == 'tinyblob'
+            || $this->getType() == 'mediumblob'
+            || $this->getType() == 'longblob'
+            || $this->getType() == 'enum'
+            || $this->getType() == 'set';
+    }
+    
     public function isInt(): bool
     {
         return $this->getType() == 'int'
+            || $this->getType() == 'bigint'
             || $this->getType() == 'tinyint'
-            || $this->getType() == 'bigint';
+            || $this->getType() == 'smallint'
+            || $this->getType() == 'mediumint'
+            || $this->getType() == 'integer'
+            || $this->getType() == 'bool'
+            || $this->getType() == 'boolean';
+    }
+    
+    public function isDecimal(): bool
+    {
+        return $this->getType() == 'decimal'
+            || $this->getType() == 'float'
+            || $this->getType() == 'double'
+            || $this->getType() == 'real';
+    }
+    
+    public function isDateTime(): bool
+    {
+        return $this->getType() == 'datetime'
+            || $this->getType() == 'date'
+            || $this->getType() == 'timestamp' 
+            || $this->getType() == 'time'
+            || $this->getType() == 'year';
+    }
+    
+    public function isBit(): bool
+    {
+        return $this->getType() == 'bit';
     }
 
     public function isNumeric(): bool
     {
-        return $this->isInt()
-            || $this->getType() == 'decimal';
+        return $this->isInt()            
+            || $this->isDecimal()
+            || $this->isBit();
     }
 
     public function isNull(): bool
@@ -148,40 +180,32 @@ class Column
     
     public function getSyntax(): string
     {
-        $str = "$this->_name $this->_type";
+        $str = "{$this->getName()} {$this->getType()}";
         
-        if (!in_array($this->_type, array('text', 'datetime'))) {
-            if (is_array($this->_length)) {
-                if (isset($this->_length['M'])) {
-                    $str .= "({$this->_length['M']}";
-                    if (isset($this->_length['D'])) {
-                        $str .= ",{$this->_length['D']}";
-                    }
-                    $str .= ')';
-                }
-            } else {
-                $str .= "($this->_length)";
-            }
+        $length = $this->getLength();
+        if (!empty($length)) {
+            $str .= "($length)";
         }
         
-        $default = ' DEFAULT ';
-        if ($this->_default !== null) {
+        $syntax = ' DEFAULT ';
+        $default = $this->getDefault();
+        if ($default !== null) {
             if ($this->isNumeric()) {
-                $default .= $this->_default;
+                $syntax .= $default;
             } else {
-                $default .= "'$this->_default'";
+                $syntax .= "'$default'";
             }
         } else {
-            $default .= 'NULL';
+            $syntax .= 'NULL';
         }
         
         if (!$this->isNull()) {
             $str .= ' NOT NULL';
-            if ($this->_default !== null) {
-                $str .= $default;
+            if ($default !== null) {
+                $str .= $syntax;
             }
         } else {
-            $str .= $default;
+            $str .= $syntax;
         }
         
         if ($this->isAuto()) {

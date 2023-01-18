@@ -2,33 +2,25 @@
 
 namespace codesaur\DataObject;
 
-use Exception;
-use InvalidArgumentException;
-
-use PDO;
-use PDOStatement;
-
 class MultiModel
 {
     use TableTrait;
     
-    protected $contentColumns = array(); // Content table columns
+    protected array $contentColumns = []; // Content table columns
 
-    function __construct(PDO $pdo)
+    function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
     
-    public function setTable(string $name, $collate = null)
+    public function setTable(string $name, ?string $collate = null)
     {
         $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
         
         $table = $this->getName();
         $columns = $this->getColumns();
-        if (empty($columns)
-            || empty($this->getContentColumns())
-        ) {
-            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
+        if (empty($columns) || empty($this->getContentColumns())) {
+            throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
         }
@@ -55,11 +47,13 @@ class MultiModel
 
     public function getContentColumn(string $name): Column
     {
-        if (isset($this->contentColumns[$name])) {
+        if (isset($this->contentColumns[$name])
+            && $this->contentColumns[$name] instanceof Column
+        ) {
             return $this->contentColumns[$name];
         }
         
-        throw new Exception(__CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have content column named [$name]", 1054);
+        throw new \Exception(__CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have content column named [$name]", 1054);
     }
 
     public function getKeyColumn(): Column
@@ -77,19 +71,19 @@ class MultiModel
         $parent_id = clone $this->getIdColumn();
         $parent_id->primary(false)->auto(false)->unique(false)->setName('parent_id');
 
-        $contentColumns = array(
+        $contentColumns = [
             'id' => (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull(),
             $parent_id->getName() => $parent_id,
             'code' => new Column('code', 'varchar', 6)
-        );
+        ];
         
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
-                throw new Exception(__CLASS__ . ': Column should have been instance of Column class!');
+                throw new \Exception(__CLASS__ . ': Column should have been instance of Column class!');
             } elseif (isset($contentColumns[$column->getName()])) {
-                continue;
+                throw new \Exception(__CLASS__ . ": Content table already has predefined column named [{$column->getName()}]");
             } elseif ($column->isUnique()) {
-                throw new Exception(__CLASS__ . ": Content table forbidden to contain unique column [{$column->getName()}]");
+                throw new \Exception(__CLASS__ . ": Content table forbidden to contain unique column [{$column->getName()}]");
             }
             
             $contentColumns[$column->getName()] = $column;
@@ -98,11 +92,11 @@ class MultiModel
         $this->contentColumns = $contentColumns;
     }
 
-    public function insert(array $record, array $content)
+    public function insert(array $record, array $content): int|string|false
     {
         $contentTable = $this->getContentName();
         if (empty($content)) {
-            throw new InvalidArgumentException(__CLASS__ . "[$contentTable}]: Can't insert record when content is empty!");
+            throw new \InvalidArgumentException(__CLASS__ . "[$contentTable}]: Can't insert record when content is empty!");
         }
 
         if ($this->hasColumn('created_at')
@@ -118,8 +112,7 @@ class MultiModel
             $record['created_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
-        $table = $this->getName();
-        $column = $param = array();
+        $column = $param = [];
         foreach (array_keys($record) as $key) {
             $column[] = $key;
             $param[] = ":$key";
@@ -127,6 +120,7 @@ class MultiModel
         $columns = implode(', ', $column);
         $values = implode(', ', $param);
         
+        $table = $this->getName();
         $insert = $this->prepare("INSERT INTO $table($columns) VALUES($values)");
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
@@ -137,14 +131,14 @@ class MultiModel
         }
         
         $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();
+        $idColumnName = $idColumn->getName();       
         $idRaw = $record[$idColumnName] ?? $this->lastInsertId();
-        $insertId = $idColumn->isInt() ? (int)$idRaw : $idRaw;
+        $insertId = $idColumn->isInt() ? (int) $idRaw : $idRaw;
         
         $keyName = $this->getKeyColumn()->getName();
         $codeName = $this->getCodeColumn()->getName();
         foreach ($content as $code => $data) {
-            $content_field = $content_value = array();
+            $content_field = $content_value = [];
             foreach (array_keys($data) as $key) {
                 $content_field[] = $key;
                 $content_value[] = ":$key";
@@ -166,20 +160,26 @@ class MultiModel
             try {
                 if (!$content_stmt->execute()) {
                     $error_info = $content_stmt->errorInfo();
-                    throw new Exception(implode(': ', $error_info),
-                            is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode());
+                    if (is_numeric($error_info[1] ?? null)) {
+                        $error_code = (int) $error_info[1];
+                    } elseif (is_numeric($content_stmt->errorCode())) {
+                        $error_code = (int) $content_stmt->errorCode();
+                    } else {
+                        $error_code = 0;
+                    }
+                    throw new \Exception(implode(': ', $error_info), $error_code);
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $ex ){
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
                 $delete->execute(array(':id' => $insertId));
-                throw new Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $e->getMessage(), $e->getCode());
+                throw new \Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $ex->getMessage(), $ex->getCode());
             }
         }
         
         return $insertId;
     }
     
-    public function update(array $record, array $content, array $condition)
+    public function update(array $record, array $content, array $condition): array|false
     {
         if ($this->hasColumn('updated_at')
             && !isset($record['updated_at'])
@@ -197,9 +197,10 @@ class MultiModel
         $table = $this->getName();
         $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
+        $is_int_index = $idColumn->isInt();
         $selection = "p.$idColumnName as $idColumnName";
         if (!empty($record)) {
-            $set = array();
+            $set = [];
             foreach (array_keys($record) as $name) {
                 $set[] = "$name=:$name";
                 if ($name != $idColumnName) {
@@ -219,10 +220,10 @@ class MultiModel
             $content_select = $this->prepare("SELECT id FROM $contentTable WHERE $keyName=:key AND $codeName=:code LIMIT 1");
         }
         
-        $ids = array();        
+        $ids = [];        
         $select = $this->selectFrom("$table p", $selection, $condition);
-        while ($row = $select->fetch(PDO::FETCH_ASSOC)) {            
-            $p_id = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
+        while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {            
+            $p_id = $is_int_index ? (int) $row[$idColumnName] : $row[$idColumnName];
             if (!isset($ids[$p_id])) {
                 if (isset($update)) {
                     foreach ($record as $name => $value) {
@@ -232,17 +233,15 @@ class MultiModel
                     $update->bindValue(":old_$idColumnName", $p_id, $idColumn->getDataType());
                     if (!$update->execute()) {
                         $error_info = $update->errorInfo();
-                        throw new Exception(__CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $error_info),
-                                is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode());
+                        throw new \Exception(
+                            __CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $error_info),
+                            (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode()));
                     }
                 }
                 
-                $newId = $record[$idColumnName] ?? $p_id;
-                if ($idColumn->isInt()) {
-                    $newId = (int)$newId;
-                }
+                $newId = $record[$idColumnName] ?? $p_id;                
                 
-                $contentIds = array();
+                $contentIds = [];
                 foreach ($content as $code => $value) {
                     foreach (array_keys($value) as $key) {
                         if ($key == $keyName || $key == $codeName) {
@@ -256,9 +255,9 @@ class MultiModel
                     $content_select->bindValue(':key', $newId, $keyColumn->getDataType());
                     $content_select->bindValue(':code', $code, $codeColumn->getDataType());
                     $content_select->execute();
-                    $content_row = $content_select->fetch(PDO::FETCH_ASSOC);
+                    $content_row = $content_select->fetch(\PDO::FETCH_ASSOC);
                     if (isset($content_row['id'])) {
-                        $content_set = array();
+                        $content_set = [];
                         foreach (array_keys($value) as $n) {
                             $content_set[] = "$n=:$n";
                         }
@@ -266,8 +265,8 @@ class MultiModel
                         $content_stmt = $this->prepare("UPDATE $contentTable SET $content_sets WHERE id=:id");
                         $content_stmt->bindValue(':id', $content_row['id']);
                     } else {
-                        $content_col = array();
-                        $content_bind = array();
+                        $content_col = [];
+                        $content_bind = [];
                         foreach (array_keys($value) as $n) {
                             $content_col[] = $n;
                             $content_bind[] = ":$n";
@@ -286,10 +285,11 @@ class MultiModel
                     try {
                         if (!$content_stmt->execute()) {
                             $error_info = $content_stmt->errorInfo();
-                            throw new Exception(implode(': ', $content_stmt->errorInfo()),
-                                    is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode());
+                            throw new \Exception(
+                                implode(': ', $content_stmt->errorInfo()),
+                                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode()));
                         }
-                    } catch (Exception $e) {
+                    } catch (\Exception $ex) {
                         if (isset($update)) {
                             $update->bindValue(":old_$idColumnName", $newId, $idColumn->getDataType());
                             foreach (array_keys($record) as $name) {
@@ -297,33 +297,33 @@ class MultiModel
                             }
                             $update->execute();
                         }
-                        throw new Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage(), $e->getCode());
+                        throw new \Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $ex->getMessage(), $ex->getCode());
                     }
                     
-                    $contentIds[] = (int)($content_row['id'] ?? $this->lastInsertId());
+                    $contentIds[] = (int) ($content_row['id'] ?? $this->lastInsertId());
                 }
                 
-                $ids[$p_id] = array($newId => $contentIds);
+                $ids[$p_id] = [$newId => $contentIds];
             }
         }
         
         return empty($ids) ? false : $ids;
     }
     
-    public function updateById($id, array $record, array $content)
+    public function updateById(int|string $id, array $record, array $content): array|false
     {
         $idColumnName = $this->getIdColumn()->getName();
-        $condition = array(
+        $condition = [
             'WHERE' => "p.$idColumnName=:p_$idColumnName",
-            'PARAM' => array(":p_$idColumnName" => $id)
-        );
+            'PARAM' => [":p_$idColumnName" => $id]
+        ];
         return $this->update($record, $content, $condition);
     }
     
-    public function select(string $selection = '*', array $condition = []): PDOStatement
+    public function select(string $selection = '*', array $condition = []): \PDOStatement
     {
         if ($selection == '*') {
-            $fields = array();
+            $fields = [];
             foreach (array_keys($this->getColumns()) as $column) {
                 $fields[] = "p.$column as p_$column";
             }
@@ -345,6 +345,7 @@ class MultiModel
     {
         $idColumn = $this->getIdColumn();        
         $idColumnName = $idColumn->getName();
+        $is_int_index = $idColumn->isInt();
         $codeName = $this->getCodeColumn()->getName();
 
         if (empty($condition)) {
@@ -358,20 +359,20 @@ class MultiModel
 
         $p_idName = "p_$idColumnName";
         $c_codeName = "c_$codeName";
-        $content_KeyColumns = array('id', $this->getKeyColumn()->getName(), $codeName);
+        $content_KeyColumns = ['id', $this->getKeyColumn()->getName(), $codeName];
         
-        $rows = array();
+        $rows = [];
         $pdostmt = $this->select('*', $condition);
-        while ($data = $pdostmt->fetch(PDO::FETCH_ASSOC)) {
-            $p_id = $idColumn->isInt() ? (int)$data[$p_idName] : $data[$p_idName];
+        while ($data = $pdostmt->fetch(\PDO::FETCH_ASSOC)) {
+            $p_id = $is_int_index ? (int) $data[$p_idName] : $data[$p_idName];
             if (!isset($rows[$p_id][$p_idName])) {
                 foreach ($this->getColumns() as $column) {
                     $columnName = $column->getName();
                     if (isset($data["p_$columnName"])) {
                         if ($column->isInt()) {
-                            $value = (int)$data["p_$columnName"];
-                        } elseif ($column->getType() == 'decimal') {
-                            $value = (float)$data["p_$columnName"];
+                            $value = (int) $data["p_$columnName"];
+                        } elseif ($column->isDecimal()) {
+                            $value = (float) $data["p_$columnName"];
                         } else {
                             $value = $data["p_$columnName"];
                         }
@@ -387,9 +388,9 @@ class MultiModel
                 if (!in_array($ccolumnName, $content_KeyColumns)) {
                     if (isset($data["c_$ccolumnName"])) {
                         if ($ccolumn->isInt()) {
-                            $value = (int)$data["c_$ccolumnName"];
-                        } elseif ($ccolumn->getType() == 'decimal') {
-                            $value = (float)$data["c_$ccolumnName"];
+                            $value = (int) $data["c_$ccolumnName"];
+                        } elseif ($ccolumn->isDecimal()) {
+                            $value = (float) $data["c_$ccolumnName"];
                         } else {
                             $value = $data["c_$ccolumnName"];
                         }
@@ -404,11 +405,11 @@ class MultiModel
         return $rows;
     }
     
-    public function getRowBy(array $with_values)
+    public function getRowBy(array $with_values): array|null
     {
         $count = 1;
-        $params = array();
-        $wheres = array();
+        $params = [];
+        $wheres = [];
         foreach ($with_values as $key => $value) {
             $params[":$count"] = $value;
             $wheres[] = "$key=:$count";
@@ -417,27 +418,27 @@ class MultiModel
         $clause = implode(' AND ', $wheres);
         
         if (!empty($wheres)) {
-            $condition = array(
+            $condition = [
                 'WHERE' => $clause,
                 'PARAM' => $params
-            );
+            ];
             $stmt = $this->select('*', $condition);
             
             $idName = $this->getIdColumn()->getName();
             $codeName = $this->getCodeColumn()->getName();
             $c_codeName = "c_$codeName";
-            $content_KeyColumns = array('id', $this->getKeyColumn()->getName(), $codeName);
+            $content_KeyColumns = ['id', $this->getKeyColumn()->getName(), $codeName];
             
-            $row = array();
-            while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $row = [];
+            while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 if (!isset($row[$idName])) {
                     foreach ($this->getColumns() as $column) {
                         $columnName = $column->getName();
                         if (isset($data["p_$columnName"])) {
                             if ($column->isInt()) {
-                                $value = (int)$data["p_$columnName"];
-                            } elseif ($column->getType() == 'decimal') {
-                                $value = (float)$data["p_$columnName"];
+                                $value = (int) $data["p_$columnName"];
+                            } elseif ($column->isDecimal()) {
+                                $value = (float) $data["p_$columnName"];
                             } else {
                                 $value = $data["p_$columnName"];
                             }
@@ -453,9 +454,9 @@ class MultiModel
                     if (!in_array($ccolumnName, $content_KeyColumns)) {
                         if (isset($data["c_$ccolumnName"])) {
                             if ($ccolumn->isInt()) {
-                                $value = (int)$data["c_$ccolumnName"];
-                            } elseif ($ccolumn->getType() == 'decimal') {
-                                $value = (float)$data["c_$ccolumnName"];
+                                $value = (int) $data["c_$ccolumnName"];
+                            } elseif ($ccolumn->isDecimal()) {
+                                $value = (float) $data["c_$ccolumnName"];
                             } else {
                                 $value = $data["c_$ccolumnName"];
                             }
@@ -472,11 +473,11 @@ class MultiModel
         return null;
     }
     
-    public function getById($id, $code = null)
+    public function getById(int|string $id, ?string $code = null): array|null
     {
-        $with_values = array(
+        $with_values = [
             'p.' . $this->getIdColumn()->getName() => $id
-        );
+        ];
         if ($this->hasColumn('is_active')
             && $this->getColumn('is_active')->isInt()
         ) {

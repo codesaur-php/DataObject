@@ -2,10 +2,6 @@
 
 namespace codesaur\DataObject;
 
-use PDO;
-
-use Exception;
-
 trait TableTrait
 {
     use StatementTrait;
@@ -15,14 +11,14 @@ trait TableTrait
      *
      * @var string|null
      */
-    protected $name;
+    protected ?string $name = null;
     
     /**
      * The sql table columns definitions.
      *
      * @var array
      */
-    protected $columns = array();
+    protected array $columns = [];
     
     function __initial()
     {
@@ -31,20 +27,20 @@ trait TableTrait
     public function getName(): string
     {
         if (empty($this->name)) {
-            throw new Exception(__CLASS__ . ': Table name must be provided', 1103);
+            throw new \Exception(__CLASS__ . ': Table name must be provided', 1103);
         }
         
         return $this->name;
     }
     
-    public function setTable(string $name, $collate = null)
+    public function setTable(string $name, ?string $collate = null)
     {
         $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
         
         $table = $this->getName();
         $columns = $this->getColumns();
         if (empty($columns)) {
-            throw new Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
+            throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
         }
@@ -65,17 +61,14 @@ trait TableTrait
     
     public function setColumns(array $columns)
     {
-        $columnSets = array();
-        if (!isset($columns['id'])) {
-            $columnSets['id'] = (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull();
-        }
-
+        $columnSets = [];
         foreach ($columns as $column) {
             if (!$column instanceof Column) {
-                throw new Exception(__CLASS__ . ': Column should have been instance of Column class');
+                throw new \Exception(__CLASS__ . ': Column should have been instance of Column class');
             }
             $columnSets[$column->getName()] = $column;
         }
+        
         $this->columns = $columnSets;
     }
     
@@ -85,7 +78,7 @@ trait TableTrait
             return $this->columns[$name];
         }
         
-        throw new Exception(__CLASS__ . ": Table [{$this->getName()}] definition doesn't have column named [$name]", 1054);
+        throw new \Exception(__CLASS__ . ": Table [$this->name] definition doesn't have column named [$name]", 1054);
     }
 
     public function hasColumn(string $name): bool
@@ -98,20 +91,23 @@ trait TableTrait
         return $this->getColumn('id');
     }
     
-    public function delete(array $condition)
+    public function delete(array $condition): array|false
     {
-        $ids = array();
+        $ids = [];
         $table = $this->getName();
         $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
-
+        $idDataType = $idColumn->getDataType();
+        $index_is_int = $idColumn->isInt();
+        
         if ($this->hasColumn('is_active')
-            && $_ENV['CODESAUR_DELETE_DEACTIVATE'] ?? false
+            && $this->getColumn('is_active')->isInt()
+            && ($_ENV['CODESAUR_DELETE_DEACTIVATE'] ?? false)
         ) {
             $selection = "$idColumnName, is_active";
         
-            $uniques = array();
-            $set = array('is_active=:is_active');
+            $uniques = [];
+            $set = ['is_active=:is_active'];
             foreach ($this->getColumns() as $column) {
                 $uniqueName = $column->getName();
                 if ($column->isUnique()
@@ -125,17 +121,17 @@ trait TableTrait
             $sets = implode(', ', $set);
             $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:$idColumnName");
             $select = $this->selectFrom($table, $selection, $condition);
-            while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
                 if (!$row['is_active']) {
                     continue;
                 }
                 
-                $update->bindValue(":$idColumnName", $row[$idColumnName], $idColumn->getDataType());
-                $update->bindValue(':is_active', 0, PDO::PARAM_INT);
+                $update->bindValue(":$idColumnName", $row[$idColumnName], $idDataType);
+                $update->bindValue(':is_active', 0, \PDO::PARAM_INT);
                 foreach ($uniques as $unique) {
                     $uniqueName = $unique->getName();
                     if ($unique->isNumeric()) {
-                        $row[$uniqueName] = PHP_INT_MAX - $row[$uniqueName];
+                        $row[$uniqueName] = \PHP_INT_MAX - $row[$uniqueName];
                     } else {
                         $row[$uniqueName] = '[' . uniqid() . '] ' . $row[$uniqueName];
                     }
@@ -144,19 +140,21 @@ trait TableTrait
                 }
 
                 if ($update->execute()) {
-                    $ids[] = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
+                    $id = $index_is_int ? (int) $row[$idColumnName] : $row[$idColumnName];
+                    $ids[$id] = 'deactivated';
                 }
             }
         } else {
             $select = $this->selectFrom($table, $idColumnName, $condition);
             $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
-            while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
                 $delete->bindValue(':id', $row[$idColumnName]);
                 $delete_executed = $delete->execute();
                 if ($delete->rowCount()
-                    || ($delete_executed && $this->driverName() !== 'mysql')
+                    || ($delete_executed && $this->driverName() != 'mysql')
                 ) {
-                    $ids[] = $idColumn->isInt() ? (int)$row[$idColumnName] : $row[$idColumnName];
+                    $id = $index_is_int ? (int) $row[$idColumnName] : $row[$idColumnName];
+                    $ids[$id] = 'deleted';
                 }
             }
         }
@@ -164,13 +162,13 @@ trait TableTrait
         return empty($ids) ? false : $ids;
     }
     
-    public function deleteById($id)
+    public function deleteById(int|string $id): array|false
     {
         $idColumnName = $this->getIdColumn()->getName();
-        $condition = array(
+        $condition = [
             'WHERE' => "$idColumnName=:id",
-            'PARAM' => array(':id' => $id)
-        );        
+            'PARAM' => [':id' => $id]
+        ];        
         return $this->delete($condition);
     }
 }

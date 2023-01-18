@@ -2,18 +2,14 @@
 
 namespace codesaur\DataObject;
 
-use PDOStatement;
-
-use Exception;
-
 trait StatementTrait
 {
     use PDOTrait;
     
-    public function createTable(string $table, array $columns, $collate)
+    public function createTable(string $table, array $columns, ?string $collate)
     {
-        $references = array();
-        $columnSyntaxes = array();
+        $references = [];
+        $columnSyntaxes = [];
         foreach ($columns as $key => $column) {
             if (!$column instanceof Column) {
                 continue;
@@ -39,7 +35,7 @@ trait StatementTrait
             $create .= implode(', ', $references);
         }
         $create .= ')';
-        if (strtolower($this->driverName()) === 'mysql') {
+        if (strtolower($this->driverName()) == 'mysql') {
              $create .= ' ENGINE=InnoDB';
         }
         if (!empty($collate)) {
@@ -51,9 +47,9 @@ trait StatementTrait
         
         if ($this->exec($create) === false) {
             $error_info = $this->pdo->errorInfo();
-            throw new Exception(
+            throw new \Exception(
                 __CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $error_info),
-                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
         }
     }
     
@@ -61,20 +57,20 @@ trait StatementTrait
     {
         if ($this->exec("CREATE TABLE $versionTable LIKE " . $this->quote($originalTable)) === false) {
             $error_info = $this->pdo->errorInfo();
-            throw new Exception(
+            throw new \Exception(
                 __CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $error_info),
-                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
         }
         
         if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(8) NOT NULL, ADD v_number int(4) NOT NULL") === false) {
             $error_info = $this->pdo->errorInfo();
-            throw new Exception(
+            throw new \Exception(
                 __CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $error_info),
-                is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode());
+                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
         }
     }
     
-    public function selectFrom(string $table, string $selection, array $condition): PDOStatement
+    public function selectFrom(string $table, string $selection, array $condition): \PDOStatement
     {
         $select = "SELECT $selection FROM $table";
         if (isset($condition['JOIN'])) {
@@ -113,8 +109,8 @@ trait StatementTrait
             return $stmt;
         }
         
-        throw new Exception(
-            __CLASS__ . ": Can't select from [$table]! " . 
-            implode(': ', $stmt->errorInfo()), is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode());
+        throw new \Exception(
+            __CLASS__ . ": Can't select from [$table]! " .  implode(': ', $stmt->errorInfo()),
+            (int) (is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode()));
     }
 }

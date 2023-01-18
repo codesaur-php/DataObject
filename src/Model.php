@@ -2,19 +2,16 @@
 
 namespace codesaur\DataObject;
 
-use PDO;
-use PDOStatement;
-
 class Model
 {
     use TableTrait;
     
-    function __construct(PDO $pdo)
+    function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
     
-    public function insert(array $record)
+    public function insert(array $record): int|string|false
     {
         if ($this->hasColumn('created_at')
             && !isset($record['created_at'])
@@ -29,8 +26,7 @@ class Model
             $record['created_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
-        $table = $this->getName();
-        $column = $param = array();
+        $column = $param = [];
         foreach (array_keys($record) as $key) {
             $column[] = $key;
             $param[] = ":$key";
@@ -38,20 +34,21 @@ class Model
         $columns = implode(', ', $column);
         $params = implode(', ', $param);
         
+        $table = $this->getName();
         $insert = $this->prepare("INSERT INTO $table($columns) VALUES($params)");
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
-        }        
+        }
         if (!$insert->execute()) {
             return false;
         }
         
         $idColumn = $this->getIdColumn();
-        $insertId = $record[$idColumn->getName()] ?? $this->lastInsertId();        
-        return $idColumn->isInt() ? (int)$insertId : $insertId;
+        $insertId = $record[$idColumn->getName()] ?? $this->lastInsertId();
+        return $idColumn->isInt() ? (int) $insertId : $insertId;
     }
     
-    public function update(array $record, array $condition)
+    public function update(array $record, array $condition): array|false
     {
         if ($this->hasColumn('updated_at')
             && !isset($record['updated_at'])
@@ -66,19 +63,20 @@ class Model
             $record['updated_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
-        $set = array();
+        $set = [];
         foreach (array_keys($record) as $name) {
             $set[] = "$name=:$name";
         }
         $sets = implode(', ', $set);
         
-        $ids = array();
+        $ids = [];
         $table = $this->getName();
         $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
+        $is_int_index = $idColumn->isInt();
         $select = $this->select($idColumnName, $condition);
         $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:old_$idColumnName");
-        while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
             $update->bindValue(":old_$idColumnName", $row[$idColumnName]);
             
             foreach ($record as $name => $value) {
@@ -88,24 +86,28 @@ class Model
             if ($update->execute()) {
                 $oldId = $row[$idColumnName];
                 $newId = $record[$idColumnName] ?? $oldId;
-                $ids[$idColumn->isInt() ? (int)$oldId : $oldId] = $idColumn->isInt() ? (int)$newId : $newId;
+                if ($is_int_index) {
+                    $ids[(int) $oldId] = (int) $newId;
+                } else {
+                    $ids[$oldId] = $newId;
+                }
             }
         }
         
         return empty($ids) ? false : $ids;
     }
     
-    public function updateById($id, array $record)
+    public function updateById(int|string $id, array $record): array|false
     {
         $idColumnName = $this->getIdColumn()->getName();
-        $condition = array(
+        $condition = [
             'WHERE' => "$idColumnName=:id",
-            'PARAM' => array(':id' => $id)
-        );        
+            'PARAM' => [':id' => $id]
+        ];        
         return $this->update($record, $condition);
     }
     
-    public function select(string $selection = '*', array $condition = []): PDOStatement
+    public function select(string $selection = '*', array $condition = []): \PDOStatement
     {
         return $this->selectFrom($this->getName(), $selection, $condition);
     }
@@ -114,6 +116,7 @@ class Model
     {
         $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
+        $is_int_index = $idColumn->isInt();
         
         if (empty($condition)) {
             $condition['ORDER BY'] = $idColumnName;
@@ -125,16 +128,20 @@ class Model
             }
         }
         
-        $rows = array();
+        $rows = [];
         $stmt = $this->select('*', $condition);
-        while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $id = $idColumn->isInt() ? (int)$data[$idColumnName] : $data[$idColumnName];
+        while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            if ($is_int_index) {
+                $id = (int) $data[$idColumnName];
+            } else {
+                $id = $data[$idColumnName];
+            }
             foreach ($this->getColumns() as $column) {
                 if (isset($data[$column->getName()])) {
                     if ($column->isInt()) {
-                        $value = (int)$data[$column->getName()];
-                    } elseif ($column->getType() == 'decimal') {
-                        $value = (float)$data[$column->getName()];
+                        $value = (int) $data[$column->getName()];
+                    } elseif ($column->isDecimal()) {
+                        $value = (float) $data[$column->getName()];
                     } else {
                         $value = $data[$column->getName()];
                     }
@@ -149,10 +156,10 @@ class Model
         return $rows;
     }
     
-    public function getRowBy(array $with_values)
+    public function getRowBy(array $with_values): array|null
     {
-        $where = array();
-        $params = array();
+        $where = [];
+        $params = [];
         foreach ($with_values as $key => $value) {
             $where[] = "$key=:$key";
             $params[":$key"] = $value;
@@ -160,20 +167,20 @@ class Model
         $clause = implode(' AND ', $where);
         
         if (!empty($clause)) {
-            $condition = array(
+            $condition = [
                 'WHERE' => $clause,
                 'LIMIT' => 1,
                 'PARAM' => $params
-            );
+            ];
             $stmt = $this->select('*', $condition);
             if ($stmt->rowCount() == 1) {
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                $row = $stmt->fetch(\PDO::FETCH_ASSOC);
                 foreach ($this->getColumns() as $column) {
                     if (isset($row[$column->getName()])) {
                         if ($column->isInt()) {
-                            $row[$column->getName()] = (int)$row[$column->getName()];
-                        } elseif ($column->getType() == 'decimal') {
-                            $row[$column->getName()] = (float)$row[$column->getName()];
+                            $row[$column->getName()] = (int) $row[$column->getName()];
+                        } elseif ($column->isDecimal()) {
+                            $row[$column->getName()] = (float) $row[$column->getName()];
                         }
                     }
                 }
@@ -185,11 +192,11 @@ class Model
         return null;
     }
     
-    public function getById($id)
+    public function getById(int|string $id): array|null
     {
-        $with_values = array(
+        $with_values = [
             $this->getIdColumn()->getName() => $id
-        );
+        ];
         if ($this->hasColumn('is_active')
             && $this->getColumn('is_active')->isInt()
         ) {
