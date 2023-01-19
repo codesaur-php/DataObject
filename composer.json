@@ -1,6 +1,6 @@
 {
     "name": "codesaur/dataobject",
-    "description": "An elegant object-oriented application development framework component for PHP 7.2 or newer",
+    "description": "An elegant object-oriented application development framework component for PHP 8.2.1 or newer",
     "keywords": [
         "pdo", "database", "mysql", "dataobject", "mongol", "mongolia", "mongolian", "монгол", "codesaur", "кодзавр", "narankhuu", "наранхүү", "ololt", "ололт", "мөнхийн ололт", "munkhiin ololt"
     ],
