@@ -29,7 +29,7 @@ trait PDOTrait
     public function databaseName(): ?string
     {
         try {
-            return (string) $this->query('select database()')->fetchColumn();            
+            return (string) $this->query('select database()')->fetchColumn();
         } catch (\Exception $ex) {
             if (defined('CODESAUR_DEVELOPMENT')
                     && CODESAUR_DEVELOPMENT
