@@ -45,7 +45,7 @@ trait PDOTrait
         return $this->pdo->quote($string, $parameter_type);
     }
 
-    public function prepare(string $statement, array $driver_options = array()): PDOStatement
+    public function prepare(string $statement, array $driver_options = []): PDOStatement
     {
         $stmt = $this->pdo->prepare($statement, $driver_options);
         
