@@ -73,34 +73,34 @@ trait StatementTrait
     public function selectFrom(string $table, string $selection, array $condition): \PDOStatement
     {
         $select = "SELECT $selection FROM $table";
-        if (isset($condition['JOIN'])) {
+        if (!empty($condition['JOIN'])) {
             $select .= ' JOIN ' . $condition['JOIN'];
         }
-        if (isset($condition['CROSS JOIN'])) {
+        if (!empty($condition['CROSS JOIN'])) {
             $select .= ' CROSS JOIN ' . $condition['CROSS JOIN'];
         }
-        if (isset($condition['INNER JOIN'])) {
+        if (!empty($condition['INNER JOIN'])) {
             $select .= ' INNER JOIN ' . $condition['INNER JOIN'];
         }
-        if (isset($condition['LEFT JOIN'])) {
+        if (!empty($condition['LEFT JOIN'])) {
             $select .= ' LEFT JOIN ' . $condition['LEFT JOIN'];
         }
-        if (isset($condition['RIGHT JOIN'])) {
+        if (!empty($condition['RIGHT JOIN'])) {
             $select .= ' RIGHT JOIN ' . $condition['RIGHT JOIN'];
         }
-        if (isset($condition['WHERE'])) {
+        if (!empty($condition['WHERE'])) {
             $select .= ' WHERE ' . $condition['WHERE'];
         }
-        if (isset($condition['GROUP BY'])) {
+        if (!empty($condition['GROUP BY'])) {
             $select .= ' GROUP BY ' . $condition['ORDER BY'];
         }
-        if (isset($condition['HAVING'])) {
+        if (!empty($condition['HAVING'])) {
             $select .= ' HAVING ' . $condition['ORDER BY'];
         }
-        if (isset($condition['ORDER BY'])) {
+        if (!empty($condition['ORDER BY'])) {
             $select .= ' ORDER BY ' . $condition['ORDER BY'];
         }
-        if (isset($condition['LIMIT'])) {
+        if (!empty($condition['LIMIT'])) {
             $select .= ' LIMIT ' . $condition['LIMIT'];
         }
 

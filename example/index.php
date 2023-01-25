@@ -8,7 +8,7 @@ namespace codesaur\DataObject\Example;
  */
 
 ini_set('display_errors', 'On');
-error_reporting(\E_ALL & ~\E_STRICT & ~\E_NOTICE);
+error_reporting(\E_ALL);
 
 require_once '../vendor/autoload.php';
 
@@ -33,7 +33,7 @@ class ExampleAccountModel extends Model
            (new Column('email', 'varchar', 65))->unique(),
             new Column('is_active', 'tinyint', 1, 1),
             new Column('created_at', 'datetime'),
-            new Column('created_by', 'bigint', 8) ,
+            new Column('created_by', 'bigint', 8),
             new Column('updated_at', 'datetime'),
             new Column('updated_by', 'bigint', 8)
         ]);
@@ -168,7 +168,7 @@ try {
     foreach ($rows as $row) {
         $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['content']['title']);
     }
-    echo "<br/><hr><br/>List of Translation texts<br/>";
+    echo '<br/><hr><br/>List of Translation texts<br/>';
     var_dump($texts);
     
     echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
@@ -177,7 +177,7 @@ try {
         var_dump($row);
     }
     
-    echo "<br/><hr><br/><br/>";
+    echo '<br/><hr><br/><br/>';
     var_dump(['list of accounts: ' => $account->getRows()]);
 } catch (\Throwable $th) {
     die('<br/>{' . date('Y-m-d H:i:s') . '} Error[' . $th->getCode() . '] => ' . $th->getMessage());

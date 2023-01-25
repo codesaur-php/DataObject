@@ -171,7 +171,7 @@ class MultiModel
                 }
             } catch (\Exception $ex ){
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
-                $delete->execute(array(':id' => $insertId));
+                $delete->execute([':id' => $insertId]);
                 throw new \Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $ex->getMessage(), $ex->getCode());
             }
         }
@@ -485,7 +485,7 @@ class MultiModel
         }
         if (!empty($code)) {
             $with_values['c.' . $this->getCodeColumn()->getName()] = $code;
-        }        
+        }
         return $this->getRowBy($with_values);
     }
 }
