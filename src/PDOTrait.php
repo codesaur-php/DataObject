@@ -10,15 +10,18 @@ trait PDOTrait
     /**
      * The PHP Data Object instance.
      *
-     * @var PDO|null
+     * @var PDO
      */
-    protected ?PDO $pdo = null;
+    public PDO $pdo;
+    
+    function __construct(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
     
     function __destruct()
     {
-        if ($this->pdo instanceof PDO) {
-            $this->pdo = null;
-        }
+        unset($this->pdo);
     }
     
     public function driverName(): string

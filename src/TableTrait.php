@@ -9,18 +9,18 @@ trait TableTrait
     /**
      * The sql table name.
      *
-     * @var string|null
+     * @var string
      */
-    protected ?string $name = null;
+    protected readonly string $name;
     
     /**
      * The sql table columns definitions.
      *
      * @var array
      */
-    protected array $columns = [];
+    protected readonly array $columns;
     
-    function __initial()
+    protected function __initial()
     {
     }
     
@@ -56,7 +56,7 @@ trait TableTrait
     
     public function getColumns(): array
     {
-        return $this->columns;
+        return $this->columns ?? [];
     }
     
     public function setColumns(array $columns)

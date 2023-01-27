@@ -6,13 +6,8 @@ class MultiModel
 {
     use TableTrait;
     
-    protected array $contentColumns = []; // Content table columns
+    protected readonly array $contentColumns; // Content table columns
 
-    function __construct(\PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-    
     public function setTable(string $name, ?string $collate = null)
     {
         $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
@@ -42,7 +37,7 @@ class MultiModel
 
     public function getContentColumns(): array
     {
-        return $this->contentColumns;
+        return $this->contentColumns ?? [];
     }
 
     public function getContentColumn(string $name): Column
@@ -68,12 +63,11 @@ class MultiModel
 
     public function setContentColumns(array $columns)
     {
-        $parent_id = clone $this->getIdColumn();
-        $parent_id->primary(false)->auto(false)->unique(false)->setName('parent_id');
+        $pid = clone $this->getIdColumn();
 
         $contentColumns = [
             'id' => (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull(),
-            $parent_id->getName() => $parent_id,
+            'parent_id' => (new Column('parent_id', $pid->getType(), $pid->getLength()))->notNull(),
             'code' => new Column('code', 'varchar', 6)
         ];
         

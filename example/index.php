@@ -41,7 +41,7 @@ class ExampleAccountModel extends Model
         $this->setTable('example_user', 'utf8_unicode_ci');
     }
     
-    function __initial()
+    protected function __initial()
     {
         $table = $this->getName();
         $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_created_by FOREIGN KEY (created_by) REFERENCES $table(id) ON DELETE SET NULL ON UPDATE CASCADE");

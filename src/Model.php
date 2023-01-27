@@ -6,11 +6,6 @@ class Model
 {
     use TableTrait;
     
-    function __construct(\PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-    
     public function insert(array $record): int|string|false
     {
         if ($this->hasColumn('created_at')

@@ -4,15 +4,21 @@ namespace codesaur\DataObject;
 
 class Column
 {
-    private string $_name;
-    private string $_type;
-    private int|string|null $_length;
-    private string|int|float|bool|null $_default;
+    private readonly string $_name;
+    
+    private readonly string $_type;
+    
+    private readonly int|string|null $_length;
+    
+    private readonly string|int|float|bool|null $_default;
 
-    private bool $_is_null = true;
-    private bool $_is_auto = false;
-    private bool $_is_unique = false;
-    private bool $_is_primary = false;
+    private readonly bool $_is_null;
+    
+    private readonly bool $_is_auto;
+    
+    private readonly bool $_is_unique;
+    
+    private readonly bool $_is_primary;
     
     function __construct(
         string $name,
@@ -20,10 +26,10 @@ class Column
         int|string|null $length = null,
         string|int|float|bool|null $default = null
     ) {
-        $this->setName($name);
-        $this->setType($type);
-        $this->setLength($length);
-        $this->setDefault($default);
+        $this->_name = $name;
+        $this->_type = strtolower($type);
+        $this->_length = $length;
+        $this->_default = $default;
     }
     
     public function auto(bool $auto = true): Column
@@ -59,19 +65,9 @@ class Column
         return $this->_name;
     }
 
-    final public function setName(string $name)
-    {
-        $this->_name = $name;
-    }
-
     public function getType(): string
     {
         return $this->_type;
-    }
-
-    public function setType(string $type)
-    {
-        $this->_type = strtolower($type);
     }
     
     public function getDataType(): int
@@ -84,24 +80,14 @@ class Column
         return $this->_length;
     }
 
-    public function setLength(int|string|null $length)
-    {
-        $this->_length = $length;
-    }
-
     public function getDefault(): string|int|float|bool|null
     {
         return $this->_default;
     }
-
-    public function setDefault(string|int|float|bool|null $default)
-    {
-        $this->_default = $default;
-    }
     
     public function isAuto(): bool
     {
-        return $this->_is_auto;
+        return $this->_is_auto ?? false;
     }
     
     public function isString(): bool
@@ -165,17 +151,17 @@ class Column
 
     public function isNull(): bool
     {
-        return $this->_is_null;
+        return $this->_is_null ?? true;
     }
 
     public function isPrimary(): bool
     {
-        return $this->_is_primary;
+        return $this->_is_primary ?? false;
     }
 
     public function isUnique(): bool
     {
-        return $this->_is_unique;
+        return $this->_is_unique ?? false;
     }
     
     public function getSyntax(): string
