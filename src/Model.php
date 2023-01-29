@@ -2,7 +2,7 @@
 
 namespace codesaur\DataObject;
 
-class Model
+abstract class Model
 {
     use TableTrait;
     

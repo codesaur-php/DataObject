@@ -6,7 +6,7 @@ trait StatementTrait
 {
     use PDOTrait;
     
-    public function createTable(string $table, array $columns, ?string $collate)
+    public final function createTable(string $table, array $columns, ?string $collate)
     {
         $references = [];
         $columnSyntaxes = [];
@@ -53,24 +53,7 @@ trait StatementTrait
         }
     }
     
-    public function createTableVersion(string $originalTable, string $versionTable)
-    {
-        if ($this->exec("CREATE TABLE $versionTable LIKE " . $this->quote($originalTable)) === false) {
-            $error_info = $this->pdo->errorInfo();
-            throw new \Exception(
-                __CLASS__ . ": Version table [$versionTable] creation failed! " .  implode(': ', $error_info),
-                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
-        }
-        
-        if ($this->exec("ALTER TABLE $versionTable ADD v_id bigint(8) NOT NULL, ADD v_number int(4) NOT NULL") === false) {
-            $error_info = $this->pdo->errorInfo();
-            throw new \Exception(
-                __CLASS__ . ": Table [$versionTable] version columns creation failed!  " .  implode(': ', $error_info),
-                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
-        }
-    }
-    
-    public function selectFrom(string $table, string $selection, array $condition): \PDOStatement
+    public final function selectFrom(string $table, string $selection, array $condition): \PDOStatement
     {
         $select = "SELECT $selection FROM $table";
         if (!empty($condition['JOIN'])) {
@@ -95,7 +78,7 @@ trait StatementTrait
             $select .= ' GROUP BY ' . $condition['ORDER BY'];
         }
         if (!empty($condition['HAVING'])) {
-            $select .= ' HAVING ' . $condition['ORDER BY'];
+            $select .= ' HAVING ' . $condition['HAVING'];
         }
         if (!empty($condition['ORDER BY'])) {
             $select .= ' ORDER BY ' . $condition['ORDER BY'];

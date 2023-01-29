@@ -2,7 +2,7 @@
 
 namespace codesaur\DataObject;
 
-class MultiModel
+abstract class MultiModel
 {
     use TableTrait;
     

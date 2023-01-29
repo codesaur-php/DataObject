@@ -20,7 +20,7 @@ class Column
     
     private readonly bool $_is_primary;
     
-    function __construct(
+    public function __construct(
         string $name,
         string $type,
         int|string|null $length = null,
@@ -60,7 +60,7 @@ class Column
         return $this;
     }
     
-    final public function getName(): string
+    public function getName(): string
     {
         return $this->_name;
     }

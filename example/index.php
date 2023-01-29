@@ -18,9 +18,9 @@ use codesaur\DataObject\MultiModel;
 
 class ExampleAccountModel extends Model
 {
-    function __construct(\PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
-        parent::__construct($pdo);
+        $this->setInstance($pdo);
         
         $this->setColumns([
            (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull(),
@@ -59,9 +59,9 @@ class ExampleAccountModel extends Model
 
 class ExampleTranslationModel extends MultiModel
 {
-    function __construct(\PDO $conn)
+    public function __construct(\PDO $pdo)
     {
-        parent::__construct($conn);
+        $this->setInstance($pdo);
         
         $this->setColumns([
            (new Column('id', 'bigint', 8))->auto()->primary()->unique()->notNull(),
@@ -79,7 +79,7 @@ class ExampleTranslationModel extends MultiModel
         $this->setTable('example_translation', 'utf8_unicode_ci');
     }
     
-    function __initial()
+    protected function __initial()
     {
         $table = $this->getName();
         $this->setForeignKeyChecks(false);

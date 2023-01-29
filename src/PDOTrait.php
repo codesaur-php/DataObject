@@ -12,24 +12,26 @@ trait PDOTrait
      *
      * @var PDO
      */
-    public PDO $pdo;
+    protected PDO $pdo;
     
-    function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-    
-    function __destruct()
+    public abstract function __construct(PDO $pdo);
+        
+    public function __destruct()
     {
         unset($this->pdo);
     }
     
-    public function driverName(): string
+    public final function setInstance(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
+    
+    public final function driverName(): string
     {
         return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     }
     
-    public function databaseName(): ?string
+    public final function databaseName(): ?string
     {
         try {
             return (string) $this->query('select database()')->fetchColumn();
@@ -43,12 +45,12 @@ trait PDOTrait
         }
     }    
     
-    public function quote(string $string, int $parameter_type = PDO::PARAM_STR): string|false
+    public final function quote(string $string, int $parameter_type = PDO::PARAM_STR): string|false
     {
         return $this->pdo->quote($string, $parameter_type);
     }
 
-    public function prepare(string $statement, array $driver_options = []): PDOStatement
+    public final function prepare(string $statement, array $driver_options = []): PDOStatement
     {
         $stmt = $this->pdo->prepare($statement, $driver_options);
         
@@ -61,12 +63,12 @@ trait PDOTrait
             (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
     }
 
-    public function exec(string $statement): int|false
+    public final function exec(string $statement): int|false
     {
         return $this->pdo->exec($statement);
     }
 
-    public function query(string $statement): PDOStatement
+    public final function query(string $statement): PDOStatement
     {
         $stmt =  $this->pdo->query($statement);
         
@@ -79,17 +81,17 @@ trait PDOTrait
             (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
     }
 
-    public function lastInsertId(string $name = null): string|false
+    public final function lastInsertId(?string $name = null): string|false
     {
         return $this->pdo->lastInsertId($name);
     }
     
-    public function hasTable(string $table): bool
+    public final function hasTable(string $table): bool
     {
         return $this->query('SHOW TABLES LIKE ' .  $this->quote($table))->rowCount() > 0;
     }
     
-    public function setForeignKeyChecks(bool $enable): int|false
+    public final function setForeignKeyChecks(bool $enable): int|false
     {
         return $this->exec('set foreign_key_checks=' . ($enable ? 1 : 0));
     }
