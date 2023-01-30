@@ -14,13 +14,6 @@ trait PDOTrait
      */
     protected PDO $pdo;
     
-    public abstract function __construct(PDO $pdo);
-        
-    public function __destruct()
-    {
-        unset($this->pdo);
-    }
-    
     public final function setInstance(PDO $pdo)
     {
         $this->pdo = $pdo;
