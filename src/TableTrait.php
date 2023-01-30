@@ -20,9 +20,7 @@ trait TableTrait
      */
     protected readonly array $columns;
     
-    protected function __initial()
-    {
-    }
+    protected abstract function __initial();
     
     public function getName(): string
     {
