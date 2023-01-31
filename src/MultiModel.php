@@ -216,7 +216,7 @@ abstract class MultiModel
         
         $ids = [];        
         $select = $this->selectFrom("$table p", $selection, $condition);
-        while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {            
+        while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
             $p_id = $is_int_index ? (int) $row[$idColumnName] : $row[$idColumnName];
             if (!isset($ids[$p_id])) {
                 if (isset($update)) {
