@@ -101,7 +101,7 @@ abstract class MultiModel
 
         if ($this->hasColumn('created_by')
             && !isset($record['created_by'])
-            && getenv('CODESAUR_ACCOUNT_ID', true)
+            && \getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
             $record['created_by'] = \getenv('CODESAUR_ACCOUNT_ID', true);
         }
@@ -183,7 +183,7 @@ abstract class MultiModel
         
         if ($this->hasColumn('updated_by')
             && !isset($record['updated_by'])
-            && getenv('CODESAUR_ACCOUNT_ID', true)
+            && \getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
             $record['updated_by'] = \getenv('CODESAUR_ACCOUNT_ID', true);
         }
