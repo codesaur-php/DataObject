@@ -190,10 +190,10 @@ trait TableTrait
             
             if ($column->isPrimary()) {
                 $references[] = "PRIMARY KEY ($key)";
-            }            
+            }
             if ($column->isUnique()) {
                 $references[] = "UNIQUE ($key)";
-            }            
+            }
             if ($column->isAuto() && $column->isInt()) {
                 $auto_increment = 1;
             }

@@ -372,7 +372,7 @@ abstract class MultiModel
                         }
                     } else {
                         $value = $column->getDefault();
-                    }                    
+                    }
                     $rows[$p_id][$columnName] = $value;
                 }
             }
@@ -438,7 +438,7 @@ abstract class MultiModel
                             }
                         } else {
                             $value = $column->getDefault();
-                        }                        
+                        }
                         $row[$columnName] = $value;
                     }
                 }
@@ -456,7 +456,7 @@ abstract class MultiModel
                             }
                         } else {
                             $value = $ccolumn->getDefault();
-                        }                        
+                        }
                         $row['content'][$ccolumnName][$data[$c_codeName]] = $value;
                     }
                 }

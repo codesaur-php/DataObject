@@ -33,10 +33,10 @@ trait PDOTrait
                     && CODESAUR_DEVELOPMENT
             ) {
                 error_log($ex->getMessage());
-            }            
+            }
             return null;
         }
-    }    
+    }
     
     public final function quote(string $string, int $parameter_type = PDO::PARAM_STR): string|false
     {
