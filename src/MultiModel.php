@@ -228,7 +228,7 @@ abstract class MultiModel
                     if (!$update->execute()) {
                         $error_info = $update->errorInfo();
                         throw new \Exception(
-                            __CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $error_info),
+                            __CLASS__ . ": Error while updating record on table [$table:$p_id]! " . \implode(': ', $error_info),
                             (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode()));
                     }
                 }
