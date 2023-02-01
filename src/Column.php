@@ -27,7 +27,7 @@ class Column
         string|int|float|bool|null $default = null
     ) {
         $this->_name = $name;
-        $this->_type = strtolower($type);
+        $this->_type = \strtolower($type);
         $this->_length = $length;
         $this->_default = $default;
     }
@@ -175,7 +175,7 @@ class Column
         
         $syntax = ' DEFAULT ';
         $default = $this->getDefault();
-        if ($default !== null) {
+        if ($default != null) {
             if ($this->isNumeric()) {
                 $syntax .= $default;
             } else {
@@ -187,7 +187,7 @@ class Column
         
         if (!$this->isNull()) {
             $str .= ' NOT NULL';
-            if ($default !== null) {
+            if ($default != null) {
                 $str .= $syntax;
             }
         } else {

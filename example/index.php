@@ -7,8 +7,8 @@ namespace codesaur\DataObject\Example;
  * This is an example script!
  */
 
-ini_set('display_errors', 'On');
-error_reporting(\E_ALL);
+\ini_set('display_errors', 'On');
+\error_reporting(\E_ALL);
 
 require_once '../vendor/autoload.php';
 
@@ -47,7 +47,7 @@ class ExampleAccountModel extends Model
         $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_created_by FOREIGN KEY (created_by) REFERENCES $table(id) ON DELETE SET NULL ON UPDATE CASCADE");
         $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_updated_by FOREIGN KEY (updated_by) REFERENCES $table(id) ON DELETE SET NULL ON UPDATE CASCADE");
 
-        $now_date = date('Y-m-d H:i:s');
+        $now_date = \date('Y-m-d H:i:s');
         $password = $this->quote(password_hash('secret', \PASSWORD_BCRYPT));
         $query =
             "INSERT INTO $table(created_at,username,password,first_name,last_name,email) " .
@@ -114,7 +114,7 @@ try {
     echo 'connected to mysql...<br/>';
     
     $database = 'dataobject_example';
-    if (in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
+    if (\in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
         $pdo->exec("CREATE DATABASE IF NOT EXISTS $database COLLATE " . $pdo->quote('utf8_unicode_ci'));
     }
 
@@ -124,61 +124,61 @@ try {
     $account = new ExampleAccountModel($pdo);
     $admin = $account->getRowBy(['username' =>'admin']);
     if ($admin) {
-        putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
-        var_dump(['admin' => $admin]);
+        \putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
+        \var_dump(['admin' => $admin]);
     }
 
-    $uniq_account = uniqid('account');
+    $uniq_account = \uniqid('account');
     $new_account_id = $account->insert([
         'username' => $uniq_account,
-        'password' => password_hash('pass', \PASSWORD_BCRYPT),
+        'password' => \password_hash('pass', \PASSWORD_BCRYPT),
         'first_name' => 'Random Guy',
-        'phone' => uniqid(),
+        'phone' => \uniqid(),
         'address' => 'Somewhere in Earth',
         'email' => "$uniq_account@example.com"
     ]);
 
-    var_dump(['newly created account id: ' => $new_account_id]);
-    var_dump(['newly created account: ' => $account->getById($new_account_id)]);
+    \var_dump(['newly created account id: ' => $new_account_id]);
+    \var_dump(['newly created account: ' => $account->getById($new_account_id)]);
     
     $_ENV['CODESAUR_DELETE_DEACTIVATE'] = false;
-    var_dump(['delete account 3: ' => $account->deleteById(3)]);
+    \var_dump(['delete account 3: ' => $account->deleteById(3)]);
     
     $_ENV['CODESAUR_DELETE_DEACTIVATE'] = true;
-    var_dump(['deactivate account 7: ' => $account->deleteById(7)]);
+    \var_dump(['deactivate account 7: ' => $account->deleteById(7)]);
     
-    var_dump($account->update(['address' => 'Ulaanbaatar'], ['WHERE' => 'is_active=1']));
-    var_dump($account->updateById(15, ['first_name' => 'Not so random', 'id' => 1500]));
+    \var_dump($account->update(['address' => 'Ulaanbaatar'], ['WHERE' => 'is_active=1']));
+    \var_dump($account->updateById(15, ['first_name' => 'Not so random', 'id' => 1500]));
     
     $translation = new ExampleTranslationModel($pdo);
 
-    var_dump($translation->getById(1, 'mn'));
+    \var_dump($translation->getById(1, 'mn'));
     
     $_ENV['CODESAUR_DELETE_DEACTIVATE'] = false;
-    var_dump($translation->deleteById(7));
+    \var_dump($translation->deleteById(7));
 
     $_ENV['CODESAUR_DELETE_DEACTIVATE'] = true;
-    var_dump($translation->deleteById(8));
+    \var_dump($translation->deleteById(8));
    
-    var_dump($translation->update(['keyword' => 'golio'], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']], ['WHERE' => 'p.id=4']));
-    var_dump($translation->updateById(5, ['id' => 500], ['en' => ['title' => 'Hyperactive']]));
+    \var_dump($translation->update(['keyword' => 'golio'], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']], ['WHERE' => 'p.id=4']));
+    \var_dump($translation->updateById(5, ['id' => 500], ['en' => ['title' => 'Hyperactive']]));
     
     $rows = $translation->getRows();
     $texts = [];
     foreach ($rows as $row) {
-        $texts[$row['keyword']] = array_merge($texts[$row['keyword']] ?? [], $row['content']['title']);
+        $texts[$row['keyword']] = \array_merge($texts[$row['keyword']] ?? [], $row['content']['title']);
     }
     echo '<br/><hr><br/>List of Translation texts<br/>';
-    var_dump($texts);
+    \var_dump($texts);
     
     echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
     
     foreach ($translation->getRows(['ORDER BY' => 'p.keyword']) as $row) {
-        var_dump($row);
+        \var_dump($row);
     }
     
     echo '<br/><hr><br/><br/>';
-    var_dump(['list of accounts: ' => $account->getRows()]);
+    \var_dump(['list of accounts: ' => $account->getRows()]);
 } catch (\Throwable $th) {
-    die('<br/>{' . date('Y-m-d H:i:s') . '} Error[' . $th->getCode() . '] => ' . $th->getMessage());
+    die('<br/>{' . \date('Y-m-d H:i:s') . '} Error[' . $th->getCode() . '] => ' . $th->getMessage());
 }

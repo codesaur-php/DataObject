@@ -40,7 +40,7 @@ trait TableTrait
     
     public function setTable(string $name, ?string $collate = null)
     {
-        $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+        $this->name = \preg_replace('/[^A-Za-z0-9_-]/', '', $name);
         
         $table = $this->getName();
         $columns = $this->getColumns();
@@ -123,7 +123,7 @@ trait TableTrait
                     $set[] = "$uniqueName=:$uniqueName";
                 }
             }
-            $sets = implode(', ', $set);
+            $sets = \implode(', ', $set);
             $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:$idColumnName");
             $select = $this->selectFrom($table, $selection, $condition);
             while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
@@ -138,7 +138,7 @@ trait TableTrait
                     if ($unique->isNumeric()) {
                         $row[$uniqueName] = \PHP_INT_MAX - $row[$uniqueName];
                     } else {
-                        $row[$uniqueName] = '[' . uniqid() . '] ' . $row[$uniqueName];
+                        $row[$uniqueName] = '[' . \uniqid() . '] ' . $row[$uniqueName];
                     }
 
                     $update->bindValue(":$uniqueName", $row[$uniqueName], $unique->getDataType());
@@ -173,7 +173,7 @@ trait TableTrait
         $condition = [
             'WHERE' => "$idColumnName=:id",
             'PARAM' => [':id' => $id]
-        ];        
+        ];
         return $this->delete($condition);
     }
     
@@ -200,13 +200,13 @@ trait TableTrait
         }
         
         $create = "CREATE TABLE $table (";
-        $create .= implode(', ', $columnSyntaxes);
+        $create .= \implode(', ', $columnSyntaxes);
         if (!empty($references)) {
             $create .= ', ';
-            $create .= implode(', ', $references);
+            $create .= \implode(', ', $references);
         }
         $create .= ')';
-        if (strtolower($this->driverName()) == 'mysql') {
+        if (\strtolower($this->driverName()) == 'mysql') {
              $create .= ' ENGINE=InnoDB';
         }
         if (!empty($collate)) {
@@ -219,8 +219,8 @@ trait TableTrait
         if ($this->exec($create) === false) {
             $error_info = $this->pdo->errorInfo();
             throw new \Exception(
-                __CLASS__ . ": Table [$table] creation failed! " .  implode(': ', $error_info),
-                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
+                __CLASS__ . ": Table [$table] creation failed! " . \implode(': ', $error_info),
+                (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
         }
     }
     
@@ -264,7 +264,7 @@ trait TableTrait
         }
         
         throw new \Exception(
-            __CLASS__ . ": Can't select from [$table]! " .  implode(': ', $stmt->errorInfo()),
-            (int) (is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode()));
+            __CLASS__ . ": Can't select from [$table]! " . \implode(': ', $stmt->errorInfo()),
+            (int) (\is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode()));
     }
 }

@@ -10,7 +10,7 @@ abstract class MultiModel
 
     public function setTable(string $name, ?string $collate = null)
     {
-        $this->name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+        $this->name = \preg_replace('/[^A-Za-z0-9_-]/', '', $name);
         
         $table = $this->getName();
         $columns = $this->getColumns();
@@ -96,23 +96,23 @@ abstract class MultiModel
         if ($this->hasColumn('created_at')
             && !isset($record['created_at'])
         ) {
-            $record['created_at'] = date('Y-m-d H:i:s');
+            $record['created_at'] = \date('Y-m-d H:i:s');
         }
 
         if ($this->hasColumn('created_by')
             && !isset($record['created_by'])
             && getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
-            $record['created_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
+            $record['created_by'] = \getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
         $column = $param = [];
-        foreach (array_keys($record) as $key) {
+        foreach (\array_keys($record) as $key) {
             $column[] = $key;
             $param[] = ":$key";
         }
-        $columns = implode(', ', $column);
-        $values = implode(', ', $param);
+        $columns = \implode(', ', $column);
+        $values = \implode(', ', $param);
         
         $table = $this->getName();
         $insert = $this->prepare("INSERT INTO $table($columns) VALUES($values)");
@@ -125,7 +125,7 @@ abstract class MultiModel
         }
         
         $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();       
+        $idColumnName = $idColumn->getName();
         $idRaw = $record[$idColumnName] ?? $this->lastInsertId();
         $insertId = $idColumn->isInt() ? (int) $idRaw : $idRaw;
         
@@ -133,7 +133,7 @@ abstract class MultiModel
         $codeName = $this->getCodeColumn()->getName();
         foreach ($content as $code => $data) {
             $content_field = $content_value = [];
-            foreach (array_keys($data) as $key) {
+            foreach (\array_keys($data) as $key) {
                 $content_field[] = $key;
                 $content_value[] = ":$key";
             }
@@ -144,8 +144,8 @@ abstract class MultiModel
             $content_field[] = $codeName;
             $content_value[] = ":$codeName";
 
-            $fields = implode(', ', $content_field);
-            $values = implode(', ', $content_value);
+            $fields = \implode(', ', $content_field);
+            $values = \implode(', ', $content_value);
             $content_stmt = $this->prepare("INSERT INTO $contentTable($fields) VALUES($values)");
             foreach ($data as $key => $value) {
                 $content_stmt->bindValue(":$key", $value, $this->getContentColumn($key)->getDataType());
@@ -154,14 +154,14 @@ abstract class MultiModel
             try {
                 if (!$content_stmt->execute()) {
                     $error_info = $content_stmt->errorInfo();
-                    if (is_numeric($error_info[1] ?? null)) {
+                    if (\is_numeric($error_info[1] ?? null)) {
                         $error_code = (int) $error_info[1];
-                    } elseif (is_numeric($content_stmt->errorCode())) {
+                    } elseif (\is_numeric($content_stmt->errorCode())) {
                         $error_code = (int) $content_stmt->errorCode();
                     } else {
                         $error_code = 0;
                     }
-                    throw new \Exception(implode(': ', $error_info), $error_code);
+                    throw new \Exception(\implode(': ', $error_info), $error_code);
                 }
             } catch (\Exception $ex ){
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
@@ -178,14 +178,14 @@ abstract class MultiModel
         if ($this->hasColumn('updated_at')
             && !isset($record['updated_at'])
         ) {
-            $record['updated_at'] = date('Y-m-d H:i:s');
+            $record['updated_at'] = \date('Y-m-d H:i:s');
         }
         
         if ($this->hasColumn('updated_by')
             && !isset($record['updated_by'])
             && getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
-            $record['updated_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
+            $record['updated_by'] = \getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
         $table = $this->getName();
@@ -195,13 +195,13 @@ abstract class MultiModel
         $selection = "p.$idColumnName as $idColumnName";
         if (!empty($record)) {
             $set = [];
-            foreach (array_keys($record) as $name) {
+            foreach (\array_keys($record) as $name) {
                 $set[] = "$name=:$name";
                 if ($name != $idColumnName) {
                     $selection .= ", p.$name as $name";
                 }
             }
-            $sets = implode(', ', $set);
+            $sets = \implode(', ', $set);
             $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:old_$idColumnName");
         }
         
@@ -214,7 +214,7 @@ abstract class MultiModel
             $content_select = $this->prepare("SELECT id FROM $contentTable WHERE $keyName=:key AND $codeName=:code LIMIT 1");
         }
         
-        $ids = [];        
+        $ids = [];
         $select = $this->selectFrom("$table p", $selection, $condition);
         while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
             $p_id = $is_int_index ? (int) $row[$idColumnName] : $row[$idColumnName];
@@ -229,15 +229,15 @@ abstract class MultiModel
                         $error_info = $update->errorInfo();
                         throw new \Exception(
                             __CLASS__ . ": Error while updating record on table [$table:$p_id]! " . implode(': ', $error_info),
-                            (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode()));
+                            (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode()));
                     }
                 }
                 
-                $newId = $record[$idColumnName] ?? $p_id;                
+                $newId = $record[$idColumnName] ?? $p_id;
                 
                 $contentIds = [];
                 foreach ($content as $code => $value) {
-                    foreach (array_keys($value) as $key) {
+                    foreach (\array_keys($value) as $key) {
                         if ($key == $keyName || $key == $codeName) {
                             unset($value);
                         }
@@ -252,10 +252,10 @@ abstract class MultiModel
                     $content_row = $content_select->fetch(\PDO::FETCH_ASSOC);
                     if (isset($content_row['id'])) {
                         $content_set = [];
-                        foreach (array_keys($value) as $n) {
+                        foreach (\array_keys($value) as $n) {
                             $content_set[] = "$n=:$n";
                         }
-                        $content_sets = implode(', ', $content_set);
+                        $content_sets = \implode(', ', $content_set);
                         $content_stmt = $this->prepare("UPDATE $contentTable SET $content_sets WHERE id=:id");
                         $content_stmt->bindValue(':id', $content_row['id']);
                     } else {
@@ -265,8 +265,8 @@ abstract class MultiModel
                             $content_col[] = $n;
                             $content_bind[] = ":$n";
                         }
-                        $content_cols = implode(', ', $content_col) . ", $keyName, $codeName";
-                        $content_binds = implode(', ', $content_bind) . ", :$keyName, :$codeName";
+                        $content_cols = \implode(', ', $content_col) . ", $keyName, $codeName";
+                        $content_binds = \implode(', ', $content_bind) . ", :$keyName, :$codeName";
                         $content_stmt = $this->prepare("INSERT INTO $contentTable($content_cols) VALUES($content_binds)");
                         $content_stmt->bindValue(":$keyName", $p_id, $keyColumn->getDataType());
                         $content_stmt->bindValue(":$codeName", $code, $codeColumn->getDataType());
@@ -280,8 +280,8 @@ abstract class MultiModel
                         if (!$content_stmt->execute()) {
                             $error_info = $content_stmt->errorInfo();
                             throw new \Exception(
-                                implode(': ', $content_stmt->errorInfo()),
-                                (int) (is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode()));
+                                \implode(': ', $content_stmt->errorInfo()),
+                                (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode()));
                         }
                     } catch (\Exception $ex) {
                         if (isset($update)) {
@@ -318,13 +318,13 @@ abstract class MultiModel
     {
         if ($selection == '*') {
             $fields = [];
-            foreach (array_keys($this->getColumns()) as $column) {
+            foreach (\array_keys($this->getColumns()) as $column) {
                 $fields[] = "p.$column as p_$column";
             }
             foreach (array_keys($this->getContentColumns()) as $column) {
                 $fields[] = "c.$column as c_$column";
             }
-            $selection = implode(', ', $fields);
+            $selection = \implode(', ', $fields);
         }
         
         $table = $this->getName();
@@ -337,13 +337,13 @@ abstract class MultiModel
 
     public function getRows(array $condition = []): array
     {
-        $idColumn = $this->getIdColumn();        
+        $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
         $is_int_index = $idColumn->isInt();
         $codeName = $this->getCodeColumn()->getName();
 
         if (empty($condition)) {
-            $condition = ['ORDER BY' => "p.$idColumnName"];            
+            $condition = ['ORDER BY' => "p.$idColumnName"];
             if ($this->hasColumn('is_active')
                 && $this->getColumn('is_active')->isInt()
             ) {
@@ -379,7 +379,7 @@ abstract class MultiModel
             
             foreach ($this->getContentColumns() as $ccolumn) {
                 $ccolumnName = $ccolumn->getName();
-                if (!in_array($ccolumnName, $content_KeyColumns)) {
+                if (!\in_array($ccolumnName, $content_KeyColumns)) {
                     if (isset($data["c_$ccolumnName"])) {
                         if ($ccolumn->isInt()) {
                             $value = (int) $data["c_$ccolumnName"];
@@ -409,7 +409,7 @@ abstract class MultiModel
             $wheres[] = "$key=:$count";
             $count++;
         }
-        $clause = implode(' AND ', $wheres);
+        $clause = \implode(' AND ', $wheres);
         
         if (!empty($wheres)) {
             $condition = [
@@ -445,7 +445,7 @@ abstract class MultiModel
 
                 foreach ($this->getContentColumns() as $ccolumn) {
                     $ccolumnName = $ccolumn->getName();
-                    if (!in_array($ccolumnName, $content_KeyColumns)) {
+                    if (!\in_array($ccolumnName, $content_KeyColumns)) {
                         if (isset($data["c_$ccolumnName"])) {
                             if ($ccolumn->isInt()) {
                                 $value = (int) $data["c_$ccolumnName"];

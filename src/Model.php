@@ -11,23 +11,23 @@ abstract class Model
         if ($this->hasColumn('created_at')
             && !isset($record['created_at'])
         ) {
-            $record['created_at'] = date('Y-m-d H:i:s');
+            $record['created_at'] = \date('Y-m-d H:i:s');
         }
 
         if ($this->hasColumn('created_by')
             && !isset($record['created_by'])
-            && getenv('CODESAUR_ACCOUNT_ID', true)
+            && \getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
-            $record['created_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
+            $record['created_by'] = \getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
         $column = $param = [];
-        foreach (array_keys($record) as $key) {
+        foreach (\array_keys($record) as $key) {
             $column[] = $key;
             $param[] = ":$key";
         }
-        $columns = implode(', ', $column);
-        $params = implode(', ', $param);
+        $columns = \implode(', ', $column);
+        $params = \implode(', ', $param);
         
         $table = $this->getName();
         $insert = $this->prepare("INSERT INTO $table($columns) VALUES($params)");
@@ -48,21 +48,21 @@ abstract class Model
         if ($this->hasColumn('updated_at')
             && !isset($record['updated_at'])
         ) {
-            $record['updated_at'] = date('Y-m-d H:i:s');
+            $record['updated_at'] = \date('Y-m-d H:i:s');
         }
         
         if ($this->hasColumn('updated_by')
             && !isset($record['updated_by'])
-            && getenv('CODESAUR_ACCOUNT_ID', true)
+            && \getenv('CODESAUR_ACCOUNT_ID', true)
         ) {
-            $record['updated_by'] = getenv('CODESAUR_ACCOUNT_ID', true);
+            $record['updated_by'] = \getenv('CODESAUR_ACCOUNT_ID', true);
         }
         
         $set = [];
-        foreach (array_keys($record) as $name) {
+        foreach (\array_keys($record) as $name) {
             $set[] = "$name=:$name";
         }
-        $sets = implode(', ', $set);
+        $sets = \implode(', ', $set);
         
         $ids = [];
         $table = $this->getName();
@@ -98,7 +98,7 @@ abstract class Model
         $condition = [
             'WHERE' => "$idColumnName=:id",
             'PARAM' => [':id' => $id]
-        ];        
+        ];
         return $this->update($record, $condition);
     }
     
@@ -159,7 +159,7 @@ abstract class Model
             $where[] = "$key=:$key";
             $params[":$key"] = $value;
         }
-        $clause = implode(' AND ', $where);
+        $clause = \implode(' AND ', $where);
         
         if (!empty($clause)) {
             $condition = [
