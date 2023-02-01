@@ -144,7 +144,7 @@ class Column
 
     public function isNumeric(): bool
     {
-        return $this->isInt()            
+        return $this->isInt()
             || $this->isDecimal()
             || $this->isBit();
     }
