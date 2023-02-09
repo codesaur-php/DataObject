@@ -163,10 +163,10 @@ abstract class MultiModel
                     }
                     throw new \Exception(\implode(': ', $error_info), $error_code);
                 }
-            } catch (\Exception $ex ){
+            } catch (\Throwable $e) {
                 $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
                 $delete->execute([':id' => $insertId]);
-                throw new \Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $ex->getMessage(), $ex->getCode());
+                throw new \Exception(__CLASS__ . ": Failed to insert content on table [$contentTable] " . $e->getMessage(), $e->getCode());
             }
         }
         
@@ -296,7 +296,7 @@ abstract class MultiModel
                             }
                             throw new \Exception(\implode(': ', $content_stmt->errorInfo()), $error_code);
                         }
-                    } catch (\Exception $ex) {
+                    } catch (\Throwable $e) {
                         if (isset($update)) {
                             $update->bindValue(":old_$idColumnName", $newId, $idColumn->getDataType());
                             foreach (\array_keys($record) as $name) {
@@ -304,7 +304,7 @@ abstract class MultiModel
                             }
                             $update->execute();
                         }
-                        throw new \Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $ex->getMessage(), $ex->getCode());
+                        throw new \Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage(), $e->getCode());
                     }
                     
                     $contentIds[] = (int) ($content_row['id'] ?? $this->lastInsertId());

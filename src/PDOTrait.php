@@ -28,11 +28,11 @@ trait PDOTrait
     {
         try {
             return (string) $this->query('select database()')->fetchColumn();
-        } catch (\Exception $ex) {
+        } catch (\Throwable $e) {
             if (\defined('CODESAUR_DEVELOPMENT')
                     && CODESAUR_DEVELOPMENT
             ) {
-                \error_log($ex->getMessage());
+                \error_log($e->getMessage());
             }
             return null;
         }
