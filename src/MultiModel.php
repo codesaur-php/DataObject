@@ -227,9 +227,17 @@ abstract class MultiModel
                     $update->bindValue(":old_$idColumnName", $p_id, $idColumn->getDataType());
                     if (!$update->execute()) {
                         $error_info = $update->errorInfo();
+                        if (\is_numeric($error_info[1] ?? null)) {
+                            $error_code = (int) $error_info[1];
+                        } elseif (\is_numeric($update->errorCode())) {
+                            $error_code = (int) $update->errorCode();
+                        } else {
+                            $error_code = 0;
+                        }
                         throw new \Exception(
                             __CLASS__ . ": Error while updating record on table [$table:$p_id]! " . \implode(': ', $error_info),
-                            (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $update->errorCode()));
+                            $error_code
+                        );
                     }
                 }
                 
@@ -279,9 +287,14 @@ abstract class MultiModel
                     try {
                         if (!$content_stmt->execute()) {
                             $error_info = $content_stmt->errorInfo();
-                            throw new \Exception(
-                                \implode(': ', $content_stmt->errorInfo()),
-                                (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $content_stmt->errorCode()));
+                            if (\is_numeric($error_info[1] ?? null)) {
+                                $error_code = (int) $error_info[1];
+                            } elseif (\is_numeric($update->errorCode())) {
+                                $error_code = (int) $update->errorCode();
+                            } else {
+                                $error_code = 0;
+                            }
+                            throw new \Exception(\implode(': ', $content_stmt->errorInfo()), $error_code);
                         }
                     } catch (\Exception $ex) {
                         if (isset($update)) {

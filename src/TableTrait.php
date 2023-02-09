@@ -218,9 +218,17 @@ trait TableTrait
         
         if ($this->exec($create) === false) {
             $error_info = $this->pdo->errorInfo();
+            if (\is_numeric($error_info[1] ?? null)) {
+                $error_code = (int) $error_info[1];
+            } elseif (\is_numeric($this->pdo->errorCode())) {
+                $error_code = (int) $this->pdo->errorCode();
+            } else {
+                $error_code = 0;
+            }
             throw new \Exception(
                 __CLASS__ . ": Table [$table] creation failed! " . \implode(': ', $error_info),
-                (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
+                $error_code
+            );
         }
     }
     
@@ -263,8 +271,17 @@ trait TableTrait
             return $stmt;
         }
         
+        $error_info = $stmt->errorInfo();
+        if (\is_numeric($error_info[1] ?? null)) {
+            $error_code = (int) $error_info[1];
+        } elseif (\is_numeric($stmt->errorCode())) {
+            $error_code = (int) $stmt->errorCode();
+        } else {
+            $error_code = 0;
+        }
         throw new \Exception(
-            __CLASS__ . ": Can't select from [$table]! " . \implode(': ', $stmt->errorInfo()),
-            (int) (\is_int($stmt->errorInfo()[1] ?? null) ? $stmt->errorInfo()[1] : $stmt->errorCode()));
+            __CLASS__ . ": Can't select from [$table]! " . \implode(': ', $error_info),
+            $error_code
+        );
     }
 }

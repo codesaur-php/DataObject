@@ -52,8 +52,14 @@ trait PDOTrait
         }
         
         $error_info = $this->pdo->errorInfo();
-        throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info),
-            (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
+        if (\is_numeric($error_info[1] ?? null)) {
+            $error_code = (int) $error_info[1];
+        } elseif (\is_numeric($this->pdo->errorCode())) {
+            $error_code = (int) $this->pdo->errorCode();
+        } else {
+            $error_code = 0;
+        }
+        throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info), $error_code);
     }
 
     public final function exec(string $statement): int|false
@@ -70,8 +76,14 @@ trait PDOTrait
         }
         
         $error_info = $this->pdo->errorInfo();
-        throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info),
-            (int) (\is_int($error_info[1] ?? null) ? $error_info[1] : $this->pdo->errorCode()));
+        if (\is_numeric($error_info[1] ?? null)) {
+            $error_code = (int) $error_info[1];
+        } elseif (\is_numeric($this->pdo->errorCode())) {
+            $error_code = (int) $this->pdo->errorCode();
+        } else {
+            $error_code = 0;
+        }
+        throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info), $error_code);
     }
 
     public final function lastInsertId(?string $name = null): string|false

@@ -179,6 +179,6 @@ try {
     
     echo '<br/><hr><br/><br/>';
     \var_dump(['list of accounts: ' => $account->getRows()]);
-} catch (\Throwable $th) {
-    die('<br/>{' . \date('Y-m-d H:i:s') . '} Error[' . $th->getCode() . '] => ' . $th->getMessage());
+} catch (\Throwable $e) {
+    die('<br/>{' . \date('Y-m-d H:i:s') . '} Error[' . $e->getCode() . '] => ' . $e->getMessage());
 }
