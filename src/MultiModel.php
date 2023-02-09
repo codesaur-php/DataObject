@@ -261,7 +261,7 @@ abstract class MultiModel
                     } else {
                         $content_col = [];
                         $content_bind = [];
-                        foreach (array_keys($value) as $n) {
+                        foreach (\array_keys($value) as $n) {
                             $content_col[] = $n;
                             $content_bind[] = ":$n";
                         }
@@ -286,7 +286,7 @@ abstract class MultiModel
                     } catch (\Exception $ex) {
                         if (isset($update)) {
                             $update->bindValue(":old_$idColumnName", $newId, $idColumn->getDataType());
-                            foreach (array_keys($record) as $name) {
+                            foreach (\array_keys($record) as $name) {
                                 $update->bindValue(":$name", $row[$name], $this->getColumn($name)->getDataType());
                             }
                             $update->execute();
@@ -321,7 +321,7 @@ abstract class MultiModel
             foreach (\array_keys($this->getColumns()) as $column) {
                 $fields[] = "p.$column as p_$column";
             }
-            foreach (array_keys($this->getContentColumns()) as $column) {
+            foreach (\array_keys($this->getContentColumns()) as $column) {
                 $fields[] = "c.$column as c_$column";
             }
             $selection = \implode(', ', $fields);
