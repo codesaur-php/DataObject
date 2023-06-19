@@ -156,7 +156,7 @@ trait TableTrait
                 $delete->bindValue(':id', $row[$idColumnName]);
                 $delete_executed = $delete->execute();
                 if ($delete->rowCount()
-                    || ($delete_executed && $this->driverName() != 'mysql')
+                    || ($delete_executed && $this->getDriverName() != 'mysql')
                 ) {
                     $id = $index_is_int ? (int) $row[$idColumnName] : $row[$idColumnName];
                     $ids[$id] = 'deleted';
@@ -206,7 +206,7 @@ trait TableTrait
             $create .= \implode(', ', $references);
         }
         $create .= ')';
-        if (\strtolower($this->driverName()) == 'mysql') {
+        if (\strtolower($this->getDriverName()) == 'mysql') {
              $create .= ' ENGINE=InnoDB';
         }
         if (!empty($collate)) {

@@ -39,7 +39,7 @@ abstract class Model
         }
         
         $idColumn = $this->getIdColumn();
-        $insertId = $record[$idColumn->getName()] ?? $this->lastInsertId();
+        $insertId = $record[$idColumn->getName()] ?? $this->getLastInsertId();
         return $idColumn->isInt() ? (int) $insertId : $insertId;
     }
     

@@ -126,7 +126,7 @@ abstract class MultiModel
         
         $idColumn = $this->getIdColumn();
         $idColumnName = $idColumn->getName();
-        $idRaw = $record[$idColumnName] ?? $this->lastInsertId();
+        $idRaw = $record[$idColumnName] ?? $this->getLastInsertId();
         $insertId = $idColumn->isInt() ? (int) $idRaw : $idRaw;
         
         $keyName = $this->getKeyColumn()->getName();
@@ -307,7 +307,7 @@ abstract class MultiModel
                         throw new \Exception(__CLASS__ . ": Failed to update content on table [$contentTable]! " . $e->getMessage(), $e->getCode());
                     }
                     
-                    $contentIds[] = (int) ($content_row['id'] ?? $this->lastInsertId());
+                    $contentIds[] = (int) ($content_row['id'] ?? $this->getLastInsertId());
                 }
                 
                 $ids[$p_id] = [$newId => $contentIds];

@@ -19,12 +19,12 @@ trait PDOTrait
         $this->pdo = $pdo;
     }
     
-    public final function driverName(): string
+    public final function getDriverName(): string
     {
         return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     }
     
-    public final function databaseName(): ?string
+    public final function getDatabaseName(): ?string
     {
         try {
             return (string) $this->query('select database()')->fetchColumn();
@@ -86,7 +86,7 @@ trait PDOTrait
         throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info), $error_code);
     }
 
-    public final function lastInsertId(?string $name = null): string|false
+    public final function getLastInsertId(?string $name = null): string|false
     {
         return $this->pdo->lastInsertId($name);
     }
