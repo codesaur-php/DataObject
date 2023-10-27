@@ -89,7 +89,7 @@ abstract class Model
             }
         }
         
-        return empty($ids) ? false : $ids;
+        return $ids;
     }
     
     public function updateById(int|string $id, array $record): array|false

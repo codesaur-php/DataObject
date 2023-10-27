@@ -127,7 +127,7 @@ trait TableTrait
             $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:$idColumnName");
             $select = $this->selectFrom($table, $selection, $condition);
             while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
-                if (!$row['is_active']) {
+                if (empty($row['is_active'])) {
                     continue;
                 }
                 
@@ -164,7 +164,7 @@ trait TableTrait
             }
         }
 
-        return empty($ids) ? false : $ids;
+        return $ids;
     }
     
     public function deleteById(int|string $id): array|false
