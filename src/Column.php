@@ -175,7 +175,7 @@ class Column
         
         $syntax = ' DEFAULT ';
         $default = $this->getDefault();
-        if ($default != null) {
+        if ($default !== null) {
             if ($this->isNumeric()) {
                 $syntax .= $default;
             } else {
