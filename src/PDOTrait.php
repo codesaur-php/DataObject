@@ -19,25 +19,6 @@ trait PDOTrait
         $this->pdo = $pdo;
     }
     
-    public final function getDriverName(): string
-    {
-        return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-    }
-    
-    public final function getDatabaseName(): ?string
-    {
-        try {
-            return (string) $this->query('select database()')->fetchColumn();
-        } catch (\Throwable $e) {
-            if (\defined('CODESAUR_DEVELOPMENT')
-                    && CODESAUR_DEVELOPMENT
-            ) {
-                \error_log($e->getMessage());
-            }
-            return null;
-        }
-    }
-    
     public final function quote(string $string, int $parameter_type = PDO::PARAM_STR): string|false
     {
         return $this->pdo->quote($string, $parameter_type);
