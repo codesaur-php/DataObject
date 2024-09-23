@@ -16,7 +16,7 @@ use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
 use codesaur\DataObject\MultiModel;
 
-class ExampleAccountModel extends Model
+class ExampleUserModel extends Model
 {
     public function __construct(\PDO $pdo)
     {
@@ -121,34 +121,32 @@ try {
     $pdo->exec("USE $database");
     echo "starting to use database [$database]<br/>";
     
-    $account = new ExampleAccountModel($pdo);
-    $admin = $account->getRowBy(['username' =>'admin']);
+    $users = new ExampleUserModel($pdo);
+    $admin = $users->getRowBy(['username' =>'admin']);
     if ($admin) {
-        \putenv("CODESAUR_ACCOUNT_ID={$admin['id']}");
+        \putenv("CODESAUR_USER_ID={$admin['id']}");
         \var_dump(['admin' => $admin]);
     }
 
-    $uniq_account = \uniqid('account');
-    $new_account_id = $account->insert([
-        'username' => $uniq_account,
+    $uniq_user = \uniqid('user');
+    $new_user_id = $users->insert([
+        'username' => $uniq_user,
         'password' => \password_hash('pass', \PASSWORD_BCRYPT),
         'first_name' => 'Random Guy',
         'phone' => \uniqid(),
         'address' => 'Somewhere in Earth',
-        'email' => "$uniq_account@example.com"
+        'email' => "$uniq_user@example.com"
     ]);
 
-    \var_dump(['newly created account id: ' => $new_account_id]);
-    \var_dump(['newly created account: ' => $account->getById($new_account_id)]);
+    \var_dump(['newly created user id: ' => $new_user_id]);
+    \var_dump(['newly created user: ' => $users->getById($new_user_id)]);
     
-    $_ENV['CODESAUR_DELETE_DEACTIVATE'] = false;
-    \var_dump(['delete account 3: ' => $account->deleteById(3)]);
-    
+    \var_dump(['delete user 3: ' => $users->deleteById(3)]);
     $_ENV['CODESAUR_DELETE_DEACTIVATE'] = true;
-    \var_dump(['deactivate account 7: ' => $account->deleteById(7)]);
+    \var_dump(['deactivate user 7: ' => $users->deleteById(7)]);
     
-    \var_dump($account->update(['address' => 'Ulaanbaatar'], ['WHERE' => 'is_active=1']));
-    \var_dump($account->updateById(15, ['first_name' => 'Not so random', 'id' => 1500]));
+    \var_dump($users->update(['address' => 'Ulaanbaatar'], ['WHERE' => 'is_active=1']));
+    \var_dump($users->updateById(15, ['first_name' => 'Not so random', 'id' => 1500]));
     
     $translation = new ExampleTranslationModel($pdo);
 
@@ -178,7 +176,7 @@ try {
     }
     
     echo '<br/><hr><br/><br/>';
-    \var_dump(['list of accounts: ' => $account->getRows()]);
+    \var_dump(['list of users: ' => $users->getRows()]);
 } catch (\Throwable $e) {
     die('<br/>{' . \date('Y-m-d H:i:s') . '} Error[' . $e->getCode() . '] => ' . $e->getMessage());
 }
