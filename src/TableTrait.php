@@ -288,7 +288,7 @@ trait TableTrait
                     $type = 'smallint';
                     break;
                 case 'timestamptz':
-                    $type = 'datetime';
+                    $type = 'timestamp';
                     break;
             }
         }
