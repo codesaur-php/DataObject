@@ -62,6 +62,8 @@ abstract class Model
             || !$this->getColumn('id')->isPrimary()
         ) {
             throw new \Exception("(updateById): Table [$table] must have primary auto increment id column!");
+        } elseif (empty($record)) {
+            throw new \Exception("(updateById): Must provide updated record!");
         }
         
         if ($this->hasColumn('updated_at')

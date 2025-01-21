@@ -163,15 +163,14 @@ abstract class LocalizedModel
     
     public function updateById(int|string $id, array $record, array $content): array|false
     {
-        if ($this->hasColumn('updated_at')
-            && !isset($record['updated_at'])
-        ) {
-            $record['updated_at'] = \date('Y-m-d H:i:s');
-        }
-        
         $table = $this->getName();
         $row = $current_record = $this->getById($id);
         if (!empty($record)) {
+            if ($this->hasColumn('updated_at')
+                && !isset($record['updated_at'])
+            ) {
+                $record['updated_at'] = \date('Y-m-d H:i:s');
+            }
             $set = [];
             foreach (\array_keys($record) as $name) {
                 $set[] = "$name=:$name";

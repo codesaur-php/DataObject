@@ -272,6 +272,9 @@ trait TableTrait
                         $type = 'smallserial';
                     }
                     break;
+                case 'datetime':
+                    $type = 'timestamp';
+                    break;
             }
         } else {
             switch ($type) {
