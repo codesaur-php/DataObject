@@ -275,6 +275,11 @@ trait TableTrait
                 case 'datetime':
                     $type = 'timestamp';
                     break;
+                case 'tinytext':
+                case 'mediumtext':
+                case 'longtext':
+                    $type = 'text';
+                    break;
             }
         } else {
             switch ($type) {
