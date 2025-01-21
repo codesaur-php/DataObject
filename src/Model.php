@@ -6,19 +6,12 @@ abstract class Model
 {
     use TableTrait;
     
-    public function insert(array $record): int|string|false
+    public function insert(array $record): array|false
     {
         if ($this->hasColumn('created_at')
             && !isset($record['created_at'])
         ) {
             $record['created_at'] = \date('Y-m-d H:i:s');
-        }
-
-        if ($this->hasColumn('created_by')
-            && !isset($record['created_by'])
-            && \getenv('CODESAUR_USER_ID', true)
-        ) {
-            $record['created_by'] = \getenv('CODESAUR_USER_ID', true);
         }
         
         $column = $param = [];
@@ -30,7 +23,11 @@ abstract class Model
         $params = \implode(', ', $param);
         
         $table = $this->getName();
-        $insert = $this->prepare("INSERT INTO $table($columns) VALUES($params)");
+        $query = "INSERT INTO $table($columns) VALUES($params)";
+        if ($this->getDriverName() == 'pgsql') {
+            $query .= ' RETURNING *';
+        }
+        $insert = $this->prepare($query);
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
@@ -38,24 +35,39 @@ abstract class Model
             return false;
         }
         
-        $idColumn = $this->getIdColumn();
-        $insertId = $record[$idColumn->getName()] ?? $this->getLastInsertId();
-        return $idColumn->isInt() ? (int) $insertId : $insertId;
+        if ($this->getDriverName() == 'pgsql') {
+            return $insert->fetch(\PDO::FETCH_ASSOC);
+        }
+        
+        if ($this->hasColumn('id') && $this->getColumn('id')->isPrimary()) {
+            return $this->getById((int) ($record['id'] ?? $this->pdo->lastInsertId('id')));
+        }
+        
+        $row = [];
+        foreach ($this->getColumns() as $column) {
+            if (isset($record[$column->getName()])) {
+                $row[$column->getName()] = $record[$column->getName()];
+            } else {
+                $row[$column->getName()] = $column->getDefault();
+            }
+        }
+        return $row;
     }
     
-    public function update(array $record, array $condition): array|false
+    public function updateById(int $id, array $record): array|false
     {
+        $table = $this->getName();
+        if (!$this->hasColumn('id')
+            || !$this->getColumn('id')->isInt()
+            || !$this->getColumn('id')->isPrimary()
+        ) {
+            throw new \Exception("(updateById): Table [$table] must have primary auto increment id column!");
+        }
+        
         if ($this->hasColumn('updated_at')
             && !isset($record['updated_at'])
         ) {
             $record['updated_at'] = \date('Y-m-d H:i:s');
-        }
-        
-        if ($this->hasColumn('updated_by')
-            && !isset($record['updated_by'])
-            && \getenv('CODESAUR_USER_ID', true)
-        ) {
-            $record['updated_by'] = \getenv('CODESAUR_USER_ID', true);
         }
         
         $set = [];
@@ -64,58 +76,36 @@ abstract class Model
         }
         $sets = \implode(', ', $set);
         
-        $ids = [];
-        $table = $this->getName();
-        $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();
-        $is_int_index = $idColumn->isInt();
-        $select = $this->select($idColumnName, $condition);
-        $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:old_$idColumnName");
-        while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
-            $update->bindValue(":old_$idColumnName", $row[$idColumnName]);
-            
-            foreach ($record as $name => $value) {
-                $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
-            }
-
-            if ($update->execute()) {
-                $oldId = $row[$idColumnName];
-                $newId = $record[$idColumnName] ?? $oldId;
-                if ($is_int_index) {
-                    $ids[(int) $oldId] = (int) $newId;
-                } else {
-                    $ids[$oldId] = $newId;
-                }
-            }
+        $query = "UPDATE $table SET $sets WHERE id=$id";
+        if ($this->getDriverName() == 'pgsql') {
+            $query .= ' RETURNING *';
+        }
+        $update = $this->prepare($query);
+        foreach ($record as $name => $value) {
+            $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
+        }
+        if (!$update->execute()
+            || $update->rowCount() < 1
+        ) {
+            return false;
         }
         
-        return $ids;
-    }
-    
-    public function updateById(int|string $id, array $record): array|false
-    {
-        $idColumnName = $this->getIdColumn()->getName();
-        $condition = [
-            'WHERE' => "$idColumnName=:id",
-            'PARAM' => [':id' => $id]
-        ];
-        return $this->update($record, $condition);
-    }
-    
-    public function select(string $selection = '*', array $condition = []): \PDOStatement
-    {
-        return $this->selectFrom($this->getName(), $selection, $condition);
+        if ($this->getDriverName() == 'pgsql') {
+            return $update->fetch(\PDO::FETCH_ASSOC);
+        } else {
+            return $this->getById($record['id'] ?? $id);
+        }
     }
     
     public function getRows(array $condition = []): array
     {
-        $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();
-        $is_int_index = $idColumn->isInt();
+        $havePrimaryId = $this->hasColumn('id')
+            && $this->getColumn('id')->isPrimary();
         
         if (empty($condition)) {
-            $condition['ORDER BY'] = $idColumnName;
-            
+            if ($havePrimaryId) {
+                $condition['ORDER BY'] = 'id';
+            }
             if ($this->hasColumn('is_active')
                 && $this->getColumn('is_active')->isInt()
             ) {
@@ -124,30 +114,14 @@ abstract class Model
         }
         
         $rows = [];
-        $stmt = $this->select('*', $condition);
+        $stmt = $this->selectStatement($this->getName(), '*', $condition);
         while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-            if ($is_int_index) {
-                $id = (int) $data[$idColumnName];
+            if ($havePrimaryId) {
+                $rows[$data['id']] = $data;
             } else {
-                $id = $data[$idColumnName];
-            }
-            foreach ($this->getColumns() as $column) {
-                if (isset($data[$column->getName()])) {
-                    if ($column->isInt()) {
-                        $value = (int) $data[$column->getName()];
-                    } elseif ($column->isDecimal()) {
-                        $value = (float) $data[$column->getName()];
-                    } else {
-                        $value = $data[$column->getName()];
-                    }
-                } else {
-                    $value = $column->getDefault();
-                }
-                
-                $rows[$id][$column->getName()] = $value;
+                $rows[] = $data;
             }
         }
-        
         return $rows;
     }
     
@@ -167,31 +141,26 @@ abstract class Model
                 'LIMIT' => 1,
                 'PARAM' => $params
             ];
-            $stmt = $this->select('*', $condition);
+            $stmt = $this->selectStatement($this->getName(), '*', $condition);
             if ($stmt->rowCount() == 1) {
-                $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-                foreach ($this->getColumns() as $column) {
-                    if (isset($row[$column->getName()])) {
-                        if ($column->isInt()) {
-                            $row[$column->getName()] = (int) $row[$column->getName()];
-                        } elseif ($column->isDecimal()) {
-                            $row[$column->getName()] = (float) $row[$column->getName()];
-                        }
-                    }
-                }
-                
-                return $row;
+                return $stmt->fetch(\PDO::FETCH_ASSOC);
             }
         }
         
         return null;
     }
     
-    public function getById(int|string $id): array|null
+    public function getById(int $id): array|null
     {
-        $with_values = [
-            $this->getIdColumn()->getName() => $id
-        ];
+        $table = $this->getName();
+        if (!$this->hasColumn('id')
+            || !$this->getColumn('id')->isInt()
+            || !$this->getColumn('id')->isPrimary()
+        ) {
+            throw new \Exception("(getById): Table [$table] must have primary auto increment id column!");
+        }
+
+        $with_values = ['id' => $id];
         if ($this->hasColumn('is_active')
             && $this->getColumn('is_active')->isInt()
         ) {

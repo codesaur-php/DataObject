@@ -10,26 +10,31 @@ class Column
     
     private readonly int|string|null $_length;
     
-    private readonly string|int|float|bool|null $_default;
-
     private readonly bool $_is_null;
     
-    private readonly bool $_is_auto;
+    private bool $_is_auto;
     
     private readonly bool $_is_unique;
     
     private readonly bool $_is_primary;
     
+    private string|int|float|bool|null $_default = null;
+    
     public function __construct(
         string $name,
         string $type,
-        int|string|null $length = null,
-        string|int|float|bool|null $default = null
+        int|string|null $length = null
     ) {
         $this->_name = $name;
         $this->_type = \strtolower($type);
         $this->_length = $length;
+    }
+    
+    public function default(string|int|float|bool|null $default)
+    {
         $this->_default = $default;
+        
+        return $this;
     }
     
     public function auto(bool $auto = true): Column
@@ -112,10 +117,13 @@ class Column
     {
         return $this->getType() == 'int'
             || $this->getType() == 'bigint'
-            || $this->getType() == 'tinyint'
-            || $this->getType() == 'smallint'
-            || $this->getType() == 'mediumint'
             || $this->getType() == 'integer'
+            || $this->getType() == 'smallint'
+            || $this->getType() == 'int8'
+            || $this->getType() == 'bigserial'
+            || $this->getType() == 'serial'
+            || $this->getType() == 'tinyint'
+            || $this->getType() == 'mediumint'
             || $this->getType() == 'bool'
             || $this->getType() == 'boolean';
     }
@@ -123,6 +131,7 @@ class Column
     public function isDecimal(): bool
     {
         return $this->getType() == 'decimal'
+            || $this->getType() == 'numeric'
             || $this->getType() == 'float'
             || $this->getType() == 'double'
             || $this->getType() == 'real';
@@ -132,8 +141,9 @@ class Column
     {
         return $this->getType() == 'datetime'
             || $this->getType() == 'date'
-            || $this->getType() == 'timestamp' 
+            || $this->getType() == 'timestamp'
             || $this->getType() == 'time'
+            || $this->getType() == 'timestamptz'
             || $this->getType() == 'year';
     }
     
@@ -162,42 +172,5 @@ class Column
     public function isUnique(): bool
     {
         return $this->_is_unique ?? false;
-    }
-    
-    public function getSyntax(): string
-    {
-        $str = "{$this->getName()} {$this->getType()}";
-        
-        $length = $this->getLength();
-        if (!empty($length)) {
-            $str .= "($length)";
-        }
-        
-        $syntax = ' DEFAULT ';
-        $default = $this->getDefault();
-        if ($default !== null) {
-            if ($this->isNumeric()) {
-                $syntax .= $default;
-            } else {
-                $syntax .= "'$default'";
-            }
-        } else {
-            $syntax .= 'NULL';
-        }
-        
-        if (!$this->isNull()) {
-            $str .= ' NOT NULL';
-            if ($default != null) {
-                $str .= $syntax;
-            }
-        } else {
-            $str .= $syntax;
-        }
-        
-        if ($this->isAuto()) {
-            $str .= ' AUTO_INCREMENT';
-        }
-        
-        return $str;
     }
 }

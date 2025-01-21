@@ -4,66 +4,61 @@ namespace codesaur\DataObject;
 
 trait TableTrait
 {
+
     use PDOTrait;
-    
+
     /**
      * The sql table name.
      *
      * @var string
      */
     protected readonly string $name;
-    
+
     /**
      * The sql table columns definitions.
      *
      * @var array
      */
     protected readonly array $columns;
-    
+
     public abstract function __construct(\PDO $pdo);
-        
+
     protected abstract function __initial();
-    
+
     public function __destruct()
     {
         unset($this->pdo);
     }
-    
+
     public function getName(): string
     {
         if (empty($this->name)) {
             throw new \Exception(__CLASS__ . ': Table name must be provided', 1103);
         }
-        
+
         return $this->name;
     }
-    
-    public function setTable(string $name, ?string $collate = null)
+
+    public function setTable(string $name)
     {
         $this->name = \preg_replace('/[^A-Za-z0-9_-]/', '', $name);
-        
+
         $table = $this->getName();
-        $columns = $this->getColumns();
-        if (empty($columns)) {
+        if (empty($this->columns)) {
             throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
         } elseif ($this->hasTable($table)) {
             return;
         }
-        
-        $this->createTable($table, $columns, $collate);
+
+        $this->createTable($table, $this->columns);
         $this->__initial();
     }
-    
-    public function getVersionName(): string
-    {
-        return $this->getName() . '_version';
-    }
-    
+
     public function getColumns(): array
     {
-        return $this->columns ?? [];
+        return $this->columns ?? throw new \Exception("Table [$this->name] doesn't have columns definition!");
     }
-    
+
     public function setColumns(array $columns)
     {
         $columnSets = [];
@@ -73,16 +68,16 @@ trait TableTrait
             }
             $columnSets[$column->getName()] = $column;
         }
-        
+
         $this->columns = $columnSets;
     }
-    
+
     public function getColumn(string $name): Column
     {
         if ($this->hasColumn($name)) {
             return $this->columns[$name];
         }
-        
+
         throw new \Exception(__CLASS__ . ": Table [$this->name] definition doesn't have column named [$name]", 1054);
     }
 
@@ -90,96 +85,74 @@ trait TableTrait
     {
         return isset($this->columns[$name]);
     }
-    
+
     public function getIdColumn(): Column
     {
         return $this->getColumn('id');
     }
-    
-    public function delete(array $condition): array|false
+
+    public function deleteById(int $id): bool
     {
-        $ids = [];
         $table = $this->getName();
-        $idColumn = $this->getIdColumn();
-        $idColumnName = $idColumn->getName();
-        $idDataType = $idColumn->getDataType();
-        $index_is_int = $idColumn->isInt();
-        
-        if ($this->hasColumn('is_active')
-            && $this->getColumn('is_active')->isInt()
-            && ($_ENV['CODESAUR_DELETE_DEACTIVATE'] ?? false)
+        if (!$this->hasColumn('id')
+            || !$this->getColumn('id')->isInt()
+            || !$this->getColumn('id')->isPrimary()
         ) {
-            $selection = "$idColumnName, is_active";
+            throw new \Exception("(deleteById): Table [$table] must have primary auto increment id column!");
+        }
         
-            $uniques = [];
-            $set = ['is_active=:is_active'];
-            foreach ($this->getColumns() as $column) {
-                $uniqueName = $column->getName();
-                if ($column->isUnique()
-                    && $uniqueName != $idColumnName
-                ) {
-                    $uniques[] = $column;
-                    $selection .= ", $uniqueName";
-                    $set[] = "$uniqueName=:$uniqueName";
-                }
-            }
-            $sets = \implode(', ', $set);
-            $update = $this->prepare("UPDATE $table SET $sets WHERE $idColumnName=:$idColumnName");
-            $select = $this->selectFrom($table, $selection, $condition);
-            while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
-                if (empty($row['is_active'])) {
-                    continue;
-                }
-                
-                $update->bindValue(":$idColumnName", $row[$idColumnName], $idDataType);
-                $update->bindValue(':is_active', 0, \PDO::PARAM_INT);
-                foreach ($uniques as $unique) {
-                    $uniqueName = $unique->getName();
-                    if ($unique->isNumeric()) {
-                        $row[$uniqueName] = \PHP_INT_MAX - $row[$uniqueName];
-                    } else {
-                        $row[$uniqueName] = '[' . \uniqid() . '] ' . $row[$uniqueName];
-                    }
-
-                    $update->bindValue(":$uniqueName", $row[$uniqueName], $unique->getDataType());
-                }
-
-                if ($update->execute()) {
-                    $id = $index_is_int ? (int) $row[$idColumnName] : $row[$idColumnName];
-                    $ids[$id] = 'deactivated';
-                }
-            }
-        } else {
-            $select = $this->selectFrom($table, $idColumnName, $condition);
-            $delete = $this->prepare("DELETE FROM $table WHERE $idColumnName=:id");
-            while ($row = $select->fetch(\PDO::FETCH_ASSOC)) {
-                $delete->bindValue(':id', $row[$idColumnName]);
-                $delete_executed = $delete->execute();
-                if ($delete->rowCount()
-                    || ($delete_executed
-                        && \strtolower($this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME)) != 'mysql'
-                    )
-                ) {
-                    $id = $index_is_int ? (int) $row[$idColumnName] : $row[$idColumnName];
-                    $ids[$id] = 'deleted';
-                }
+        $delete = $this->prepare("DELETE FROM $table WHERE id=$id");
+        return $delete->execute() && $delete->rowCount() > 0;
+    }
+    
+    public function deactivateById(int $id): bool
+    {
+        $table = $this->getName();
+        if (!$this->hasColumn('id')
+            || !$this->getColumn('id')->isInt()
+            || !$this->getColumn('id')->isPrimary()
+        ) {
+            throw new \Exception("(deactivateById): Table [$table] must have primary auto increment id column!");
+        }
+        
+        if (!$this->hasColumn('is_active')
+            || !$this->getColumn('is_active')->isInt()
+        ) {
+            throw new \Exception("(deactivateById): Table [$table] must have an is_active column!");
+        }
+        
+        $selection = 'is_active';
+        $set = ['is_active=:is_active'];
+        $uniques = [];
+        foreach ($this->getColumns() as $column) {
+            $uniqueName = $column->getName();
+            if ($column->isUnique() && $uniqueName != 'id') {
+                $uniques[] = $column;
+                $selection .= ", $uniqueName";
+                $set[] = "$uniqueName=:$uniqueName";
             }
         }
+        $select = $this->query("SELECT $selection FROM $table WHERE id=$id");
+        $row = $select->fetch(\PDO::FETCH_ASSOC);
+        if (($row['is_active'] ?? 0) == 0) {
+            return false;
+        }
+        $sets = \implode(', ', $set);
+        $update = $this->prepare("UPDATE $table SET $sets WHERE id=$id");
+        $update->bindValue(':is_active', 0, \PDO::PARAM_INT);
+        foreach ($uniques as $unique) {
+            $uniqueName = $unique->getName();
+            if ($unique->isNumeric()) {
+                $row[$uniqueName] = -$row[$uniqueName];
+            } else {
+                $row[$uniqueName] = '[' . \uniqid() . '] ' . $row[$uniqueName];
+            }
+            $update->bindValue(":$uniqueName", $row[$uniqueName], $unique->getDataType());
+        }
+        return $update->execute();
+    }
 
-        return $ids;
-    }
-    
-    public function deleteById(int|string $id): array|false
-    {
-        $idColumnName = $this->getIdColumn()->getName();
-        $condition = [
-            'WHERE' => "$idColumnName=:id",
-            'PARAM' => [':id' => $id]
-        ];
-        return $this->delete($condition);
-    }
-    
-    public final function createTable(string $table, array $columns, ?string $collate)
+    public final function createTable(string $table, array $columns)
     {
         $references = [];
         $columnSyntaxes = [];
@@ -187,20 +160,14 @@ trait TableTrait
             if (!$column instanceof Column) {
                 continue;
             }
-            
-            $columnSyntaxes[] = $column->getSyntax();
-            
-            if ($column->isPrimary()) {
-                $references[] = "PRIMARY KEY ($key)";
-            }
+
+            $columnSyntaxes[] = $this->getSyntax($column);
+
             if ($column->isUnique()) {
                 $references[] = "UNIQUE ($key)";
             }
-            if ($column->isAuto() && $column->isInt()) {
-                $auto_increment = 1;
-            }
         }
-        
+
         $create = "CREATE TABLE $table (";
         $create .= \implode(', ', $columnSyntaxes);
         if (!empty($references)) {
@@ -208,14 +175,8 @@ trait TableTrait
             $create .= \implode(', ', $references);
         }
         $create .= ')';
-        if (\strtolower($this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME)) == 'mysql') {
-             $create .= ' ENGINE=InnoDB';
-        }
-        if (!empty($collate)) {
-            $create .= " COLLATE=$collate";
-        }
-        if (isset($auto_increment)) {
-            $create .= " AUTO_INCREMENT=$auto_increment";
+        if ($this->getDriverName() == 'mysql') {
+            $create .= ' ENGINE=InnoDB';
         }
         
         if ($this->exec($create) === false) {
@@ -227,16 +188,13 @@ trait TableTrait
             } else {
                 $error_code = 0;
             }
-            throw new \Exception(
-                __CLASS__ . ": Table [$table] creation failed! " . \implode(': ', $error_info),
-                $error_code
-            );
+            throw new \Exception(__CLASS__ . ": Table [$table] creation failed! " . \implode(': ', $error_info), $error_code);
         }
     }
-    
-    public final function selectFrom(string $table, string $selection, array $condition): \PDOStatement
+
+    public function selectStatement(string $fromTable, string $selection= '*', array $condition = []): \PDOStatement
     {
-        $select = "SELECT $selection FROM $table";
+        $select = "SELECT $selection FROM $fromTable";
         if (!empty($condition['JOIN'])) {
             $select .= ' JOIN ' . $condition['JOIN'];
         }
@@ -272,7 +230,7 @@ trait TableTrait
         if ($stmt->execute($condition['PARAM'] ?? null)) {
             return $stmt;
         }
-        
+
         $error_info = $stmt->errorInfo();
         if (\is_numeric($error_info[1] ?? null)) {
             $error_code = (int) $error_info[1];
@@ -281,9 +239,86 @@ trait TableTrait
         } else {
             $error_code = 0;
         }
-        throw new \Exception(
-            __CLASS__ . ": Can't select from [$table]! " . \implode(': ', $error_info),
-            $error_code
-        );
+        throw new \Exception(__CLASS__ . ": Can't select from [$fromTable]! " . \implode(': ', $error_info), $error_code);
+    }
+
+    private function getSyntax(Column $column): string
+    {
+        $str = $column->getName();
+        
+        if ($column->isPrimary()) {
+            $column->notNull()->auto();
+        }
+
+        $type = $column->getType();
+        if ($this->getDriverName() == 'pgsql') {
+            switch ($type) {
+                case 'bigint':
+                    if ($column->isAuto()) {
+                        $type = 'bigserial';
+                    }
+                    break;
+                case 'int':
+                case 'integer':
+                case 'mediumint':
+                    if ($column->isAuto()) {
+                        $type = 'serial';
+                    }
+                    break;
+                case 'tinyint':
+                    $type = 'smallint';
+                case 'smallint':
+                    if ($column->isAuto()) {
+                        $type = 'smallserial';
+                    }
+                    break;
+            }
+        } else {
+            switch ($type) {
+                case 'bigserial':
+                    $type = 'bigint';
+                    break;
+                case 'serial':
+                    $type = 'int';
+                    break;
+                case 'smallserial':
+                    $type = 'smallint';
+                    break;
+                case 'timestamptz':
+                    $type = 'datetime';
+                    break;
+            }
+        }
+        $str .= " $type";
+
+        $length = $column->getLength();
+        if (!empty($length)) {
+            $str .= "($length)";
+        }
+        
+        if ($column->isNull()) {
+            $str .= ' NULL';
+        } else {
+            $str .= ' NOT NULL';
+        }
+        $default = $column->getDefault();
+        if ($default !== null) {
+            $str .= ' DEFAULT ';
+            if ($column->isNumeric()) {
+                $str .= $default;
+            } else {
+                $str .= $this->quote($default);
+            }
+        }
+
+        if ($column->isPrimary()) {
+            $str .= ' PRIMARY KEY';
+        }
+
+        if ($column->isAuto() && $this->getDriverName() == 'mysql') {
+            $str .= ' AUTO_INCREMENT';
+        }
+
+        return $str;
     }
 }
