@@ -81,6 +81,12 @@ class ExampleTranslationModel extends LocalizedModel
     
     protected function __initial()
     {
+
+        if (!$this->hasTable('example_user')) {
+            // this will create example_user table if not exists
+            new ExampleUserModel($this->pdo);
+        }
+
         $table = $this->getName();
         $this->setForeignKeyChecks(false);
         $this->exec("ALTER TABLE $table ADD CONSTRAINT {$table}_fk_created_by FOREIGN KEY (created_by) REFERENCES example_user(id) ON DELETE SET NULL ON UPDATE CASCADE");
