@@ -175,9 +175,6 @@ trait TableTrait
             $create .= \implode(', ', $references);
         }
         $create .= ')';
-        if ($this->getDriverName() == 'mysql') {
-            $create .= ' ENGINE=InnoDB';
-        }
         
         if ($this->exec($create) === false) {
             $error_info = $this->pdo->errorInfo();
@@ -253,24 +250,15 @@ trait TableTrait
         $type = $column->getType();
         if ($this->getDriverName() == 'pgsql') {
             switch ($type) {
-                case 'bigint':
-                    if ($column->isAuto()) {
-                        $type = 'bigserial';
-                    }
+                case 'int8':
+                    $type = 'bigint';
                     break;
-                case 'int':
                 case 'integer':
                 case 'mediumint':
-                    if ($column->isAuto()) {
-                        $type = 'serial';
-                    }
+                    $type = 'int';
                     break;
                 case 'tinyint':
                     $type = 'smallint';
-                case 'smallint':
-                    if ($column->isAuto()) {
-                        $type = 'smallserial';
-                    }
                     break;
                 case 'datetime':
                     $type = 'timestamp';
@@ -280,6 +268,15 @@ trait TableTrait
                 case 'longtext':
                     $type = 'text';
                     break;
+            }
+            if ($column->isAuto()) {
+                if ($type == 'bigint') {
+                    $type = 'bigserial';
+                } elseif ($type == 'int') {
+                    $type = 'serial';
+                } elseif ($type == 'smallint') {
+                    $type = 'smallserial';
+                }
             }
         } else {
             switch ($type) {

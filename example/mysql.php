@@ -32,9 +32,9 @@ class ExampleUserModel extends Model
            (new Column('address', 'varchar', 200))->default('Mongolia'),
            (new Column('email', 'varchar', 65))->unique(),
            (new Column('is_active', 'tinyint'))->default(1),
-            new Column('created_at', 'timestamp'),
+            new Column('created_at', 'datetime'),
             new Column('created_by', 'bigint'),
-            new Column('updated_at', 'timestamp'),
+            new Column('updated_at', 'datetime'),
             new Column('updated_by', 'bigint')
         ]);
         
@@ -67,9 +67,9 @@ class ExampleTranslationModel extends LocalizedModel
            (new Column('id', 'bigint'))->primary(),
            (new Column('keyword', 'varchar', 128))->unique(),
            (new Column('is_active', 'tinyint'))->default(1),
-            new Column('created_at', 'timestamp'),
+            new Column('created_at', 'datetime'),
             new Column('created_by', 'bigint'),
-            new Column('updated_at', 'timestamp'),
+            new Column('updated_at', 'datetime'),
             new Column('updated_by', 'bigint')
         ]);
         $this->setContentColumns([
