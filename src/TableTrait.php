@@ -86,11 +86,6 @@ trait TableTrait
         return isset($this->columns[$name]);
     }
 
-    public function getIdColumn(): Column
-    {
-        return $this->getColumn('id');
-    }
-
     public function deleteById(int $id): bool
     {
         $table = $this->getName();
@@ -152,7 +147,7 @@ trait TableTrait
         return $update->execute();
     }
 
-    public final function createTable(string $table, array $columns)
+    protected final function createTable(string $table, array $columns)
     {
         $references = [];
         $columnSyntaxes = [];
