@@ -85,12 +85,6 @@ abstract class LocalizedModel
         if (empty($content)) {
             throw new \InvalidArgumentException(__CLASS__ . "[$contentTable}]: Can't insert record when localized content is empty!");
         }
-
-        if ($this->hasColumn('created_at')
-            && !isset($record['created_at'])
-        ) {
-            $record['created_at'] = \date('Y-m-d H:i:s');
-        }
         
         $column = $param = [];
         foreach (\array_keys($record) as $key) {
@@ -161,16 +155,11 @@ abstract class LocalizedModel
         return $this->getById($id);
     }
     
-    public function updateById(int|string $id, array $record, array $content): array|false
+    public function updateById(int $id, array $record, array $content): array|false
     {
         $table = $this->getName();
         $row = $current_record = $this->getById($id);
         if (!empty($record)) {
-            if ($this->hasColumn('updated_at')
-                && !isset($record['updated_at'])
-            ) {
-                $record['updated_at'] = \date('Y-m-d H:i:s');
-            }
             $set = [];
             foreach (\array_keys($record) as $name) {
                 $set[] = "$name=:$name";

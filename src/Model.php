@@ -8,12 +8,6 @@ abstract class Model
     
     public function insert(array $record): array|false
     {
-        if ($this->hasColumn('created_at')
-            && !isset($record['created_at'])
-        ) {
-            $record['created_at'] = \date('Y-m-d H:i:s');
-        }
-        
         $column = $param = [];
         foreach (\array_keys($record) as $key) {
             $column[] = $key;
@@ -64,12 +58,6 @@ abstract class Model
             throw new \Exception("(updateById): Table [$table] must have primary auto increment id column!");
         } elseif (empty($record)) {
             throw new \Exception("(updateById): Must provide updated record!");
-        }
-        
-        if ($this->hasColumn('updated_at')
-            && !isset($record['updated_at'])
-        ) {
-            $record['updated_at'] = \date('Y-m-d H:i:s');
         }
         
         $set = [];
