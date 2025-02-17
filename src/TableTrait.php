@@ -151,7 +151,7 @@ trait TableTrait
         foreach ($record as $name => $value) {
             $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
-        return $update->execute();
+        return $update->execute() && $update->rowCount() > 0;
     }
 
     protected final function createTable(string $table, array $columns)
