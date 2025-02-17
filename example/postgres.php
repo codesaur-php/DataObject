@@ -167,20 +167,23 @@ try {
         'first_name' => 'Random Guy',
         'phone' => \uniqid(),
         'address' => 'Somewhere in Earth',
-        'email' => "$uniq_user@example.com"
+        'email' => "$uniq_user@example.com",
+        'created_by' => $admin['id']
     ]);
     
-    \var_dump(['newly created user ' => $new_user]);
+    \var_dump(['newly created user: ' => $new_user]);
     \var_dump(['delete user 3: ' => $users->deleteById(3)]);
-    \var_dump(['deactivate user 7: ' => $users->deactivateById(7)]);
-    \var_dump(['update user 15: ' => $users->updateById(15, ['first_name' => 'Not so random', 'id' => 1500])]);
+    \var_dump(['deactivate user 7: ' => $users->deactivateById(7, ['updated_at' => \date('Y-m-d H:i:s'), 'updated_by' => $admin['id']])]);
+    \var_dump(['update user 15: ' => $users->updateById(15, ['first_name' => 'Not so random', 'id' => 1500, 'updated_by' => $admin['id']])]);
     
     $translation = new ExampleTranslationModel($pdo);
     \var_dump($translation->getById(1), $translation->getById(1, 'mn'));
     \var_dump($translation->deleteById(7));
-    \var_dump($translation->deactivateById(8));
-    \var_dump($translation->updateById(4, ['keyword' => 'golio'], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']]));
-    \var_dump($translation->updateById(5, ['id' => 500], ['en' => ['title' => 'Hyperactive']]));
+    \var_dump($translation->deactivateById(8, ['updated_at' => \date('Y-m-d H:i:s'), 'updated_by' => $admin['id']]));
+   
+    \var_dump($translation->updateById(4, ['keyword' => 'golio', 'updated_by' => $admin['id']], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']]));
+    \var_dump($translation->updateById(5, ['id' => 500, 'updated_by' => $admin['id']], ['en' => ['title' => 'Hyperactive']]));
+    
     $rows = $translation->getRows();
     $texts = [];
     foreach ($rows as $row) {

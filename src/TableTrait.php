@@ -100,7 +100,7 @@ trait TableTrait
         return $delete->execute() && $delete->rowCount() > 0;
     }
     
-    public function deactivateById(int $id): bool
+    public function deactivateById(int $id, array $record = []): bool
     {
         $table = $this->getName();
         if (!$this->hasColumn('id')
@@ -127,6 +127,10 @@ trait TableTrait
                 $set[] = "$uniqueName=:$uniqueName";
             }
         }
+        foreach (\array_keys($record) as $name) {
+            $selection .= ", $name";
+            $set[] = "$name=:$name";
+        }
         $select = $this->query("SELECT $selection FROM $table WHERE id=$id");
         $row = $select->fetch(\PDO::FETCH_ASSOC);
         if (($row['is_active'] ?? 0) == 0) {
@@ -143,6 +147,9 @@ trait TableTrait
                 $row[$uniqueName] = '[' . \uniqid() . '] ' . $row[$uniqueName];
             }
             $update->bindValue(":$uniqueName", $row[$uniqueName], $unique->getDataType());
+        }
+        foreach ($record as $name => $value) {
+            $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
         return $update->execute();
     }
