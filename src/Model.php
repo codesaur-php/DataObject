@@ -74,9 +74,7 @@ abstract class Model
         foreach ($record as $name => $value) {
             $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
-        if (!$update->execute()
-            || $update->rowCount() < 1
-        ) {
+        if (!$update->execute()) {
             return false;
         }
         

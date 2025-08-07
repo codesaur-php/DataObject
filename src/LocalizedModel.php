@@ -171,9 +171,7 @@ abstract class LocalizedModel
                 $update_primary->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
                 $row[$name] = $value;
             }
-            if (!$update_primary->execute()
-                || $update_primary->rowCount() < 1
-            ) {
+            if (!$update_primary->execute()) {
                 return false;
             }
         } elseif (empty($content)) {
