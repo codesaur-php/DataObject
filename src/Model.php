@@ -94,11 +94,6 @@ abstract class Model
             if ($havePrimaryId) {
                 $condition['ORDER BY'] = 'id';
             }
-            if ($this->hasColumn('is_active')
-                && $this->getColumn('is_active')->isInt()
-            ) {
-                $condition['WHERE'] = 'is_active=1';
-            }
         }
         
         $rows = [];
@@ -113,7 +108,7 @@ abstract class Model
         return $rows;
     }
     
-    public function getRowBy(array $with_values): array|null
+    public function getRowBy(array $with_values): array|false
     {
         $where = [];
         $params = [];
@@ -135,10 +130,10 @@ abstract class Model
             }
         }
         
-        return null;
+        return false;
     }
     
-    public function getById(int $id): array|null
+    public function getById(int $id): array|false
     {
         $table = $this->getName();
         if (!$this->hasColumn('id')
@@ -147,13 +142,7 @@ abstract class Model
         ) {
             throw new \Exception("(getById): Table [$table] must have primary auto increment id column!");
         }
-
-        $with_values = ['id' => $id];
-        if ($this->hasColumn('is_active')
-            && $this->getColumn('is_active')->isInt()
-        ) {
-            $with_values['is_active'] = 1;
-        }
-        return $this->getRowBy($with_values);
+        
+        return $this->getRowBy(['id' => $id]);
     }
 }

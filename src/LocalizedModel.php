@@ -267,11 +267,6 @@ abstract class LocalizedModel
     {
         if (empty($condition)) {
             $condition = ['ORDER BY' => 'p.id'];
-            if ($this->hasColumn('is_active')
-                && $this->getColumn('is_active')->isInt()
-            ) {
-                $condition['WHERE'] = 'p.is_active=1';
-            }
         }
         
         $rows = [];
@@ -296,7 +291,7 @@ abstract class LocalizedModel
         return $rows;
     }
     
-    public function getRowBy(array $with_values): array|null
+    public function getRowBy(array $with_values): array|false
     {
         $count = 1;
         $params = [];
@@ -337,17 +332,12 @@ abstract class LocalizedModel
             return $row;
         }
         
-        return null;
+        return false;
     }
     
-    public function getById(int $id, ?string $code = null): array|null
+    public function getById(int $id, ?string $code = null): array|false
     {
         $with_values = ['p.id' => $id];
-        if ($this->hasColumn('is_active')
-            && $this->getColumn('is_active')->isInt()
-        ) {
-            $with_values['p.is_active'] = 1;
-        }
         if (!empty($code)) {
             $with_values['c.code'] = $code;
         }
