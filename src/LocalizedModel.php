@@ -265,10 +265,6 @@ abstract class LocalizedModel
 
     public function getRows(array $condition = []): array
     {
-        if (empty($condition)) {
-            $condition = ['ORDER BY' => 'p.id'];
-        }
-        
         $rows = [];
         $pdostmt = $this->select('*', $condition);
         $content_KeyColumns = ['id', 'parent_id', 'code'];

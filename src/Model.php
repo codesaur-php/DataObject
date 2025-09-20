@@ -90,12 +90,6 @@ abstract class Model
         $havePrimaryId = $this->hasColumn('id')
             && $this->getColumn('id')->isPrimary();
         
-        if (empty($condition)) {
-            if ($havePrimaryId) {
-                $condition['ORDER BY'] = 'id';
-            }
-        }
-        
         $rows = [];
         $stmt = $this->selectStatement($this->getName(), '*', $condition);
         while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {

@@ -192,7 +192,7 @@ try {
     \var_dump($translation->updateById(4, ['keyword' => 'golio', 'updated_by' => $admin['id']], ['mn' => ['title' => 'Голио'], 'en' => ['title' => 'Cicada'], 'de' => ['title' => 'die Heuschrecke']]));
     \var_dump($translation->updateById(5, ['id' => 500, 'updated_by' => $admin['id']], ['en' => ['title' => 'Hyperactive']]));
     
-    $rows = $translation->getRows(['WHERE' => 'p.is_active=1']);
+    $rows = $translation->getRows(['WHERE' => 'p.is_active=1', 'ORDER BY' => 'p.id']);
     $texts = [];
     foreach ($rows as $row) {
         $texts[$row['keyword']] = \array_merge($texts[$row['keyword']] ?? [], $row['localized']['title']);
@@ -207,7 +207,7 @@ try {
     }
     
     echo '<br/><hr><br/><br/>';
-    \var_dump(['list of users: ' => $users->getRows(['WHERE' => 'is_active=1'])]);
+    \var_dump(['list of users: ' => $users->getRows(['WHERE' => 'is_active=1', 'ORDER BY' => 'id Desc'])]);
 } catch (\Throwable $e) {
     die('<br/>{' . \date('Y-m-d H:i:s') . '} Error[' . $e->getCode() . '] => ' . $e->getMessage());
 }
