@@ -152,13 +152,13 @@ abstract class LocalizedModel
             }
         }
         
-        return $this->getRowBy(['p.id' => $id]);
+        return $this->getRowWhere(['p.id' => $id]);
     }
     
     public function updateById(int $id, array $record, array $content): array|false
     {
         $table = $this->getName();
-        $row = $current_record = $this->getRowBy(['p.id' => $id]);
+        $row = $current_record = $this->getRowWhere(['p.id' => $id]) ?: [];
         if (!empty($record)) {
             $set = [];
             foreach (\array_keys($record) as $name) {
@@ -313,7 +313,7 @@ abstract class LocalizedModel
     }
 
 
-    public function getRowBy(array $with_values): array|false
+    public function getRowWhere(array $with_values): array|false
     {
         $count = 1;
         $params = [];
