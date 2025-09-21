@@ -34,7 +34,8 @@ abstract class Model
         }
         
         if ($this->hasColumn('id') && $this->getColumn('id')->isPrimary()) {
-            return $this->getById((int) ($record['id'] ?? $this->pdo->lastInsertId('id')));
+            $id = (int) ($record['id'] ?? $this->pdo->lastInsertId('id'));
+            return $this->getRowBy(['id' => $id]);
         }
         
         $row = [];
@@ -81,7 +82,7 @@ abstract class Model
         if ($this->getDriverName() == 'pgsql') {
             return $update->fetch(\PDO::FETCH_ASSOC);
         } else {
-            return $this->getById($record['id'] ?? $id);
+            return $this->getRowBy(['id' => $record['id'] ?? $id]);
         }
     }
     
@@ -102,6 +103,16 @@ abstract class Model
         return $rows;
     }
     
+    public function getRow(array $condition = []): array|false
+    {
+        $stmt = $this->selectStatement($this->getName(), '*', $condition);
+        if ($stmt->rowCount() == 1) {
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        }
+        
+        return false;
+    }
+    
     public function getRowBy(array $with_values): array|false
     {
         $where = [];
@@ -111,32 +122,10 @@ abstract class Model
             $params[":$key"] = $value;
         }
         $clause = \implode(' AND ', $where);
-        
-        if (!empty($clause)) {
-            $condition = [
-                'WHERE' => $clause,
-                'LIMIT' => 1,
-                'PARAM' => $params
-            ];
-            $stmt = $this->selectStatement($this->getName(), '*', $condition);
-            if ($stmt->rowCount() == 1) {
-                return $stmt->fetch(\PDO::FETCH_ASSOC);
-            }
-        }
-        
-        return false;
-    }
-    
-    public function getById(int $id): array|false
-    {
-        $table = $this->getName();
-        if (!$this->hasColumn('id')
-            || !$this->getColumn('id')->isInt()
-            || !$this->getColumn('id')->isPrimary()
-        ) {
-            throw new \Exception("(getById): Table [$table] must have primary auto increment id column!");
-        }
-        
-        return $this->getRowBy(['id' => $id]);
+        return $this->getRow([
+            'WHERE' => $clause,
+            'PARAM' => $params,
+            'LIMIT' => 1
+        ]);
     }
 }

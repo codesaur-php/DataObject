@@ -185,7 +185,8 @@ try {
     \var_dump(['update user 15: ' => $users->updateById(15, ['first_name' => 'Not so random', 'id' => 1500, 'updated_by' => $admin['id']])]);
     
     $translation = new ExampleTranslationModel($pdo);
-    \var_dump($translation->getById(1), $translation->getById(1, 'mn'));
+    \var_dump($translation->getRowBy(['p.id' => 1, 'p.is_active' => 1]));
+    \var_dump($translation->getRowBy(['p.id' => 1, 'c.code' => 'mn']));
     \var_dump($translation->deleteById(7));
     \var_dump($translation->deactivateById(8, ['updated_at' => \date('Y-m-d H:i:s'), 'updated_by' => $admin['id']]));
    

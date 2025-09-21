@@ -152,13 +152,13 @@ abstract class LocalizedModel
             }
         }
         
-        return $this->getById($id);
+        return $this->getRowBy(['p.id' => $id]);
     }
     
     public function updateById(int $id, array $record, array $content): array|false
     {
         $table = $this->getName();
-        $row = $current_record = $this->getById($id);
+        $row = $current_record = $this->getRowBy(['p.id' => $id]);
         if (!empty($record)) {
             $set = [];
             foreach (\array_keys($record) as $name) {
@@ -287,6 +287,32 @@ abstract class LocalizedModel
         return $rows;
     }
     
+    public function getRow(array $condition): array|false
+    {
+        $row = [];
+        $c_codeName = 'c_code';
+        $content_KeyColumns = ['id', 'parent_id', 'code'];
+        $stmt = $this->select('*', $condition);            
+        while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            foreach ($this->getColumns() as $column) {
+                $columnName = $column->getName();
+                if (isset($data["p_$columnName"])) {
+                    $row[$columnName] = $data["p_$columnName"];
+                }
+            }
+            foreach ($this->getContentColumns() as $ccolumn) {
+                $ccolumnName = $ccolumn->getName();
+                if (!\in_array($ccolumnName, $content_KeyColumns)) {
+                    if (isset($data["c_$ccolumnName"])) {
+                        $row['localized'][$ccolumnName][$data[$c_codeName]] = $data["c_$ccolumnName"];
+                    }
+                }
+            }
+        }
+        return !empty($row) ? $row : false;
+    }
+
+
     public function getRowBy(array $with_values): array|false
     {
         $count = 1;
@@ -298,45 +324,12 @@ abstract class LocalizedModel
             $count++;
         }
         $clause = \implode(' AND ', $wheres);
-        
-        if (!empty($wheres)) {
-            $condition = [
-                'WHERE' => $clause,
-                'PARAM' => $params
-            ];
-            $stmt = $this->select('*', $condition);
-            
-            $row = [];
-            $c_codeName = 'c_code';
-            $content_KeyColumns = ['id', 'parent_id', 'code'];
-            while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-                foreach ($this->getColumns() as $column) {
-                    $columnName = $column->getName();
-                    if (isset($data["p_$columnName"])) {
-                        $row[$columnName] = $data["p_$columnName"];
-                    }
-                }
-                foreach ($this->getContentColumns() as $ccolumn) {
-                    $ccolumnName = $ccolumn->getName();
-                    if (!\in_array($ccolumnName, $content_KeyColumns)) {
-                        if (isset($data["c_$ccolumnName"])) {
-                            $row['localized'][$ccolumnName][$data[$c_codeName]] = $data["c_$ccolumnName"];
-                        }
-                    }
-                }
-            }
-            return $row;
-        }
-        
-        return false;
-    }
-    
-    public function getById(int $id, ?string $code = null): array|false
-    {
-        $with_values = ['p.id' => $id];
-        if (!empty($code)) {
-            $with_values['c.code'] = $code;
-        }
-        return $this->getRowBy($with_values);
+        if (empty($clause)) {
+            return false;
+        }        
+        return $this->getRow([
+            'WHERE' => $clause,
+            'PARAM' => $params
+        ]);
     }
 }
