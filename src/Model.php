@@ -35,7 +35,7 @@ abstract class Model
         
         if ($this->hasColumn('id') && $this->getColumn('id')->isPrimary()) {
             $id = (int) ($record['id'] ?? $this->pdo->lastInsertId('id'));
-            return $this->getRowWhere(['id' => $id]);
+            return $this->getRowWhere(['id' => $id]) ?? false;
         }
         
         $row = [];
@@ -82,7 +82,7 @@ abstract class Model
         if ($this->getDriverName() == 'pgsql') {
             return $update->fetch(\PDO::FETCH_ASSOC);
         } else {
-            return $this->getRowWhere(['id' => $record['id'] ?? $id]);
+            return $this->getRowWhere(['id' => $record['id'] ?? $id]) ?? false;
         }
     }
     
@@ -103,17 +103,17 @@ abstract class Model
         return $rows;
     }
     
-    public function getRow(array $condition = []): array|false
+    public function getRow(array $condition = []): array|null
     {
         $stmt = $this->selectStatement($this->getName(), '*', $condition);
         if ($stmt->rowCount() == 1) {
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         }
         
-        return false;
+        return null;
     }
     
-    public function getRowWhere(array $with_values): array|false
+    public function getRowWhere(array $with_values): array|null
     {
         $where = [];
         $params = [];

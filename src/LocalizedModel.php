@@ -152,13 +152,13 @@ abstract class LocalizedModel
             }
         }
         
-        return $this->getRowWhere(['p.id' => $id]);
+        return $this->getRowWhere(['p.id' => $id]) ?? false;
     }
     
     public function updateById(int $id, array $record, array $content): array|false
     {
         $table = $this->getName();
-        $row = $current_record = $this->getRowWhere(['p.id' => $id]) ?: [];
+        $row = $current_record = $this->getRowWhere(['p.id' => $id]) ?? [];
         if (!empty($record)) {
             $set = [];
             foreach (\array_keys($record) as $name) {
@@ -287,7 +287,7 @@ abstract class LocalizedModel
         return $rows;
     }
     
-    public function getRow(array $condition): array|false
+    public function getRow(array $condition): array|null
     {
         $row = [];
         $c_codeName = 'c_code';
@@ -309,11 +309,11 @@ abstract class LocalizedModel
                 }
             }
         }
-        return !empty($row) ? $row : false;
+        return !empty($row) ? $row : null;
     }
 
 
-    public function getRowWhere(array $with_values): array|false
+    public function getRowWhere(array $with_values): array|null
     {
         $count = 1;
         $params = [];
@@ -325,7 +325,7 @@ abstract class LocalizedModel
         }
         $clause = \implode(' AND ', $wheres);
         if (empty($clause)) {
-            return false;
+            return null;
         }        
         return $this->getRow([
             'WHERE' => $clause,
