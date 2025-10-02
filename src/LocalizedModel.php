@@ -61,7 +61,7 @@ abstract class LocalizedModel
         $contentColumns = [
             'id' => (new Column('id', $id->getType()))->primary(),
             'parent_id' => (new Column('parent_id', $id->getType()))->notNull(),
-            'code' => new Column('code', 'varchar', 6)
+            'code' => new Column('code', 'varchar', 2)
         ];
         
         foreach ($columns as $column) {
