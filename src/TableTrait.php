@@ -178,6 +178,12 @@ trait TableTrait
         }
         $create .= ')';
         
+        if ($this->getDriverName() == 'mysql') {
+            $stmt = $this->query('SELECT @@collation_connection, @@collation_connection;');
+            $collation = $stmt->fetchColumn();
+            $create .= " ENGINE=InnoDB COLLATE=$collation";
+        }
+        
         if ($this->exec($create) === false) {
             $error_info = $this->pdo->errorInfo();
             if (\is_numeric($error_info[1] ?? null)) {

@@ -144,14 +144,14 @@ class ExampleTranslationModel extends LocalizedModel
 try {
     $dsn = 'pgsql:host=localhost';
     $username = 'postgres';
-    $passwd = 'Free4all$'; // postgres user password
+    $passwd = 'password'; // postgres user password
     $database = 'dataobject_example';
     $options = [
         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
         \PDO::ATTR_PERSISTENT => false
     ];
-    $pdo = new \PDO("pgsql:host=localhost;dbname=$database", $username, $passwd, $options);
+    $pdo = new \PDO("pgsql:host=localhost;dbname=$database;client_encoding=UTF8", $username, $passwd, $options);
     echo "connected to postgres as user [$username] and starting to use database [$database]...<br/>";
     
     $users = new ExampleUserModel($pdo);

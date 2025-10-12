@@ -142,7 +142,7 @@ class ExampleTranslationModel extends LocalizedModel
 }
 
 try {
-    $dsn = 'mysql:host=localhost;charset=utf8';
+    $dsn = 'mysql:host=localhost;charset=utf8mb4';
     $username = 'root';
     $passwd = '';
     $options = [
@@ -156,10 +156,10 @@ try {
     
     $database = 'dataobject_example';
     if (\in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
-        $pdo->exec("CREATE DATABASE IF NOT EXISTS $database COLLATE " . $pdo->quote('utf8_unicode_ci'));
+        $pdo->exec("CREATE DATABASE IF NOT EXISTS $database COLLATE utf8mb4_unicode_ci");
     }
-
     $pdo->exec("USE $database");
+    $pdo->exec("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'");
     echo "starting to use database [$database]<br/>";
     
     $users = new ExampleUserModel($pdo);
