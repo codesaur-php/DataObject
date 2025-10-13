@@ -230,6 +230,9 @@ trait TableTrait
         if (!empty($condition['LIMIT'])) {
             $select .= ' LIMIT ' . $condition['LIMIT'];
         }
+        if (!empty($condition['OFFSET'])) {
+            $select .= ' OFFSET ' . $condition['OFFSET'];
+        }
 
         $stmt = $this->prepare($select);
         if ($stmt->execute($condition['PARAM'] ?? null)) {
