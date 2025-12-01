@@ -98,8 +98,8 @@ class UserModel extends Model
 
 ## Архитектур:
 
-🔶 PRIMARY хүснэгт: `example_translation`  
-🔶 CONTENT хүснэгт: `example_translation_content`  
+🔶 PRIMARY хүснэгт: `tablename`  
+🔶 CONTENT хүснэгт: `tablename_content`  
 
 CONTENT хүснэгт дотор:
 
