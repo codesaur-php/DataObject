@@ -45,10 +45,10 @@ composer require codesaur/dataobject
 use codesaur\DataObject\Column;
 
 $columns = [
-    (new Column('id', 'bigint'))->primary(),
-    (new Column('username', 'varchar', 65))->unique(),
+   (new Column('id', 'bigint'))->primary(),
+   (new Column('username', 'varchar', 65))->unique(),
     new Column('password', 'varchar', 255),
-    (new Column('is_active', 'tinyint'))->default(1),
+   (new Column('is_active', 'tinyint'))->default(1),
 ];
 ```
 ---
@@ -73,10 +73,10 @@ class UserModel extends Model
         $this->setInstance($pdo);
 
         $this->setColumns([
-            (new Column('id', 'bigint'))->primary(),
-            (new Column('username', 'varchar', 64))->unique(),
+           (new Column('id', 'bigint'))->primary(),
+           (new Column('username', 'varchar', 64))->unique(),
             new Column('password', 'varchar', 255),
-            (new Column('is_active', 'tinyint'))->default(1),
+           (new Column('is_active', 'tinyint'))->default(1),
             new Column('created_at', 'datetime'),
         ]);
 
@@ -117,9 +117,9 @@ class ArticleModel extends LocalizedModel
         $this->setInstance($pdo);
 
         $this->setColumns([
-            (new Column('id', 'bigint'))->primary(),
-            (new Column('slug', 'varchar', 128))->unique(),
-            (new Column('is_active', 'tinyint'))->default(1),
+           (new Column('id', 'bigint'))->primary(),
+           (new Column('slug', 'varchar', 128))->unique(),
+           (new Column('is_active', 'tinyint'))->default(1),
             new Column('created_at', 'datetime'),
         ]);
 
