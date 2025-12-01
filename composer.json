@@ -1,6 +1,6 @@
 {
     "name": "codesaur/dataobject",
-    "description": "codesaur-php экосистемийн өгөгдлийн давхаргын үндсэн компонент, өгөгдлийн модель ба хүснэгт үүсгэгч (MySQL / PostgreSQL, PHP 8.2+)",
+    "description": "codesaur-php экосистемийн өгөгдлийн давхаргын үндсэн компонент, өгөгдлийн модель ба хүснэгтүүдийг удирдагч (MySQL / PostgreSQL, PHP 8.2+)",
     "keywords": [
         "pdo", "database", "mysql", "postgres", "pgsql", "dataobject", "mongol", "mongolia", "монгол", "codesaur", "narankhuu", "coden", "кодзавр", "наранхүү", "коден"
     ],
