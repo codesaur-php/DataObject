@@ -40,7 +40,7 @@ trait TableTrait
     protected readonly array $columns;
 
     /**
-     * Загварын constructor – PDO заавал дамжина.
+     * Загварын constructor - PDO заавал дамжина.
      *
      * @param PDO $pdo
      */
@@ -54,7 +54,7 @@ trait TableTrait
     protected abstract function __initial();
 
     /**
-     * Destructor – PDO-г чөлөөлнө.
+     * Destructor - PDO-г чөлөөлнө.
      */
     public function __destruct()
     {

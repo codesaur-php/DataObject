@@ -167,10 +167,15 @@ abstract class LocalizedModel
     /**
      * Олон хэл дээрх контенттэй мөр нэмэх.
      *
-     * @param array $record Primary table-ийн өгөгдөл [column => value]
-     * @param array $content ['mn'=>[col=>val], 'en'=>[col=>val], ...]
-     * @return array|false Шинэ мөрийг нийлүүлсэн бүтэцтэй буцаана
+     * @param array $record
+     *   - Primary хүснэгтийн өгөгдөл: ['column' => value, ...]
+     *   - Ж: ['name' => 'product', 'status' => 'active']
+     * @param array $content
+     *   - Хэлээр бүлэглэсэн контент: ['mn' => [col => val], 'en' => [...], ...]
+     *   - Ж: ['en' => ['title' => 'English', 'description' => '...'], 'mn' => [...]]
+     * @return array|false Шинэ мөрийг буцаана; амжилтгүй бол false
      * @throws Exception
+     * @see getRow() Буцаах утгын бүтэц
      */
     public function insert(array $record, array $content): array|false
     {
@@ -194,7 +199,7 @@ abstract class LocalizedModel
 
         $table = $this->getName();
         $query = "INSERT INTO $table($columns) VALUES($values)";
-
+        
         if ($this->getDriverName() == 'pgsql') {
             $query .= ' RETURNING id';
         }
@@ -237,7 +242,6 @@ abstract class LocalizedModel
             $content_stmt = $this->prepare(
                 "INSERT INTO $contentTable($fields) VALUES($values)"
             );
-
             foreach ($data as $key => $value) {
                 $content_stmt->bindValue(":$key", $value, $this->getContentColumn($key)->getDataType());
             }
@@ -270,33 +274,33 @@ abstract class LocalizedModel
      * Олон хэл дээрх контенттэй мөрийг id багана барьж шинэчлэх.
      *
      * @param int $id
-     * @param array $record Primary table update [column => value]
-     * @param array $content ['mn'=>[col=>val], 'en'=>[col=>val], ...]
-     * @return array|false
+     * @param array $record
+     *   - Primary хүснэгтийн шинэчлэл: ['column' => value, ...]
+     *   - Ж: ['read_count' => 10]
+     * @param array $content
+     *   - Хэлээр бүлэглэсэн контент шинэчлэл: ['mn' => [col => val], 'en' => [...], ...]
+     *   - Ж: ['en' => ['title' => 'New title'], 'mn' => ['description' => 'Шинэ тайлбар']]
+     * @return array|false Шинэчлэгдсэн мөрийг буцаана; амжилтгүй бол false
      * @throws Exception
+     * @see getRow() Буцаах утгын бүтэц
      */
     public function updateById(int $id, array $record, array $content): array|false
     {
         $table = $this->getName();
 
-        $row = $current_record = $this->getRowWhere(['p.id' => $id]) ?? [];
         // Primary table шинэчлэлт
         if (!empty($record)) {
             $set = [];
             foreach (\array_keys($record) as $name) {
                 $set[] = "$name=:$name";
             }
-
             $sets = \implode(', ', $set);
+            
             $update_primary = $this->prepare("UPDATE $table SET $sets WHERE id=:old_id");
-
             $update_primary->bindValue(':old_id', $id, \PDO::PARAM_INT);
-
             foreach ($record as $name => $value) {
                 $update_primary->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
-                $row[$name] = $value;
             }
-
             if (!$update_primary->execute()) {
                 return false;
             }
@@ -318,7 +322,6 @@ abstract class LocalizedModel
                     unset($value[$key]);
                 }
             }
-
             if (empty($value)) {
                 continue;
             }
@@ -327,33 +330,26 @@ abstract class LocalizedModel
                 // Хэлний content мөр байгаа эсэхийг шалгах
                 $content_select->bindValue(':parent_id', $parent_id, \PDO::PARAM_INT);
                 $content_select->bindValue(':code', $code, \PDO::PARAM_STR);
-
                 if (!$content_select->execute()
                     || $content_select->rowCount() < 1
                 ) {
                     // Байхгүй → шинээр INSERT
                     $column = ['code'];
                     $param = [':code'];
-
                     foreach (\array_keys($value) as $key) {
                         $column[] = $key;
                         $param[] = ":$key";
                     }
-
                     $columns = \implode(', ', $column);
                     $values = \implode(', ', $param);
 
                     $content_stmt = $this->prepare(
                         "INSERT INTO $contentTable(parent_id,$columns) VALUES($parent_id,$values)"
                     );
-
                     $content_stmt->bindValue(":code", $code, \PDO::PARAM_STR);
-
                     foreach ($value as $key => $var) {
                         $content_stmt->bindValue(":$key", $var, $this->getContentColumn($key)->getDataType());
-                        $row['localized'][$key][$code] = $var;
                     }
-
                 } else {
                     // Байгаа → UPDATE хийнэ
                     $content_row = $content_select->fetch(\PDO::FETCH_ASSOC);
@@ -362,15 +358,12 @@ abstract class LocalizedModel
                     foreach (\array_keys($value) as $n) {
                         $content_set[] = "$n=:$n";
                     }
-
                     $content_sets = \implode(', ', $content_set);
                     $content_stmt = $this->prepare(
                         "UPDATE $contentTable SET $content_sets WHERE id={$content_row['id']}"
                     );
-
                     foreach ($value as $key => $var) {
                         $content_stmt->bindValue(":$key", $var, $this->getContentColumn($key)->getDataType());
-                        $row['localized'][$key][$code] = $var;
                     }
                 }
 
@@ -394,7 +387,8 @@ abstract class LocalizedModel
             }
         }
 
-        return $row;
+        // Шинэчлэгдсэн мөрийг getRow-ийн бүтэцтэй буцаах
+        return $this->getRowWhere(['p.id' => $parent_id]) ?? false;
     }
 
     /**
@@ -432,7 +426,35 @@ abstract class LocalizedModel
      * Олон мөрийг (олон хэлтэй) авах.
      *
      * @param array $condition
-     * @return array
+     * @return array Массив [primary_id => rowStructure], rowStructure нь getRow-ийн буцаах бүтцийн адил
+     *
+     * @example
+     *   [
+     *     1 => [
+     *       'id' => 1,
+     *       'name' => 'product_name',
+     *       'status' => 'active',
+     *       'localized' => [
+     *         'en' => [
+     *           'title' => 'English Title',
+     *           'description' => 'English Description'
+     *         ],
+     *         'mn' => [
+     *           'title' => 'Монгол Гарчиг',
+     *           'description' => 'Монгол Тайлбар'
+     *         ]
+     *       ]
+     *     ],
+     *     2 => [
+     *       'id' => 2,
+     *       'name' => 'another_product',
+     *       'status' => 'draft',
+     *       'localized' => [
+     *         'en' => ['title' => 'Another', 'description' => 'Desc'],
+     *         'mn' => ['title' => 'Өөр', 'description' => 'Тайлбар']
+     *       ]
+     *     ]
+     *   ]
      */
     public function getRows(array $condition = []): array
     {
@@ -453,12 +475,18 @@ abstract class LocalizedModel
             }
 
             // Localized утгуудыг нэгтгэх
+            $langCode = $data['c_code'];
+            if (!isset($rows[$p_id]['localized'][$langCode])) {
+                $rows[$p_id]['localized'][$langCode] = [];
+            }
+
             foreach ($this->getContentColumns() as $ccolumn) {
                 $ccolumnName = $ccolumn->getName();
 
                 if (!\in_array($ccolumnName, $content_KeyColumns)) {
-                    $rows[$p_id]['localized'][$ccolumnName][$data['c_code']] =
-                        $data["c_$ccolumnName"];
+                    if (isset($data["c_$ccolumnName"])) {
+                        $rows[$p_id]['localized'][$langCode][$ccolumnName] = $data["c_$ccolumnName"];
+                    }
                 }
             }
         }
@@ -469,8 +497,30 @@ abstract class LocalizedModel
     /**
      * Нэг мөрийг олон хэлтэйгээр авах.
      *
-     * @param array $condition
-     * @return array|null
+     * @param array $condition SELECT нөхцөл (WHERE, JOIN, ORDER, LIMIT гэх мэт)
+     * @return array|null Амжилттай бол дараах бүтэцтэй массив, олдохгүй бол null:
+     *   - Primary хүснэгтийн бүх багана утгууд шууд түвшинд (жишээ: 'id', 'name', 'status' гэх мэт)
+     *   - 'localized' түлхүүр дор олон хэлтэй контентууд:
+     *     - Эхний түвшин: хэлний код (жишээ: 'en', 'mn', 'ru' гэх мэт)
+     *     - Хоёрдугаар түвшин: контент баганын нэр (жишээ: 'title', 'description' гэх мэт)
+     *     - Утга: тухайн хэл дээрх контентын утга
+     * 
+     * @example
+     *   [
+     *     'id' => 1,
+     *     'name' => 'product_name',
+     *     'status' => 'active',
+     *     'localized' => [
+     *       'en' => [
+     *         'title' => 'English Title',
+     *         'description' => 'English Description'
+     *       ],
+     *       'mn' => [
+     *         'title' => 'Монгол Гарчиг',
+     *         'description' => 'Монгол Тайлбар'
+     *       ]
+     *     ]
+     *   ]
      */
     public function getRow(array $condition): array|null
     {
@@ -491,13 +541,17 @@ abstract class LocalizedModel
             }
 
             // Localized
+            $langCode = $data[$c_codeName];
+            if (!isset($row['localized'][$langCode])) {
+                $row['localized'][$langCode] = [];
+            }
+            
             foreach ($this->getContentColumns() as $ccolumn) {
                 $ccolumnName = $ccolumn->getName();
 
                 if (!\in_array($ccolumnName, $content_KeyColumns)) {
                     if (isset($data["c_$ccolumnName"])) {
-                        $row['localized'][$ccolumnName][$data[$c_codeName]] =
-                            $data["c_$ccolumnName"];
+                        $row['localized'][$langCode][$ccolumnName] = $data["c_$ccolumnName"];
                     }
                 }
             }
@@ -510,7 +564,8 @@ abstract class LocalizedModel
      * WHERE key=value хэлбэрийн нөхцлөөр мөр (олон хэлтэй) авах.
      *
      * @param array $with_values
-     * @return array|null
+     * @return array|null getRow-ийн буцаах бүтцийн адил; олдохгүй бол null
+     * @see getRow() Энэ функц getRow-ийг дуудаж байна
      */
     public function getRowWhere(array $with_values): array|null
     {

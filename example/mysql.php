@@ -143,8 +143,8 @@ try {
     ]);
 
     // Олон хэл дээр шинэчлэх (mn + en + de)
-    \var_dump([
-        'update translation 4:' =>
+    echo 'update translation 4: => ';
+    \var_dump(        
         $translation->updateById(
             4,
             ['keyword' => 'golio', 'updated_by' => $admin['id']],
@@ -154,17 +154,17 @@ try {
                 'de' => ['title' => 'die Heuschrecke']
             ]
         )
-    ]);
+    );
 
     // Зөвхөн зарим хэл шинэчлэх
-    \var_dump([
-        'update translation 5:' =>
+    echo 'update translation 5:  =>';
+    \var_dump(        
         $translation->updateById(
             5,
             ['id' => 500, 'updated_by' => $admin['id']],
             ['en' => ['title' => 'Hyperactive']]
         )
-    ]);
+    );
 
     /**
      * ---------------------------------------------------------------------
@@ -174,14 +174,21 @@ try {
     $rows = $translation->getRows(['WHERE' => 'p.is_active=1', 'ORDER BY' => 'p.id']);
     $texts = [];
     foreach ($rows as $row) {
+        // localized[lang][column] → title-уудыг хэлээр цуглуулах
+        $titleByLang = [];
+        foreach ($row['localized'] ?? [] as $lang => $content) {
+            if (isset($content['title'])) {
+                $titleByLang[$lang] = $content['title'];
+            }
+        }
         $texts[$row['keyword']] = \array_merge(
-            $texts[$row['keyword']] ?? [],
-            $row['localized']['title']
+           $texts[$row['keyword']] ?? [],
+           $titleByLang
         );
     }
     echo '<br/><hr><br/>List of Translation texts<br/>';
     \var_dump($texts);
-    echo "<br/><hr><br/>chat in mongolian => {$texts['chat']['mn']}<br/>";
+    echo "<br/><hr>chat in mongolian => {$texts['chat']['mn']}<br/><hr>";
 
     /**
      * ---------------------------------------------------------------------

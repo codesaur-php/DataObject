@@ -35,7 +35,7 @@ composer require codesaur/dataobject
 Нэг баганын мета мэдээлэл:
 
 - нэр (`name`)
-- төрөл (`type` – int, varchar, datetime, …)
+- төрөл (`type` - int, varchar, datetime, …)
 - урт (`length`)
 - NULL / NOT NULL
 - PRIMARY / UNIQUE / AUTO_INCREMENT
@@ -87,6 +87,24 @@ class UserModel extends Model
     {
         // Хүснэгт анх удаа үүсгэгдэх үед ганц удаа ажиллана
     }
+    
+    // Жишээ: хэрэглэгч нэмэх
+    public function createUser(string $username, string $hashedPassword): array|false
+    {
+        return $this->insert([
+            'username'   => $username,
+            'password'   => $hashedPassword,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    // Жишээ: хэрэглэгчийн идэвхжил шинэчлэх
+    public function setActive(int $id, bool $active): array|false
+    {
+        return $this->updateById($id, [
+            'is_active' => $active ? 1 : 0,
+        ]);
+    }
 }
 ```
 ---
@@ -129,6 +147,18 @@ class ArticleModel extends LocalizedModel
         ]);
 
         $this->setTable('article');
+    }
+    
+    // Жишээ: нийтлэл нэмэх (primary + localized)
+    public function createArticle(string $slug, array $content): array|false
+    {
+        return $this->insert(
+            [
+                'slug'       => $slug,
+                'created_at' => date('Y-m-d H:i:s'),
+            ],
+            $content // ['en' => ['title' => '...', 'body' => '...'], 'mn' => [...]]
+        );
     }
 }
 ```
