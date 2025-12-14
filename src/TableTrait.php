@@ -330,10 +330,18 @@ trait TableTrait
     /**
      * Уян хатан SELECT statement builder.
      *
-     * @param string $fromTable
-     * @param string $selection
-     * @param array $condition JOIN/WHERE/GROUP/LIMIT зэрэг нөхцлүүд
-     * @return PDOStatement
+     * @param string $fromTable FROM хүснэгтийн нэр
+     * @param string $selection Сонгох баганууд ('*' эсвэл 'col1, col2, ...')
+     * @param array $condition Нөхцлүүд:
+     *   - 'JOIN' / 'INNER JOIN' / 'LEFT JOIN' / 'RIGHT JOIN' / 'CROSS JOIN' - JOIN clause
+     *   - 'WHERE' - WHERE clause (жишээ: 'field=:param AND field2>:param2')
+     *   - 'GROUP BY' - GROUP BY clause
+     *   - 'HAVING' - HAVING clause
+     *   - 'ORDER BY' - ORDER BY clause
+     *   - 'LIMIT' - LIMIT clause
+     *   - 'OFFSET' - OFFSET clause
+     *   - 'PARAM' - Parameter массив [':param' => value, ...]
+     * @return \PDOStatement Prepared statement
      * @throws \Exception
      */
     public function selectStatement(string $fromTable, string $selection = '*', array $condition = []): \PDOStatement

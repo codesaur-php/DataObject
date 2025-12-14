@@ -10,7 +10,7 @@ namespace codesaur\DataObject\Example;
  * Энэ файл дараах ажлуудыг хийж гүйцэтгэнэ:
  *
  *  1. PostgreSQL сервертэй холбогдох (PDO pgsql)
- *  2. ExampleUserModel → хэрэглэгчийн хүснэгт үүсгэх, админ үүсгэх
+ *  2. ExampleUserModel → хэрэглэгчийн хүснэгт үүсгэх, админ хэрэглэгч шалгах
  *  3. ExampleTranslationModel → олон хэл дээр контент хадгалах хүснэгтүүдийг
  *     автоматаар үүсгэх (PRIMARY + CONTENT)
  *  4. CRUD жишээнүүд → insert, update, delete, deactivate
@@ -32,6 +32,23 @@ $autoload->addPsr4(__NAMESPACE__ . '\\', __DIR__);
 
 use codesaur\DataObject\Example\ExampleUserModel;
 use codesaur\DataObject\Example\ExampleTranslationModel;
+
+/**
+ * Human-readable debug output helper
+ * 
+ * @param mixed $data Хэвлэх өгөгдөл
+ * @param string|null $label Шошго/гарчиг
+ * @return void
+ */
+function debug($data, ?string $label = null): void
+{
+    echo '<pre style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 4px; overflow-x: auto;">';
+    if ($label !== null) {
+        echo '<strong style="color: #333;">' . \htmlspecialchars($label) . ':</strong><br/>';
+    }
+    echo \htmlspecialchars(\print_r($data, true));
+    echo '</pre>';
+}
 
 try {
     /**
@@ -66,7 +83,7 @@ try {
     // Админ хэрэглэгч байгаа эсэхийг шалгах
     $admin = $users->getRowWhere(['username' => 'admin']);
     if ($admin) {
-        \var_dump(['admin' => $admin]);
+        debug(['admin' => $admin]);
     }
 
     /**
@@ -85,7 +102,7 @@ try {
         'email'      => "$uniq_user@example.com",
         'created_by' => $admin['id']
     ]);
-    \var_dump(['newly created user:' => $new_user]);
+    debug($new_user, 'Newly created user');
 
 
     /**
@@ -93,24 +110,18 @@ try {
      * 4. CRUD жишээнүүд → Delete, Deactivate, Update
      * ---------------------------------------------------------------------
      */
-    \var_dump(['delete user 3:' =>
-        $users->deleteById(3)
-    ]);
+    debug($users->deleteById(3), 'Delete user 3');
 
-    \var_dump(['deactivate user 7:' =>
-        $users->deactivateById(7, [
-            'updated_at' => \date('Y-m-d H:i:s'),
-            'updated_by' => $admin['id']
-        ])
-    ]);
+    debug($users->deactivateById(7, [
+        'updated_at' => \date('Y-m-d H:i:s'),
+        'updated_by' => $admin['id']
+    ]), 'Deactivate user 7');
 
-    \var_dump(['update user 15:' =>
-        $users->updateById(15, [
-            'first_name' => 'Not so random',
-            'id'         => 1500,       // ID-г өөрчлөх (PostgreSQL-д зөвшөөрөгдөнө)
-            'updated_by' => $admin['id']
-        ])
-    ]);
+    debug($users->updateById(15, [
+        'first_name' => 'Not so random',
+        'id'         => 1500,       // ID-г өөрчлөх (PostgreSQL-д зөвшөөрөгдөнө)
+        'updated_by' => $admin['id']
+    ]), 'Update user 15');
 
     /**
      * ---------------------------------------------------------------------
@@ -120,43 +131,35 @@ try {
     $translation = new ExampleTranslationModel($pdo);
 
     // Localized мөр авах
-    \var_dump($translation->getRowWhere(['p.id' => 1, 'p.is_active' => 1]));
-    \var_dump($translation->getRowWhere(['p.id' => 1, 'c.code' => 'mn']));
+    debug($translation->getRowWhere(['p.id' => 1, 'p.is_active' => 1]), 'Get row (id=1, active)');
+    debug($translation->getRowWhere(['p.id' => 1, 'c.code' => 'mn']), 'Get row (id=1, code=mn)');
+    debug($translation->getRowByCode(1, 'en'), 'Get row by code (id=1, code=en)');
 
     // Delete / deactivate
-    \var_dump($translation->deleteById(7));
+    debug($translation->deleteById(7), 'Delete translation 7');
 
-    \var_dump(['deactivate translation 8:' =>
-        $translation->deactivateById(8, [
-            'updated_at' => \date('Y-m-d H:i:s'),
-            'updated_by' => $admin['id']
-        ])
-    ]);
+    debug($translation->deactivateById(8, [
+        'updated_at' => \date('Y-m-d H:i:s'),
+        'updated_by' => $admin['id']
+    ]), 'Deactivate translation 8');
 
     // Олон хэл дээр шинэчлэх (mn + en + de)
-    echo 'update translation 4: => ';
-    \var_dump(        
-        $translation->updateById(
-            4,
-            ['keyword' => 'golio', 'updated_by' => $admin['id']],
-            [
-                'mn' => ['title' => 'Голио'],
-                'en' => ['title' => 'Cicada'],
-                'de' => ['title' => 'die Heuschrecke']
-            ]
-        )
-    );
+    debug($translation->updateById(
+        4,
+        ['keyword' => 'golio', 'updated_by' => $admin['id']],
+        [
+            'mn' => ['title' => 'Голио'],
+            'en' => ['title' => 'Cicada'],
+            'de' => ['title' => 'die Heuschrecke']
+        ]
+    ), 'Update translation 4 (mn+en+de)');
 
     // Зөвхөн зарим хэл шинэчлэх
-    echo 'update translation 5:  =>';
-    \var_dump(        
-        $translation->updateById(
-            5,
-            ['id' => 500, 'updated_by' => $admin['id']],
-            ['en' => ['title' => 'Hyperactive']]
-        )
-    );
-
+    debug($translation->updateById(
+        5,
+        ['id' => 500, 'updated_by' => $admin['id']],
+        ['en' => ['title' => 'Hyperactive']]
+    ), 'Update translation 5 (en only)');
 
     /**
      * ---------------------------------------------------------------------
@@ -178,8 +181,8 @@ try {
            $titleByLang
         );
     }
-    echo '<br/><hr><br/>List of Translation texts<br/>';
-    \var_dump($texts);
+    echo '<br/><hr><br/>';
+    debug($texts, 'List of Translation texts');
     echo "<br/><hr>chat in mongolian => {$texts['chat']['mn']}<br/><hr>";
 
     /**
@@ -191,7 +194,7 @@ try {
         'WHERE'    => 'p.is_active=1',
         'ORDER BY' => 'p.keyword'
     ]) as $row) {
-        \var_dump($row);
+        debug($row, 'Translation row');
     }
 
     /**
@@ -200,13 +203,10 @@ try {
      * ---------------------------------------------------------------------
      */
     echo '<br/><hr><br/><br/>';
-    \var_dump([
-        'list of users:' =>
-        $users->getRows([
-            'WHERE'    => 'is_active=1',
-            'ORDER BY' => 'id DESC'
-        ])
-    ]);
+    debug($users->getRows([
+        'WHERE'    => 'is_active=1',
+        'ORDER BY' => 'id DESC'
+    ]), 'List of active users');
 } catch (\Throwable $e) {
     /**
      * ---------------------------------------------------------------------

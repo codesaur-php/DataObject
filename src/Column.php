@@ -122,13 +122,21 @@ class Column
         return $this;
     }
 
-    /** Баганын нэр авах. */
+    /**
+     * Баганын нэр авах.
+     *
+     * @return string Баганын нэр
+     */
     public function getName(): string
     {
         return $this->_name;
     }
 
-    /** Баганын өгөгдлийн төрөл авах. */
+    /**
+     * Баганын өгөгдлийн төрөл авах.
+     *
+     * @return string Өгөгдлийн төрөл (varchar, int, bigint гэх мэт)
+     */
     public function getType(): string
     {
         return $this->_type;
@@ -143,25 +151,41 @@ class Column
         return $this->isInt() ? \PDO::PARAM_INT : \PDO::PARAM_STR;
     }
 
-    /** Төрлийн урт авах. */
+    /**
+     * Төрлийн урт авах.
+     *
+     * @return int|string|null Урт/хэмжээ (VARCHAR(255) гэхэд 255), эсвэл null
+     */
     public function getLength(): int|string|null
     {
         return $this->_length;
     }
 
-    /** Анхдагч утга авах. */
+    /**
+     * Анхдагч утга авах.
+     *
+     * @return string|int|float|bool|null Анхдагч утга, эсвэл null
+     */
     public function getDefault(): string|int|float|bool|null
     {
         return $this->_default;
     }
 
-    /** AUTO_INCREMENT эсэх. */
+    /**
+     * AUTO_INCREMENT эсэх.
+     *
+     * @return bool AUTO_INCREMENT тэмдэглэгдсэн эсэх
+     */
     public function isAuto(): bool
     {
         return $this->_is_auto ?? false;
     }
 
-    /** Текстэн төрөл эсэх. */
+    /**
+     * Текстэн төрөл эсэх.
+     *
+     * @return bool varchar, text, blob гэх мэт текстэн төрөл эсэх
+     */
     public function isString(): bool
     {
         return $this->getType() == 'varchar'
@@ -180,7 +204,11 @@ class Column
             || $this->getType() == 'set';
     }
 
-    /** Бүх боломжит integer төрлүүд. */
+    /**
+     * Бүх боломжит integer төрлүүд.
+     *
+     * @return bool int, bigint, smallint, tinyint гэх мэт тоон төрөл эсэх
+     */
     public function isInt(): bool
     {
         return $this->getType() == 'int'
@@ -196,7 +224,11 @@ class Column
             || $this->getType() == 'boolean';
     }
 
-    /** Аравтын тоонууд. */
+    /**
+     * Аравтын тоонууд.
+     *
+     * @return bool decimal, float, double гэх мэт аравтын төрөл эсэх
+     */
     public function isDecimal(): bool
     {
         return $this->getType() == 'decimal'
@@ -206,7 +238,11 @@ class Column
             || $this->getType() == 'real';
     }
 
-    /** Огноо/цаг төрлүүд. */
+    /**
+     * Огноо/цаг төрлүүд.
+     *
+     * @return bool datetime, date, timestamp гэх мэт цагийн төрөл эсэх
+     */
     public function isDateTime(): bool
     {
         return $this->getType() == 'datetime'
@@ -217,13 +253,21 @@ class Column
             || $this->getType() == 'year';
     }
 
-    /** BIT төрөл эсэх. */
+    /**
+     * BIT төрөл эсэх.
+     *
+     * @return bool BIT төрөл эсэх
+     */
     public function isBit(): bool
     {
         return $this->getType() == 'bit';
     }
 
-    /** Тоон утгууд уу? */
+    /**
+     * Тоон утгууд эсэх.
+     *
+     * @return bool Integer, decimal, bit төрлүүд багтах эсэх
+     */
     public function isNumeric(): bool
     {
         return $this->isInt()
@@ -231,19 +275,31 @@ class Column
             || $this->isBit();
     }
 
-    /** NULL зөвшөөрөх эсэх. */
+    /**
+     * NULL зөвшөөрөх эсэх.
+     *
+     * @return bool NULL утга зөвшөөрөгдөх эсэх (true=зөвшөөрнө, false=NOT NULL)
+     */
     public function isNull(): bool
     {
         return $this->_is_null ?? true;
     }
 
-    /** PRIMARY KEY эсэх. */
+    /**
+     * PRIMARY KEY эсэх.
+     *
+     * @return bool PRIMARY KEY багана эсэх
+     */
     public function isPrimary(): bool
     {
         return $this->_is_primary ?? false;
     }
 
-    /** UNIQUE эсэх. */
+    /**
+     * UNIQUE эсэх.
+     *
+     * @return bool UNIQUE constraint байгаа эсэх
+     */
     public function isUnique(): bool
     {
         return $this->_is_unique ?? false;

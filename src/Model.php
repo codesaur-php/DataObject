@@ -32,7 +32,8 @@ abstract class Model
      * PostgreSQL → RETURNING * ашиглана
      *
      * @param array $record Нэмэх мөрийн түлхүүр → утга хослол
-     * @return array|false Амжилттай бол шинэ мөрийн мэдээлэл, алдаа бол false
+     * @return array|false Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
+     * @throws Exception
      */
     public function insert(array $record): array|false
     {
@@ -92,8 +93,8 @@ abstract class Model
      * MySQL → SELECT * WHERE id=...
      *
      * @param int $id Шинэчлэх ID
-     * @param array $record Шинэчлэх талбарууд
-     * @return array|false Шинэчилсэн мөрийн data, алдаа бол false
+     * @param array $record Шинэчлэх талбарууд ['column' => value, ...]
+     * @return array|false Шинэчилсэн мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
      * @throws Exception
      */
     public function updateById(int $id, array $record): array|false

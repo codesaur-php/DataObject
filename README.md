@@ -120,9 +120,51 @@ class UserModel extends Model
 
 CONTENT хүснэгт дотор:
 
-- `parent_id` → FK → primary.id  
+- `parent_id` → FK → primary.id (CASCADE шинэчлэлт)  
 - `code` → хэлний код (mn, en, jp …)  
 - бусад талбарууд (`title`, `description`, …)
+
+## Үндсэн функцүүд:
+
+✔ **CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
+✔ **Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowByCode($id, $code)`  
+✔ MySQL / PostgreSQL ялгааг автоматаар зохицуулна
+
+## Буцаах утгын бүтэц:
+
+`getRow()`, `getRows()`, `insert()`, `updateById()` функцүүд дараах бүтэцтэй массив буцаана:
+
+```php
+[
+    'id' => 1,
+    'slug' => 'article-slug',
+    'is_active' => 1,
+    'localized' => [
+        'en' => [
+            'title' => 'English Title',
+            'body' => 'English content...'
+        ],
+        'mn' => [
+            'title' => 'Монгол Гарчиг',
+            'body' => 'Монгол агуулга...'
+        ]
+    ]
+]
+```
+
+`getRowByCode($id, 'en')` функц зөвхөн тухайн хэлний контентыг буцаана:
+
+```php
+[
+    'id' => 1,
+    'slug' => 'article-slug',
+    'is_active' => 1,
+    'localized' => [
+        'title' => 'English Title',
+        'body' => 'English content...'
+    ]
+]
+```
 
 ```php
 use codesaur\DataObject\LocalizedModel;
@@ -159,6 +201,18 @@ class ArticleModel extends LocalizedModel
             ],
             $content // ['en' => ['title' => '...', 'body' => '...'], 'mn' => [...]]
         );
+    }
+    
+    // Жишээ: нийтлэлийн контентыг шинэчлэх
+    public function updateArticle(int $id, array $content, array $record = []): array|false
+    {
+        return $this->updateById($id, $record, $content);
+    }
+    
+    // Жишээ: тодорхой хэлээр нийтлэл авах
+    public function getArticleByLang(int $id, string $lang): array|null
+    {
+        return $this->getRowByCode($id, $lang);
     }
 }
 ```

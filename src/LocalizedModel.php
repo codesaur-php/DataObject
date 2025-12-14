@@ -75,7 +75,7 @@ abstract class LocalizedModel
         $contentTable = $this->getContentName();
         $this->createTable($contentTable, $this->getContentColumns());
 
-        // FK тохиргоо
+        // FK тохиргоо: parent_id → primary.id, CASCADE шинэчлэлт
         $this->exec(
             "ALTER TABLE $contentTable 
              ADD FOREIGN KEY (parent_id) REFERENCES $table(id)
@@ -585,5 +585,53 @@ abstract class LocalizedModel
             'WHERE' => $clause,
             'PARAM' => $params
         ]);
+    }
+
+    /**
+     * Primary ID болон хэлний кодыг ашиглан мөр авах.
+     * 
+     * Энэ функц нь тухайн хэлний кодыг өгөхөд зөвхөн тухайн хэлний контентыг буцаана.
+     *
+     * @param int $id Primary хүснэгтийн ID
+     * @param string $code Хэлний код (жишээ: 'en', 'mn', 'ru')
+     * @return array|null Зөвхөн тухайн хэлний контент агуулсан мөр; олдохгүй бол null:
+     *   - Primary хүснэгтийн бүх багана утгууд шууд түвшинд
+     *   - 'localized' түлхүүр дор зөвхөн тухайн хэлний контент (хэлний кодын түвшин байхгүй)
+     * 
+     * @example code='en' бол:
+     *   [
+     *     'id' => 1,
+     *     'name' => 'product_name',
+     *     'status' => 'active',
+     *     'localized' => [
+     *       'title' => 'English Title',
+     *       'description' => 'English Description'
+     *     ]
+     *   ]
+     * 
+     * @see getRow() Бүх хэлний контентыг авах функц
+     */
+    public function getRowByCode(int $id, string $code): array|null
+    {
+        $row = $this->getRow([
+            'WHERE' => 'p.id=:id AND c.code=:code',
+            'PARAM' => [
+                ':id' => $id,
+                ':code' => $code
+            ]
+        ]);
+
+        if ($row === null) {
+            return null;
+        }
+
+        // Зөвхөн тухайн хэлний контентыг буцаах
+        if (isset($row['localized'][$code])) {
+            $row['localized'] = $row['localized'][$code];
+        } else {
+            $row['localized'] = [];
+        }
+
+        return $row;
     }
 }
