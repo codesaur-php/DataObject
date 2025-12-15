@@ -2,8 +2,9 @@
 
 /**
  * DataObject жишээ кодууд
- *   - index_mysql.php
- *   - index_postgres.php
+ *   - mysql.php
+ *   - postgres.php
+ *   - sqlite.php
  */
 
 ?>
@@ -70,6 +71,7 @@
     <div class="links">
         <a href="mysql.php">▶ Run MySQL Example</a>
         <a href="postgres.php">▶ Run PostgreSQL Example</a>
+        <a href="sqlite.php">▶ Run SQLite Example</a>
     </div>
 
     <div class="footer">

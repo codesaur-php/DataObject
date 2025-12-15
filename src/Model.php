@@ -28,7 +28,7 @@ abstract class Model
     /**
      * Өгөгдөл нэмэх (INSERT).
      *
-     * MySQL → lastInsertId() ашиглана  
+     * MySQL/SQLite → lastInsertId() ашиглана
      * PostgreSQL → RETURNING * ашиглана
      *
      * @param array $record Нэмэх мөрийн түлхүүр → утга хослол
@@ -37,6 +37,8 @@ abstract class Model
      */
     public function insert(array $record): array|false
     {
+        $driver = $this->getDriverName();
+
         $column = $param = [];
         foreach (\array_keys($record) as $key) {
             $column[] = $key;
@@ -50,7 +52,7 @@ abstract class Model
         $query = "INSERT INTO $table($columns) VALUES($params)";
 
         // PostgreSQL → RETURNING *
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             $query .= ' RETURNING *';
         }
 
@@ -64,13 +66,15 @@ abstract class Model
         }
 
         // PostgreSQL → шинэ мөрийг буцаана
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             return $insert->fetch(\PDO::FETCH_ASSOC);
         }
 
-        // MySQL → ID багана байгаа бол retrive хийнэ
+        // MySQL/SQLite → ID багана байгаа бол retrive хийнэ
         if ($this->hasColumn('id') && $this->getColumn('id')->isPrimary()) {
-            $id = (int)($record['id'] ?? $this->pdo->lastInsertId('id'));
+            // SQLite дээр lastInsertId() нь sequence name шаардлагагүй
+            $sequenceName = ($driver == 'sqlite') ? null : 'id';
+            $id = (int)($record['id'] ?? $this->pdo->lastInsertId($sequenceName));
             return $this->getRowWhere(['id' => $id]) ?? false;
         }
 
@@ -90,7 +94,7 @@ abstract class Model
      * UPDATE table SET field=:value WHERE id=X
      *
      * PostgreSQL → RETURNING *
-     * MySQL → SELECT * WHERE id=...
+     * MySQL/SQLite → SELECT * WHERE id=...
      *
      * @param int $id Шинэчлэх ID
      * @param array $record Шинэчлэх талбарууд ['column' => value, ...]
@@ -113,20 +117,19 @@ abstract class Model
             throw new \Exception("(updateById): Must provide updated record!");
         }
 
+        $driver = $this->getDriverName();
+        
         // UPDATE SET синтакс бэлтгэх
         $set = [];
         foreach (\array_keys($record) as $name) {
             $set[] = "$name=:$name";
         }
         $sets = \implode(', ', $set);
-
         $query = "UPDATE $table SET $sets WHERE id=$id";
-
         // PostgreSQL → RETURNING *
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             $query .= ' RETURNING *';
-        }
-        
+        }        
         $update = $this->prepare($query);
         // Bind values
         foreach ($record as $name => $value) {
@@ -137,11 +140,11 @@ abstract class Model
         }
 
         // PostgreSQL → Бүрэн мөрийг буцаах
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             return $update->fetch(\PDO::FETCH_ASSOC);
         }
 
-        // MySQL → Шинэчилсэн мөрийг сонгох
+        // MySQL/SQLite → Шинэчилсэн мөрийг сонгон бүрнээр буцаах
         return $this->getRowWhere(['id' => $record['id'] ?? $id]) ?? false;
     }
 
@@ -181,7 +184,17 @@ abstract class Model
     {
         $stmt = $this->selectStatement($this->getName(), '*', $condition);
 
-        if ($stmt->rowCount() == 1) {
+        // SQLite дээр rowCount() SELECT-д ажиллахгүй, fetch() ашиглана
+        if ($this->getDriverName() == 'sqlite') {
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if ($row !== false) {
+                // Зөвхөн нэг мөр байгаа эсэхийг шалгах (хоёр дахь мөр байвал null буцаана)
+                $secondRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+                if ($secondRow === false) {
+                    return $row;
+                }
+            }
+        } elseif ($stmt->rowCount() == 1) {
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         }
 

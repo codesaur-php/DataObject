@@ -71,16 +71,47 @@ abstract class LocalizedModel
         // Primary table үүсгэнэ
         $this->createTable($table, $columns);
 
-        // Content table үүсгэнэ
+        // Content table үүсгэе
         $contentTable = $this->getContentName();
-        $this->createTable($contentTable, $this->getContentColumns());
-
-        // FK тохиргоо: parent_id → primary.id, CASCADE шинэчлэлт
-        $this->exec(
-            "ALTER TABLE $contentTable 
-             ADD FOREIGN KEY (parent_id) REFERENCES $table(id)
-             ON DELETE CASCADE ON UPDATE CASCADE"
-        );
+        
+        // SQLite дээр FK-г CREATE TABLE-д шууд нэмэх хэрэгтэй
+        if ($this->getDriverName() == 'sqlite') {
+            $contentColumns = $this->getContentColumns();
+            $columnSyntaxes = [];
+            $references = [];            
+            foreach ($contentColumns as $key => $column) {
+                $columnSyntaxes[] = $this->getSyntax($column);                
+                if ($column->isUnique()) {
+                    $references[] = "UNIQUE ($key)";
+                }
+            }            
+            // FK constraint нэмэх
+            $references[] = "FOREIGN KEY (parent_id) REFERENCES $table(id) ON DELETE CASCADE ON UPDATE CASCADE";            
+            $create = "CREATE TABLE $contentTable (" . \implode(', ', $columnSyntaxes);
+            if (!empty($references)) {
+                $create .= ', ' . \implode(', ', $references);
+            }
+            $create .= ')';            
+            if ($this->exec($create) === false) {
+                $error_info = $this->pdo->errorInfo();
+                $error_code = \is_numeric($error_info[1] ?? null)
+                    ? (int)$error_info[1]
+                    : (\is_numeric($this->pdo->errorCode())
+                        ? (int)$this->pdo->errorCode()
+                        : 0);
+                throw new \Exception(__CLASS__ . ": Table [$contentTable] creation failed! "
+                    . \implode(': ', $error_info), $error_code);
+            }
+        } else {
+            $this->createTable($contentTable, $this->getContentColumns());
+            
+            // FK тохиргоо: parent_id → primary.id, CASCADE шинэчлэлт
+            $this->exec(
+                "ALTER TABLE $contentTable 
+                 ADD FOREIGN KEY (parent_id) REFERENCES $table(id)
+                 ON DELETE CASCADE ON UPDATE CASCADE"
+            );
+        }
 
         $this->__initial();
     }
@@ -186,6 +217,8 @@ abstract class LocalizedModel
                 __CLASS__ . "[$contentTable}]: Can't insert record when localized content is empty!"
             );
         }
+        
+        $driver = $this->getDriverName();
 
         // Primary table INSERT
         $column = $param = [];
@@ -193,17 +226,14 @@ abstract class LocalizedModel
             $column[] = $key;
             $param[] = ":$key";
         }
-
         $columns = \implode(', ', $column);
         $values = \implode(', ', $param);
-
+        
         $table = $this->getName();
         $query = "INSERT INTO $table($columns) VALUES($values)";
-        
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             $query .= ' RETURNING id';
         }
-
         $insert = $this->prepare($query);
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
@@ -213,10 +243,12 @@ abstract class LocalizedModel
         }
 
         // Шинэ ID
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             $id = $insert->fetch(\PDO::FETCH_ASSOC)['id'];
         } else {
-            $id = (int)($record['id'] ?? $this->pdo->lastInsertId('id'));
+            // SQLite дээр lastInsertId() нь sequence name шаардлагагүй
+            $sequenceName = ($this->getDriverName() == 'sqlite') ? null : 'id';
+            $id = (int)($record['id'] ?? $this->pdo->lastInsertId($sequenceName));
         }
 
         // Content table → олон хэл оруулах

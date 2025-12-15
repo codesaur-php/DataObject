@@ -10,7 +10,7 @@ namespace codesaur\DataObject;
  *
  * Үүнд:
  *  - Хүснэгтийн нэр ба багануудын тодорхойлолт
- *  - Хүснэгт автоматаар үүсгэх логик (MySQL/PostgreSQL-д таарсан)
+ *  - Хүснэгт автоматаар үүсгэх логик (MySQL/PostgreSQL/SQLite-д таарсан)
  *  - PRIMARY, UNIQUE багана баталгаажуулалт
  *  - CRUD-ийн туслах үйлдлүүд (deleteById, deactivateById)
  *  - SELECT statement builder (JOIN, WHERE, LIMIT…)
@@ -285,13 +285,8 @@ trait TableTrait
     {
         $references = [];
         $columnSyntaxes = [];
-
         // Багана бүрийн SQL синтакс бэлтгэх
         foreach ($columns as $key => $column) {
-            if (!$column instanceof Column) {
-                continue;
-            }
-
             $columnSyntaxes[] = $this->getSyntax($column);
 
             if ($column->isUnique()) {
@@ -374,12 +369,12 @@ trait TableTrait
 
     /**
      * Column объектын SQL синтаксыг үүсгэх.
-     * MySQL/PGSQL-д тааруулж төрлийг хөрвүүлдэг.
+     * MySQL/PGSQL/SQLite-д тааруулж төрлийг хөрвүүлдэг.
      *
      * @param Column $column
      * @return string SQL хэлбэр
      */
-    private function getSyntax(Column $column): string
+    protected function getSyntax(Column $column): string
     {
         $str = $column->getName();
 
@@ -389,8 +384,10 @@ trait TableTrait
         }
 
         $type = $column->getType();
+        $driver = $this->getDriverName();
+        
         // PostgreSQL төрөл хөрвүүлэлт
-        if ($this->getDriverName() == 'pgsql') {
+        if ($driver == 'pgsql') {
             switch ($type) {
                 case 'int8': $type = 'bigint'; break;
                 case 'integer':
@@ -408,7 +405,41 @@ trait TableTrait
                 elseif ($type === 'int') $type = 'serial';
                 elseif ($type === 'smallint') $type = 'smallserial';
             }
-
+        } elseif ($driver == 'sqlite') {
+            // SQLite төрөл хөрвүүлэлт
+            switch ($type) {
+                case 'bigint':
+                case 'int8':
+                case 'int':
+                case 'integer':
+                case 'mediumint':
+                case 'smallint':
+                case 'tinyint':
+                case 'serial':
+                case 'bigserial':
+                case 'smallserial':
+                case 'bool':
+                case 'boolean':
+                    $type = 'INTEGER';
+                    break;
+                case 'decimal':
+                case 'numeric':
+                case 'float':
+                case 'double':
+                case 'real':
+                    $type = 'REAL';
+                    break;
+                case 'blob':
+                case 'tinyblob':
+                case 'mediumblob':
+                case 'longblob':
+                case 'binary':
+                case 'varbinary':
+                    $type = 'BLOB';
+                    break;
+                default:
+                    $type = 'TEXT';
+            }
         } else { // MySQL хөрвүүлэлт
             switch ($type) {
                 case 'bigserial': $type = 'bigint'; break;
@@ -419,8 +450,8 @@ trait TableTrait
         }
         $str .= " $type";
 
-        // Урт
-        if (!empty($column->getLength())) {
+        // Урт (SQLite дээр урт шаардлагагүй)
+        if (!empty($column->getLength()) && $driver != 'sqlite') {
             $str .= '(' . $column->getLength() . ')';
         }
 
@@ -443,9 +474,13 @@ trait TableTrait
             $str .= ' PRIMARY KEY';
         }
 
-        // AUTO_INCREMENT → зөвхөн MySQL
-        if ($column->isAuto() && $this->getDriverName() == 'mysql') {
-            $str .= ' AUTO_INCREMENT';
+        // AUTO_INCREMENT / AUTOINCREMENT
+        if ($column->isAuto()) {
+            if ($driver == 'mysql') {
+                $str .= ' AUTO_INCREMENT';
+            } elseif ($driver == 'sqlite' && $column->isPrimary()) {
+                $str .= ' AUTOINCREMENT';
+            }
         }
 
         return $str;

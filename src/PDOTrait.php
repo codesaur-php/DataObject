@@ -9,13 +9,13 @@ namespace codesaur\DataObject;
  * ерөнхий үйлдлүүдийг (prepare, query, exec, quote, driver төрлийг авах)
  * нэг стандарт интерфэйс болгон төвлөрүүлдэг.
  *
- * DataObject экосистемийн бүх Model болон Table-тэй холбоотой классууд
+ * codesaur экосистемийн бүх Model болон Table-тэй холбоотой классууд
  * энэ trait-ийг ашигласнаар:
  *
  *  - PDO instance-г хуваалцана
  *  - SQL statement-үүдийг найдвартай бэлтгэнэ
  *  - Алдааг стандарт хэлбэрээр шиднэ
- *  - MySQL/PostgreSQL драйверийг автоматаар танина
+ *  - MySQL/PostgreSQL/SQLite драйверийг автоматаар танина
  *  - FOREIGN KEY CHECKS зэрэг тохиргоог удирдана
  *
  * @package codesaur\DataObject
@@ -157,6 +157,14 @@ trait PDOTrait
                     WHERE schemaname='public' 
                     AND tablename=" . $this->quote($table))->rowCount() > 0;
 
+            case 'sqlite': {
+                $stmt = $this->query("SELECT name 
+                    FROM sqlite_master 
+                    WHERE type='table' 
+                    AND name=" . $this->quote($table));
+                return $stmt->fetch() !== false;
+            }
+
             default:
                 throw new \RuntimeException("Driver not supported");
         }
@@ -167,6 +175,7 @@ trait PDOTrait
      * 
      * MySQL → SET foreign_key_checks  
      * PostgreSQL → SET session_replication_role
+     * SQLite → PRAGMA foreign_keys
      *
      * @param bool $enable TRUE=асаах, FALSE=унтраах
      * @return int|false
@@ -179,7 +188,10 @@ trait PDOTrait
                 return $this->exec('SET foreign_key_checks=' . ($enable ? 1 : 0));
 
             case 'pgsql':
-                return $this->exec('SET session_replication_role = ' . $this->quote($enable ? 'origin' : 'replica'));
+                return $this->exec('SET session_replication_role=' . $this->quote($enable ? 'origin' : 'replica'));
+
+            case 'sqlite':
+                return $this->exec('PRAGMA foreign_keys=' . ($enable ? 'ON' : 'OFF'));
 
             default:
                 throw new \RuntimeException("Driver not supported");

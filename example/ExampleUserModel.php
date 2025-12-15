@@ -61,17 +61,21 @@ class ExampleUserModel extends Model
     {
         $table = $this->getName();
 
-        // created_by → FK (self reference)
-        $this->exec("ALTER TABLE $table 
-            ADD CONSTRAINT {$table}_fk_created_by 
-            FOREIGN KEY (created_by) REFERENCES $table(id) 
-            ON DELETE SET NULL ON UPDATE CASCADE");
+        // SQLite дээр ALTER TABLE ... ADD CONSTRAINT дэмжигддэггүй
+        // MySQL/PostgreSQL дээр л FK constraint нэмнэ
+        if ($this->getDriverName() != 'sqlite') {
+            // created_by → FK (self reference)
+            $this->exec("ALTER TABLE $table 
+                ADD CONSTRAINT {$table}_fk_created_by 
+                FOREIGN KEY (created_by) REFERENCES $table(id) 
+                ON DELETE SET NULL ON UPDATE CASCADE");
 
-        // updated_by → FK (self reference)
-        $this->exec("ALTER TABLE $table 
-            ADD CONSTRAINT {$table}_fk_updated_by 
-            FOREIGN KEY (updated_by) REFERENCES $table(id) 
-            ON DELETE SET NULL ON UPDATE CASCADE");
+            // updated_by → FK (self reference)
+            $this->exec("ALTER TABLE $table 
+                ADD CONSTRAINT {$table}_fk_updated_by 
+                FOREIGN KEY (updated_by) REFERENCES $table(id) 
+                ON DELETE SET NULL ON UPDATE CASCADE");
+        }
 
         // Админ хэрэглэгчийг автоматаар үүсгэнэ
         $now = \date('Y-m-d H:i:s');

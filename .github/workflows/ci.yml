@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        php-version: ['8.2', '8.3']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo, pdo_sqlite, pdo_mysql, pdo_pgsql
+          coverage: xdebug
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+      
+      - name: Run tests
+        run: composer test
+      
+      - name: Generate coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'
+        run: composer test-coverage
+      
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/clover.xml
+          fail_ci_if_error: false
+

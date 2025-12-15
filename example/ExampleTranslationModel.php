@@ -68,23 +68,27 @@ class ExampleTranslationModel extends LocalizedModel
 
         $table = $this->getName();
 
-        // created_by → FK example_user.id
-        $this->setForeignKeyChecks(false);
-        $this->exec(
-            "ALTER TABLE $table 
-             ADD CONSTRAINT {$table}_fk_created_by 
-             FOREIGN KEY (created_by) REFERENCES example_user(id)
-             ON DELETE SET NULL ON UPDATE CASCADE"
-        );
+        // SQLite дээр ALTER TABLE ... ADD CONSTRAINT дэмжигддэггүй
+        // MySQL/PostgreSQL дээр л FK constraint нэмнэ
+        if ($this->getDriverName() != 'sqlite') {
+            // created_by → FK example_user.id
+            $this->setForeignKeyChecks(false);
+            $this->exec(
+                "ALTER TABLE $table 
+                 ADD CONSTRAINT {$table}_fk_created_by 
+                 FOREIGN KEY (created_by) REFERENCES example_user(id)
+                 ON DELETE SET NULL ON UPDATE CASCADE"
+            );
 
-        // updated_by → FK example_user.id
-        $this->exec(
-            "ALTER TABLE $table 
-             ADD CONSTRAINT {$table}_fk_updated_by 
-             FOREIGN KEY (updated_by) REFERENCES example_user(id)
-             ON DELETE SET NULL ON UPDATE CASCADE"
-        );
-        $this->setForeignKeyChecks(true);
+            // updated_by → FK example_user.id
+            $this->exec(
+                "ALTER TABLE $table 
+                 ADD CONSTRAINT {$table}_fk_updated_by 
+                 FOREIGN KEY (updated_by) REFERENCES example_user(id)
+                 ON DELETE SET NULL ON UPDATE CASCADE"
+            );
+            $this->setForeignKeyChecks(true);
+        }
 
         // Анхны олон хэлтэй түлхүүрүүдийг оруулна
         $this->insert(['keyword' => 'chat'], ['mn' => ['title' => 'Харилцан яриа'], 'en' => ['title' => 'Chat']]);

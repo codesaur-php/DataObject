@@ -1,4 +1,8 @@
 /vendor/
 /nbproject/
+/coverage/
+.phpunit.cache/
+
+example/dataobject_example.db
 
 composer.lock
