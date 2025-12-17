@@ -1,4 +1,9 @@
 # 🧱 codesaur/dataobject  
+
+![CI](https://github.com/codesaur-php/DataObject/actions/workflows/ci.yml/badge.svg)
+![PHP](https://img.shields.io/badge/php-8.2%2B-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 **PDO суурьтай өгөгдлийн модель ба хүснэгтүүдийг удирдагч компонент (MySQL / PostgreSQL / SQLite, PHP 8.2+)**
 
 `codesaur/dataobject` нь **codesaur-php** экосистемийн өгөгдлийн давхаргын үндсэн компонент.  
@@ -29,19 +34,57 @@ composer require codesaur/dataobject
 
 ## 🧪 Тест ажиллуулах
 
+### Composer Test Command-ууд
+
 ```bash
-# Бүх тест ажиллуулах
+# Бүх тест ажиллуулах (Unit + Integration тестүүд)
 composer test
 
-# Coverage report үүсгэх
+# HTML coverage report үүсгэх (coverage/ directory дотор)
 composer test-coverage
 ```
 
-Тестүүд:
+### Command-уудын тайлбар
+
+- **`composer test`** 
+  - Бүх тестүүдийг (Unit болон Integration) ажиллуулна
+  - PHPUnit ашиглан тестлэх
+  - Тестүүдийн үр дүнг terminal дээр харуулна
+  - Амжилттай/Амжилтгүй статусыг буцаана
+
+- **`composer test-coverage`**
+  - Бүх тестүүдийг ажиллуулна + code coverage report үүсгэнэ
+  - HTML форматтай coverage report үүсгэнэ (`coverage/` directory)
+  - Браузер дээр `coverage/index.html` файлыг нээж харж болно
+  - Мөр, функц, класс тус бүрийн coverage хувийг харуулна
+
+### Тестүүдийн мэдээлэл
+
 - **Unit Tests**: Column, Model классуудын тест (12 тест, 23 assertion)
 - **Integration Tests**: LocalizedModel-ийн бүрэн тест (5 тест, 23 assertion)
 - **Нийт**: 23 тест, 65 assertion
 - **Coverage**: 80%+ code coverage (зорилго)
+
+### PHPUnit шууд ашиглах
+
+Composer command-уудын оронд PHPUnit-ийг шууд ажиллуулж болно:
+
+```bash
+# Бүх тест ажиллуулах
+vendor/bin/phpunit
+
+# Зөвхөн Unit тестүүд
+vendor/bin/phpunit tests/Unit
+
+# Зөвхөн Integration тестүүд
+vendor/bin/phpunit tests/Integration
+
+# Coverage report (Clover XML формат)
+vendor/bin/phpunit --coverage-clover coverage/clover.xml
+
+# Coverage report (HTML формат)
+vendor/bin/phpunit --coverage-html coverage
+```
 
 ---
 
@@ -304,9 +347,16 @@ Project нь бүрэн тестжүүлсэн:
 
 - ✅ **PHPUnit** - Unit болон Integration тестүүд
 - ✅ **GitHub Actions** - Автомат CI/CD pipeline
+  - Push болон Pull Request үед автоматаар ажиллана
+  - `main`, `master`, `develop` branch-ууд дээр trigger болно
 - ✅ **Code Coverage** - 80%+ coverage
+  - HTML coverage report: `coverage/` directory
+  - Codecov дээр хадгална (Clover XML формат)
 - ✅ **Multi-version** - PHP 8.2, 8.3 дээр тестлэгдсэн
 - ✅ **Multi-OS** - Ubuntu, Windows дээр тестлэгдсэн
+- ✅ **Database Extensions** - PDO, PDO_SQLite, PDO_MySQL, PDO_PgSQL суурилуулна
+
+CI/CD workflow файл: `.github/workflows/ci.yml`
 
 ---
 

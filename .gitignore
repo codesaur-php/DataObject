@@ -6,3 +6,10 @@
 example/dataobject_example.db
 
 composer.lock
+
+# PHPUnit test results
+.phpunit.result.cache
+phpunit.xml.bak
+
+# CI/CD related
+.github/workflows/*.yml.bak
