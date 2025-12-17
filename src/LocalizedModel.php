@@ -214,7 +214,7 @@ abstract class LocalizedModel
 
         if (empty($content)) {
             throw new \InvalidArgumentException(
-                __CLASS__ . "[$contentTable}]: Can't insert record when localized content is empty!"
+                __CLASS__ . "[$contentTable]: Can't insert record when localized content is empty!"
             );
         }
         
