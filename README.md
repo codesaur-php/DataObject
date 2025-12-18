@@ -1,10 +1,10 @@
 # 🧱 codesaur/dataobject  
 
-![CI](https://github.com/codesaur-php/DataObject/actions/workflows/ci.yml/badge.svg)
-![PHP](https://img.shields.io/badge/php-8.2%2B-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![CI](https://github.com/codesaur-php/DataObject/actions/workflows/ci.yml/badge.svg)](https://github.com/codesaur-php/DataObject/actions)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.2.1-777BB4.svg?logo=php)](https://www.php.net/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**PDO суурьтай өгөгдлийн модель ба хүснэгтүүдийг удирдагч компонент (MySQL / PostgreSQL / SQLite, PHP 8.2+)**
+**PDO суурьтай өгөгдлийн модель ба хүснэгтүүдийг удирдагч компонент (MySQL / PostgreSQL / SQLite, PHP 8.2.1+)**
 
 `codesaur/dataobject` нь **codesaur-php** экосистемийн өгөгдлийн давхаргын үндсэн компонент.  
 Энгийн `PDO`-г шууд ашиглахын оронд:
@@ -22,7 +22,7 @@
 
 - PHP **8.2.1+**
 - `ext-pdo`
-- MySQL эсвэл PostgreSQL
+- MySQL эсвэл PostgreSQL эсвэл SQLite
 
 ---
 
@@ -362,8 +362,8 @@ CI/CD workflow файл: `.github/workflows/ci.yml`
 
 ## 📚 Нэмэлт Документаци
 
-- **[API.md](API.md)** - Бүрэн API баримт бичиг (бүх класс, метод, parameter-уудын тайлбар Cursor AI)
-- **[REVIEW.md](REVIEW.md)** - Code review үр дүн, олсон асуудлууд, сайжруулалтын саналууд (Cursor AI)
+- **[API.md](API.md)** - Бүрэн API баримт бичиг (PHPDoc-уудаас Cursor AI ашиглан автоматаар үүсгэсэн)
+- **[REVIEW.md](REVIEW.md)** - Code review үр дүн, олсон асуудлууд, сайжруулалтын саналууд (Cursor AI ашиглан үүсгэсэн)
 
 ---
 
@@ -371,11 +371,11 @@ CI/CD workflow файл: `.github/workflows/ci.yml`
 
 Энэ төсөл MIT лицензтэй.
 
-# 👨‍💻 Хөгжүүлэгч
+# 👨‍💻 Зохиогч
 
-Narankhuu  
+**Narankhuu**  
 📧 codesaur@gmail.com  
-📱 +976 99000287  
+📲 [+976 99000287](https://wa.me/97699000287)  
 🌐 https://github.com/codesaur  
 
 # 🤝 Contribution
