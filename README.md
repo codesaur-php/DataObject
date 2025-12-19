@@ -63,7 +63,7 @@ composer test-coverage
 - **Unit Tests**: Column, Model классуудын тест (12 тест, 23 assertion)
 - **Integration Tests**: LocalizedModel-ийн бүрэн тест (5 тест, 23 assertion)
 - **Нийт**: 23 тест, 65 assertion
-- **Coverage**: 80%+ code coverage (зорилго)
+- **Coverage**: 80%+ code coverage
 
 ### PHPUnit шууд ашиглах
 
