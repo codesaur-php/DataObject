@@ -157,4 +157,71 @@ class LocalizedModelTest extends TestCase
             $this->assertArrayHasKey('en', $row['localized']);
         }
     }
+
+    public function testGetRowsByCode(): void
+    {
+        // Олон хэлтэй өгөгдөл нэмэх
+        $this->model->insert(
+            ['slug' => 'article-1'],
+            [
+                'en' => ['title' => 'Article 1 EN', 'description' => 'Description 1 EN'],
+                'mn' => ['title' => 'Нийтлэл 1 MN', 'description' => 'Тайлбар 1 MN']
+            ]
+        );
+        $this->model->insert(
+            ['slug' => 'article-2'],
+            [
+                'en' => ['title' => 'Article 2 EN', 'description' => 'Description 2 EN'],
+                'mn' => ['title' => 'Нийтлэл 2 MN', 'description' => 'Тайлбар 2 MN']
+            ]
+        );
+
+        // Зөвхөн Англи хэл дээрх мөрийг авах
+        $rows = $this->model->getRowsByCode('en');
+
+        $this->assertCount(2, $rows);
+        foreach ($rows as $id => $row) {
+            $this->assertIsInt($id);
+            $this->assertArrayHasKey('id', $row);
+            $this->assertArrayHasKey('slug', $row);
+            $this->assertArrayHasKey('localized', $row);
+            // Зөвхөн тухайн хэлний контент байх ёстой (хэлний кодын түвшин байхгүй)
+            $this->assertArrayHasKey('title', $row['localized']);
+            $this->assertArrayHasKey('description', $row['localized']);
+            $this->assertArrayNotHasKey('en', $row['localized']);
+            $this->assertArrayNotHasKey('mn', $row['localized']);
+            // Англи хэлний контент зөв байгаа эсэх
+            $this->assertStringContainsString('EN', $row['localized']['title']);
+        }
+
+        // Эхний мөрийн мэдээлэл шалгах
+        $firstRow = reset($rows);
+        $this->assertEquals('Article 1 EN', $firstRow['localized']['title']);
+        $this->assertEquals('Description 1 EN', $firstRow['localized']['description']);
+    }
+
+    public function testGetRowsByCodeWithCondition(): void
+    {
+        // Өгөгдөл нэмэх
+        $this->model->insert(
+            ['slug' => 'active-article', 'is_active' => 1],
+            ['en' => ['title' => 'Active Article']]
+        );
+        $this->model->insert(
+            ['slug' => 'inactive-article', 'is_active' => 0],
+            ['en' => ['title' => 'Inactive Article']]
+        );
+
+        // Зөвхөн идэвхтэй мөрийг Англи хэлээр авах
+        $rows = $this->model->getRowsByCode('en', [
+            'WHERE' => 'p.is_active = :active',
+            'PARAM' => [':active' => 1]
+        ]);
+
+        $this->assertCount(1, $rows);
+        $row = reset($rows);
+        $this->assertEquals('active-article', $row['slug']);
+        $this->assertEquals(1, $row['is_active']);
+        $this->assertEquals('Active Article', $row['localized']['title']);
+    }
 }

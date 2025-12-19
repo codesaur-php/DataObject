@@ -563,6 +563,48 @@ Primary ID болон хэлний кодыг ашиглан мөр авах.
 
 ---
 
+#### `getRowsByCode(string $code, array $condition = []): array`
+
+Олон мөрийг тодорхой хэлний кодоор авах.
+
+Энэ функц нь тухайн хэлний кодыг өгөхөд зөвхөн тухайн хэлний контентыг буцаана.
+
+**Параметрүүд:**
+- `$code` (string) - Хэлний код (жишээ: 'en', 'mn', 'ru')
+- `$condition` (array) - SELECT нөхцөл (WHERE, JOIN, ORDER, LIMIT гэх мэт, code нөхцөл автоматаар нэмэгдэнэ)
+
+**Буцаах утга:** Массив `[primary_id => rowStructure]`, rowStructure нь `getRowByCode()`-ийн буцаах бүтэцтэй ижил:
+- Primary хүснэгтийн бүх багана утгууд шууд түвшинд
+- 'localized' түлхүүр дор зөвхөн тухайн хэлний контент (хэлний кодын түвшин байхгүй)
+
+**Жишээ:** code='en' бол:
+```php
+[
+    1 => [
+        'id' => 1,
+        'name' => 'product_name',
+        'status' => 'active',
+        'localized' => [
+            'title' => 'English Title',
+            'description' => 'English Description'
+        ]
+    ],
+    2 => [
+        'id' => 2,
+        'name' => 'another_product',
+        'status' => 'draft',
+        'localized' => [
+            'title' => 'Another Title',
+            'description' => 'Another Description'
+        ]
+    ]
+]
+```
+
+**Жич:** Бүх хэлний контентыг авах функц - `getRows()`, Нэг мөрийг хэлний кодоор авах - `getRowByCode()`
+
+---
+
 ## PDOTrait
 
 **Namespace:** `codesaur\DataObject\PDOTrait`
@@ -956,5 +998,5 @@ MIT License
 
 Narankhuu  
 📧 codesaur@gmail.com  
-📱 +976 99000287  
+📲 [+976 99000287](https://wa.me/97699000287)  
 🌐 https://github.com/codesaur

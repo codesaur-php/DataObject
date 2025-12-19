@@ -60,10 +60,10 @@ composer test-coverage
 
 ### Тестүүдийн мэдээлэл
 
-- **Unit Tests**: Column, Model классуудын тест (12 тест, 23 assertion)
-- **Integration Tests**: LocalizedModel-ийн бүрэн тест (5 тест, 23 assertion)
-- **Нийт**: 23 тест, 65 assertion
-- **Coverage**: 80%+ code coverage
+- **Unit Tests**: Column, Model классуудын тест (18 тест, 42 assertion)
+- **Integration Tests**: LocalizedModel-ийн бүрэн тест (7 тест, 48 assertion)
+- **Нийт**: 25 тест, 90 assertion
+- **Coverage**: 68.77% code coverage (447/650 lines)
 
 ### PHPUnit шууд ашиглах
 
@@ -187,7 +187,7 @@ CONTENT хүснэгт дотор:
 ## Үндсэн функцүүд:
 
 ✔ **CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
-✔ **Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowByCode($id, $code)`  
+✔ **Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowByCode($id, $code)`, `getRowsByCode($code, $condition)`  
 ✔ MySQL / PostgreSQL / SQLite ялгааг автоматаар зохицуулна
 
 ## Буцаах утгын бүтэц:
@@ -222,6 +222,31 @@ CONTENT хүснэгт дотор:
     'localized' => [
         'title' => 'English Title',
         'body' => 'English content...'
+    ]
+]
+```
+
+`getRowsByCode('en', $condition)` функц олон мөрийг зөвхөн тухайн хэлний кодоор буцаана (хэлний кодын түвшин байхгүй):
+
+```php
+[
+    1 => [
+        'id' => 1,
+        'slug' => 'article-slug-1',
+        'is_active' => 1,
+        'localized' => [
+            'title' => 'English Title 1',
+            'body' => 'English content 1...'
+        ]
+    ],
+    2 => [
+        'id' => 2,
+        'slug' => 'article-slug-2',
+        'is_active' => 1,
+        'localized' => [
+            'title' => 'English Title 2',
+            'body' => 'English content 2...'
+        ]
     ]
 ]
 ```
@@ -273,6 +298,20 @@ class ArticleModel extends LocalizedModel
     public function getArticleByLang(int $id, string $lang): array|null
     {
         return $this->getRowByCode($id, $lang);
+    }
+    
+    // Жишээ: тодорхой хэлээр бүх нийтлэлүүд авах
+    public function getAllArticlesByLang(string $lang, bool $activeOnly = true): array
+    {
+        $condition = [];
+        if ($activeOnly) {
+            $condition = [
+                'WHERE' => 'p.is_active = :active',
+                'PARAM' => [':active' => 1],
+                'ORDER BY' => 'p.created_at DESC'
+            ];
+        }
+        return $this->getRowsByCode($lang, $condition);
     }
 }
 ```
@@ -349,7 +388,7 @@ Project нь бүрэн тестжүүлсэн:
 - ✅ **GitHub Actions** - Автомат CI/CD pipeline
   - Push болон Pull Request үед автоматаар ажиллана
   - `main`, `master`, `develop` branch-ууд дээр trigger болно
-- ✅ **Code Coverage** - 80%+ coverage
+- ✅ **Code Coverage** - 68.77% coverage (447/650 lines)
   - HTML coverage report: `coverage/` directory
   - Codecov дээр хадгална (Clover XML формат)
 - ✅ **Multi-version** - PHP 8.2, 8.3 дээр тестлэгдсэн

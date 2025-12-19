@@ -666,4 +666,76 @@ abstract class LocalizedModel
 
         return $row;
     }
+
+    /**
+     * Олон мөрийг тодорхой хэлний кодоор авах.
+     * 
+     * Энэ функц нь тухайн хэлний кодыг өгөхөд зөвхөн тухайн хэлний контентыг буцаана.
+     *
+     * @param string $code Хэлний код (жишээ: 'en', 'mn', 'ru')
+     * @param array $condition SELECT нөхцөл (WHERE, JOIN, ORDER, LIMIT гэх мэт, code нөхцөл автоматаар нэмэгдэнэ)
+     * @return array Массив [primary_id => rowStructure], rowStructure нь getRowByCode()-ийн буцаах бүтэцтэй ижил:
+     *   - Primary хүснэгтийн бүх багана утгууд шууд түвшинд
+     *   - 'localized' түлхүүр дор зөвхөн тухайн хэлний контент (хэлний кодын түвшин байхгүй)
+     * 
+     * @example code='en' бол:
+     *   [
+     *     1 => [
+     *       'id' => 1,
+     *       'name' => 'product_name',
+     *       'status' => 'active',
+     *       'localized' => [
+     *         'title' => 'English Title',
+     *         'description' => 'English Description'
+     *       ]
+     *     ],
+     *     2 => [
+     *       'id' => 2,
+     *       'name' => 'another_product',
+     *       'status' => 'draft',
+     *       'localized' => [
+     *         'title' => 'Another Title',
+     *         'description' => 'Another Description'
+     *       ]
+     *     ]
+     *   ]
+     * 
+     * @see getRows() Бүх хэлний контентыг авах функц
+     * @see getRowByCode() Нэг мөрийг хэлний кодоор авах функц
+     */
+    public function getRowsByCode(string $code, array $condition = []): array
+    {
+        // WHERE clause-д хэлний кодыг нэмэх
+        $existingWhere = $condition['WHERE'] ?? '';
+        $codeWhere = 'c.code=:code';
+        
+        if (!empty($existingWhere)) {
+            $condition['WHERE'] = "($existingWhere) AND $codeWhere";
+        } else {
+            $condition['WHERE'] = $codeWhere;
+        }
+        
+        // PARAM-д code нэмэх
+        $existingParams = $condition['PARAM'] ?? [];
+        $existingParams[':code'] = $code;
+        $condition['PARAM'] = $existingParams;
+        
+        // Бүх мөрийг авах
+        $rows = $this->getRows($condition);
+        
+        // Зөвхөн тухайн хэлний контентыг буцаах
+        $result = [];
+        foreach ($rows as $p_id => $row) {
+            if (isset($row['localized'][$code])) {
+                $result[$p_id] = $row;
+                $result[$p_id]['localized'] = $row['localized'][$code];
+            } else {
+                // Хэлний контент байхгүй ч primary утгууд байвал буцаана
+                $result[$p_id] = $row;
+                $result[$p_id]['localized'] = [];
+            }
+        }
+        
+        return $result;
+    }
 }
