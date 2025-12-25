@@ -141,7 +141,8 @@ try {
     // Localized мөр авах
     debug($translation->getRowWhere(['p.id' => 1, 'p.is_active' => 1]), 'Get row (id=1, active)');
     debug($translation->getRowWhere(['p.id' => 1, 'c.code' => 'mn']), 'Get row (id=1, code=mn)');
-    debug($translation->getRowByCode(1, 'en'), 'Get row by code (id=1, code=en)');
+    $rowsByCode = $translation->getRowsByCode('en', ['WHERE' => 'p.id=1']);
+    debug($rowsByCode, 'Get rows by code (code=en, id=1)');
 
     // Delete / deactivate
     debug($translation->deleteById(7), 'Delete translation 7');

@@ -99,27 +99,6 @@ class LocalizedModelTest extends TestCase
         $this->assertArrayHasKey('mn', $row['localized']);
     }
 
-    public function testGetRowByCode(): void
-    {
-        $inserted = $this->model->insert(
-            ['slug' => 'test'],
-            [
-                'en' => ['title' => 'English Title'],
-                'mn' => ['title' => 'Монгол Гарчиг']
-            ]
-        );
-        $id = $inserted['id'];
-
-        $row = $this->model->getRowByCode($id, 'en');
-
-        $this->assertIsArray($row);
-        $this->assertArrayHasKey('localized', $row);
-        $this->assertArrayHasKey('title', $row['localized']);
-        $this->assertEquals('English Title', $row['localized']['title']);
-        // Should not have language code level
-        $this->assertArrayNotHasKey('en', $row['localized']);
-    }
-
     public function testUpdateById(): void
     {
         $inserted = $this->model->insert(

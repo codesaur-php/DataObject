@@ -4,6 +4,10 @@
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2.1-777BB4.svg?logo=php)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+**🇬🇧 [English Version](README.EN.md) | 🇲🇳 Монгол Хувилбар**
+
+---
+
 **PDO суурьтай өгөгдлийн модель ба хүснэгтүүдийг удирдагч компонент (MySQL / PostgreSQL / SQLite, PHP 8.2.1+)**
 
 `codesaur/dataobject` нь **codesaur-php** экосистемийн өгөгдлийн давхаргын үндсэн компонент.  
@@ -187,7 +191,7 @@ CONTENT хүснэгт дотор:
 ## Үндсэн функцүүд:
 
 ✔ **CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
-✔ **Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowByCode($id, $code)`, `getRowsByCode($code, $condition)`  
+✔ **Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`  
 ✔ MySQL / PostgreSQL / SQLite ялгааг автоматаар зохицуулна
 
 ## Буцаах утгын бүтэц:
@@ -208,20 +212,6 @@ CONTENT хүснэгт дотор:
             'title' => 'Монгол Гарчиг',
             'body' => 'Монгол агуулга...'
         ]
-    ]
-]
-```
-
-`getRowByCode($id, 'en')` функц зөвхөн тухайн хэлний контентыг буцаана:
-
-```php
-[
-    'id' => 1,
-    'slug' => 'article-slug',
-    'is_active' => 1,
-    'localized' => [
-        'title' => 'English Title',
-        'body' => 'English content...'
     ]
 ]
 ```
@@ -297,21 +287,28 @@ class ArticleModel extends LocalizedModel
     // Жишээ: тодорхой хэлээр нийтлэл авах
     public function getArticleByLang(int $id, string $lang): array|null
     {
-        return $this->getRowByCode($id, $lang);
+        $rows = $this->getRowsByCode($lang, ['WHERE' => "p.id=$id"]);
+        return $rows[$id] ?? null;
     }
     
     // Жишээ: тодорхой хэлээр бүх нийтлэлүүд авах
     public function getAllArticlesByLang(string $lang, bool $activeOnly = true): array
     {
-        $condition = [];
+        $condition = ['ORDER BY' => 'p.created_at DESC'];
         if ($activeOnly) {
-            $condition = [
-                'WHERE' => 'p.is_active = :active',
-                'PARAM' => [':active' => 1],
-                'ORDER BY' => 'p.created_at DESC'
-            ];
+            $condition['WHERE'] = 'p.is_active=1';
         }
         return $this->getRowsByCode($lang, $condition);
+    }
+    
+    // Жишээ: slug болон хэлээр нийтлэл авах (WHERE + PARAM ашиглах)
+    public function getArticleBySlugAndLang(string $slug, string $lang): array|null
+    {
+        $rows = $this->getRowsByCode($lang, [
+            'WHERE' => 'p.slug=:slug AND p.is_active=1',
+            'PARAM' => [':slug' => $slug]
+        ]);
+        return !empty($rows) ? \reset($rows) : null;
     }
 }
 ```

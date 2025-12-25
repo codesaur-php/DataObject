@@ -170,7 +170,8 @@ try {
     // Localized мөр авах
     debug($translation->getRowWhere(['p.id' => $newTranslation['id'], 'p.is_active' => 1]), 'Get row (id=' . $newTranslation['id'] . ', active)');
     debug($translation->getRowWhere(['p.id' => $newTranslation['id'], 'c.code' => 'mn']), 'Get row (id=' . $newTranslation['id'] . ', code=mn)');
-    debug($translation->getRowByCode($newTranslation['id'], 'en'), 'Get row by code (id=' . $newTranslation['id'] . ', code=en)');
+    $rowsByCode = $translation->getRowsByCode('en', ['WHERE' => 'p.id=:id', 'PARAM' => [':id' => $newTranslation['id']]]);
+    debug($rowsByCode, 'Get rows by code (code=en, id=' . $newTranslation['id'] . ')');
 
     // Олон хэл дээр шинэчлэх (mn + en + de)
     // keyword-г шинэчлэхгүй (UNIQUE constraint-д хүрэхээс сэргийлэх)

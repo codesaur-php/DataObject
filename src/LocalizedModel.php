@@ -9,8 +9,8 @@ namespace codesaur\DataObject;
  * 2 хүснэгтийн загварын суурь класс.
  *
  * Архитектур:
- *   - Үндсэн хүснэгт (primary table) → id, is_active, sort гэх мэт universally shared баганууд
- *   - Контент хүснэгт (table_content) → олон хэл дээр хадгалах талбарууд
+ *   - Үндсэн хүснэгт (primary table) → id, is_active, keyword, category гэх мэт universally shared баганууд
+ *   - Контент хүснэгт (table_content) → title, content гэх мэт олон хэл дээр хадгалах талбарууд
  *
  * Контент хүснэгт нь дараах бүтэцтэй:
  *   - id (primary)
@@ -620,61 +620,13 @@ abstract class LocalizedModel
     }
 
     /**
-     * Primary ID болон хэлний кодыг ашиглан мөр авах.
-     * 
-     * Энэ функц нь тухайн хэлний кодыг өгөхөд зөвхөн тухайн хэлний контентыг буцаана.
-     *
-     * @param int $id Primary хүснэгтийн ID
-     * @param string $code Хэлний код (жишээ: 'en', 'mn', 'ru')
-     * @return array|null Зөвхөн тухайн хэлний контент агуулсан мөр; олдохгүй бол null:
-     *   - Primary хүснэгтийн бүх багана утгууд шууд түвшинд
-     *   - 'localized' түлхүүр дор зөвхөн тухайн хэлний контент (хэлний кодын түвшин байхгүй)
-     * 
-     * @example code='en' бол:
-     *   [
-     *     'id' => 1,
-     *     'name' => 'product_name',
-     *     'status' => 'active',
-     *     'localized' => [
-     *       'title' => 'English Title',
-     *       'description' => 'English Description'
-     *     ]
-     *   ]
-     * 
-     * @see getRow() Бүх хэлний контентыг авах функц
-     */
-    public function getRowByCode(int $id, string $code): array|null
-    {
-        $row = $this->getRow([
-            'WHERE' => 'p.id=:id AND c.code=:code',
-            'PARAM' => [
-                ':id' => $id,
-                ':code' => $code
-            ]
-        ]);
-
-        if ($row === null) {
-            return null;
-        }
-
-        // Зөвхөн тухайн хэлний контентыг буцаах
-        if (isset($row['localized'][$code])) {
-            $row['localized'] = $row['localized'][$code];
-        } else {
-            $row['localized'] = [];
-        }
-
-        return $row;
-    }
-
-    /**
      * Олон мөрийг тодорхой хэлний кодоор авах.
      * 
      * Энэ функц нь тухайн хэлний кодыг өгөхөд зөвхөн тухайн хэлний контентыг буцаана.
      *
      * @param string $code Хэлний код (жишээ: 'en', 'mn', 'ru')
      * @param array $condition SELECT нөхцөл (WHERE, JOIN, ORDER, LIMIT гэх мэт, code нөхцөл автоматаар нэмэгдэнэ)
-     * @return array Массив [primary_id => rowStructure], rowStructure нь getRowByCode()-ийн буцаах бүтэцтэй ижил:
+     * @return array Массив [primary_id => rowStructure], rowStructure нь дараах бүтэцтэй:
      *   - Primary хүснэгтийн бүх багана утгууд шууд түвшинд
      *   - 'localized' түлхүүр дор зөвхөн тухайн хэлний контент (хэлний кодын түвшин байхгүй)
      * 
@@ -701,7 +653,7 @@ abstract class LocalizedModel
      *   ]
      * 
      * @see getRows() Бүх хэлний контентыг авах функц
-     * @see getRowByCode() Нэг мөрийг хэлний кодоор авах функц
+     * @see getRow() Нэг мөрийг авах функц
      */
     public function getRowsByCode(string $code, array $condition = []): array
     {
