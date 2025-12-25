@@ -36,7 +36,7 @@ class DatabaseDriver {
     public const SQLITE = 'sqlite';
 }
 ```
-- **Учир:** Refactoring хийхэд хялбар болно
+- **Учир нь:** Refactoring хийхэд хялбар болно
 
 #### 3. Readonly property assignment (LOW)
 - **Асуудал:** `readonly` property `setTable()` method дотор assign хийж байна

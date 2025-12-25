@@ -402,6 +402,7 @@ CI/CD workflow file: `.github/workflows/ci.yml`
 
 ## 📚 Additional Documentation
 
+- **[CHANGELOG.EN.md](CHANGELOG.EN.md)** | **[CHANGELOG.md](CHANGELOG.md)** - Version change history
 - **[API.EN.md](API.EN.md)** - Full API documentation (automatically generated from PHPDoc using Cursor AI)
 - **[REVIEW.EN.md](REVIEW.EN.md)** - Code review results, found issues, improvement suggestions (generated using Cursor AI)
 

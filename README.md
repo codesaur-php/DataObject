@@ -396,10 +396,11 @@ CI/CD workflow файл: `.github/workflows/ci.yml`
 
 ---
 
-## 📚 Нэмэлт Документаци
+## 📚 Нэмэлт бичиг баримтууд
 
-- **[API.md](API.md)** - Бүрэн API баримт бичиг (PHPDoc-уудаас Cursor AI ашиглан автоматаар үүсгэсэн)
-- **[REVIEW.md](REVIEW.md)** - Code review үр дүн, олсон асуудлууд, сайжруулалтын саналууд (Cursor AI ашиглан үүсгэсэн)
+- **[CHANGELOG.md](CHANGELOG.md)** | **[CHANGELOG.EN.md](CHANGELOG.EN.md)** - Хувилбарын өөрчлөлтийн түүх
+- **[API.md](API.md)** | **[API.EN.md](API.EN.md)** - Бүрэн API баримт бичиг (PHPDoc-уудаас Cursor AI ашиглан автоматаар үүсгэсэн)
+- **[REVIEW.md](REVIEW.md)** | **[REVIEW.EN.md](REVIEW.EN.md)** - Code review үр дүн, олсон асуудлууд, сайжруулалтын саналууд (Cursor AI ашиглан үүсгэсэн)
 
 ---
 
