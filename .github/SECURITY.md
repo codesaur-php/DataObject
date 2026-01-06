@@ -22,7 +22,7 @@ When reporting, include:
 
 ## Response Timeline
 
-- You can expect an initial response within **3–7 days**
+- You can expect an initial response within **3-7 days**
 - We will work to assess and fix the issue as quickly as possible
 - Once fixed, an appropriate disclosure will be made if necessary
 
