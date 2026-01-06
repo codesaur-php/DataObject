@@ -1,7 +1,5 @@
 # API Documentation
 
-**🇬🇧 English Version | 🇲🇳 [Монгол Хувилбар](API.md)**
-
 Full API documentation for the codesaur/dataobject package.
 
 ---
@@ -955,18 +953,3 @@ Converts types adapted for MySQL/PGSQL/SQLite.
 - `sqlite_master` for table existence check
 - `PRAGMA foreign_keys` for FK control
 - Simplified type system (INTEGER, REAL, TEXT, BLOB)
-
----
-
-## License
-
-MIT License
-
----
-
-## Author
-
-Narankhuu  
-📧 codesaur@gmail.com  
-📲 [+976 99000287](https://wa.me/97699000287)  
-🌐 https://github.com/codesaur

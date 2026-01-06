@@ -1,7 +1,5 @@
 # API Documentation
 
-**🇬🇧 [English Version](API.EN.md) | 🇲🇳 Монгол Хувилбар**
-
 codesaur/dataobject багцын бүрэн API баримт бичиг.
 
 ---
@@ -968,6 +966,4 @@ MIT License
 ## Author
 
 Narankhuu  
-📧 codesaur@gmail.com  
-📲 [+976 99000287](https://wa.me/97699000287)  
-🌐 https://github.com/codesaur
+https://github.com/codesaur

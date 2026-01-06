@@ -1,13 +1,5 @@
 # 🧱 codesaur/dataobject  
 
-[![CI](https://github.com/codesaur-php/DataObject/actions/workflows/ci.yml/badge.svg)](https://github.com/codesaur-php/DataObject/actions)
-[![PHP Version](https://img.shields.io/badge/php-%5E8.2.1-777BB4.svg?logo=php)](https://www.php.net/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-**🇬🇧 English Version | 🇲🇳 [Монгол Хувилбар](README.md)**
-
----
-
 **PDO-based data model and table management component (MySQL / PostgreSQL / SQLite, PHP 8.2.1+)**
 
 `codesaur/dataobject` is the core data layer component of the **codesaur-php** ecosystem.  
@@ -24,8 +16,8 @@ Core idea:
 
 ## ⚙ Requirements
 
-- PHP **8.2.1+**
-- `ext-pdo`
+- PHP **8.2.1+** with `ext-pdo` extension
+- Composer
 - MySQL or PostgreSQL or SQLite
 
 ---
@@ -89,6 +81,8 @@ vendor/bin/phpunit --coverage-clover coverage/clover.xml
 # Coverage report (HTML format)
 vendor/bin/phpunit --coverage-html coverage
 ```
+
+**Windows users:** Replace `vendor/bin/phpunit` with `vendor\bin\phpunit.bat`
 
 ---
 
@@ -402,9 +396,9 @@ CI/CD workflow file: `.github/workflows/ci.yml`
 
 ## 📚 Additional Documentation
 
-- **[CHANGELOG.EN.md](CHANGELOG.EN.md)** | **[CHANGELOG.md](CHANGELOG.md)** - Version change history
-- **[API.EN.md](API.EN.md)** - Full API documentation (automatically generated from PHPDoc using Cursor AI)
-- **[REVIEW.EN.md](REVIEW.EN.md)** - Code review results, found issues, improvement suggestions (generated using Cursor AI)
+- **[API](api.md)** - Full API documentation (automatically generated from PHPDoc using Cursor AI)
+- **[REVIEW](review.md)** - Code review results, found issues, improvement suggestions (generated using Cursor AI)
+- **[CHANGELOG](../../CHANGELOG.md)** - History of all package version changes
 
 ---
 
@@ -415,22 +409,7 @@ This project is licensed under MIT.
 # 👨‍💻 Author
 
 **Narankhuu**  
-📧 codesaur@gmail.com  
-📲 [+976 99000287](https://wa.me/97699000287)  
-🌐 https://github.com/codesaur  
-
-# 🤝 Contribution
-
-PRs, issues, and improvement suggestions are always welcome.
-Since the goal is to make web systems in Mongolian language with clean architecture and reusable code:
-- bug report
-- feature request
-- performance optimization
-- additional DB driver (e.g., SQL Server)
-
-… please send everything via GitHub Issues / PR.
-
-"Clean data layer, minimal boilerplate - codesaur/dataobject."
+https://github.com/codesaur  
 
 ---
 

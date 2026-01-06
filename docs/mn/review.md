@@ -1,7 +1,5 @@
 # Code Review
 
-**🇬🇧 [English Version](REVIEW.EN.md) | 🇲🇳 Монгол Хувилбар**
-
 codesaur/dataobject төслийн код review.
 
 ---
