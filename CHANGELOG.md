@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [9.0.1] - 2026-01-06
+[9.0.1]: https://github.com/codesaur-php/DataObject/compare/v9.0.0...v9.0.1
 
 ### ✨ Added
 
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [9.0.0] - 2025-12-25
+[9.0.0]: https://github.com/codesaur-php/DataObject/compare/v8.1.0...v9.0.0
 
 ### 🚨 Breaking Changes
 
@@ -53,7 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [8.1.0] - Previous Version
+## [8.1.0] - 2025-12-19
+[8.1.0]: https://github.com/codesaur-php/DataObject/compare/v1.0...v8.1.0
 
 ### Features
 
@@ -65,6 +68,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit and Integration tests
 - CI/CD pipeline with GitHub Actions
 
-[9.0.1]: https://github.com/codesaur-php/DataObject/compare/v9.0.0...v9.0.1
-[9.0.0]: https://github.com/codesaur-php/DataObject/compare/v8.1.0...v9.0.0
-[8.1.0]: https://github.com/codesaur-php/DataObject/compare/v1.0...v8.1.0
+---
+
+## [1.0] - 2021-03-2
+[1.0]: https://github.com/codesaur-php/DataObject/releases/tag/v1.0
+
+### 🎉 Initial Release
+
+This version is the initial stable release of the `codesaur/dataobject` package.
