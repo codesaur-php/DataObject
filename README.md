@@ -144,8 +144,8 @@ This project is licensed under the MIT License.
 
 ## Author
 
-**Narankhuu**
-codesaur@gmail.com
+**Narankhuu**  
+codesaur@gmail.com  
 https://github.com/codesaur
 
 **codesaur ecosystem:** https://codesaur.net
