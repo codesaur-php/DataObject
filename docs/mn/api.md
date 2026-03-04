@@ -254,11 +254,11 @@ UNIQUE эсэх.
 
 Өгөгдөл нэмэх (INSERT).
 
-MySQL/SQLite → `lastInsertId()` ашиглана  
-PostgreSQL → `RETURNING *` ашиглана
+MySQL/SQLite -> `lastInsertId()` ашиглана  
+PostgreSQL -> `RETURNING *` ашиглана
 
 **Параметрүүд:**
-- `$record` (array) - Нэмэх мөрийн түлхүүр → утга хослол
+- `$record` (array) - Нэмэх мөрийн түлхүүр -> утга хослол
 
 **Буцаах утга:** Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
 
@@ -272,8 +272,8 @@ ID-р мөр шинэчлэх (UPDATE).
 
 `UPDATE table SET field=:value WHERE id=X`
 
-PostgreSQL → `RETURNING *`  
-MySQL/SQLite → `SELECT * WHERE id=...`
+PostgreSQL -> `RETURNING *`  
+MySQL/SQLite -> `SELECT * WHERE id=...`
 
 **Параметрүүд:**
 - `$id` (int) - Шинэчлэх ID
@@ -325,12 +325,12 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
 **Тайлбар:** Олон хэл дээрх (localized) контент хадгалах зориулалттай 2 хүснэгтийн загварын суурь класс.
 
 **Архитектур:**
-- Үндсэн хүснэгт (primary table) → id, is_active, sort гэх мэт universally shared баганууд
-- Контент хүснэгт (table_content) → олон хэл дээр хадгалах талбарууд
+- Үндсэн хүснэгт (primary table) -> id, is_active, sort гэх мэт universally shared баганууд
+- Контент хүснэгт (table_content) -> олон хэл дээр хадгалах талбарууд
 
 **Контент хүснэгтийн бүтэц:**
 - `id` (primary)
-- `parent_id` (FK → primary table.id)
+- `parent_id` (FK -> primary table.id)
 - `code` (хэлний код, ж: 'en', 'mn', 'jp')
 - бусад тухайн хэл дээр хадгалах талбарууд
 
@@ -473,8 +473,8 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
                 'description' => 'English Description'
             ],
             'mn' => [
-                'title' => 'Монгол Гарчиг',
-                'description' => 'Монгол Тайлбар'
+                'title' => 'Монгол гарчиг',
+                'description' => 'Монгол тайлбар'
             ]
         ]
     ],
@@ -510,8 +510,8 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
             'description' => 'English Description'
         ],
         'mn' => [
-            'title' => 'Монгол Гарчиг',
-            'description' => 'Монгол Тайлбар'
+            'title' => 'Монгол гарчиг',
+            'description' => 'Монгол тайлбар'
         ]
     ]
 ]
@@ -694,9 +694,9 @@ Query-г бэлтгэлгүйгээр шууд гүйцэтгэх.
 
 FOREIGN KEY constraints-г асаах/унтраах.
 
-- MySQL → `SET foreign_key_checks = 0|1`
-- PostgreSQL → `SET session_replication_role = 'replica'|'origin'`
-- SQLite → `PRAGMA foreign_keys = ON|OFF`
+- MySQL -> `SET foreign_key_checks = 0|1`
+- PostgreSQL -> `SET session_replication_role = 'replica'|'origin'`
+- SQLite -> `PRAGMA foreign_keys = ON|OFF`
 
 **Параметрүүд:**
 - `$enable` (bool) - TRUE=асаах, FALSE=унтраах
@@ -849,8 +849,8 @@ ID-р мөр устгах.
 ID-р мөрийг идэвхгүй болгох (soft delete).
 
 UNIQUE багануудын утгыг зөрчилгүй болгохын тулд дараах арга хэрэглэнэ:
-- Тоон unique → -value болгон хөрвүүлнэ
-- Текстэн unique → [uniqid] prefix нэмнэ
+- Тоон unique -> -value болгон хөрвүүлнэ
+- Текстэн unique -> [uniqid] prefix нэмнэ
 
 **Параметрүүд:**
 - `$id` (int) - Идэвхгүй болгох ID
@@ -921,9 +921,9 @@ MySQL/PGSQL/SQLite-д тааруулж төрлийг хөрвүүлдэг.
 **Буцаах утга:** SQL хэлбэр (жишээ: `id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY`)
 
 **Төрөл хөрвүүлэлт:**
-- **PostgreSQL:** int8→bigint, integer→int, tinyint→smallint, datetime→timestamp, tinytext→text, bigint+auto→bigserial, int+auto→serial
-- **SQLite:** Бүх integer төрлүүд→INTEGER, decimal/float→REAL, blob→BLOB, бусад→TEXT
-- **MySQL:** bigserial→bigint, serial→int, smallserial→smallint, timestamptz→timestamp
+- **PostgreSQL:** int8->bigint, integer->int, tinyint->smallint, datetime->timestamp, tinytext->text, bigint+auto->bigserial, int+auto->serial
+- **SQLite:** Бүх integer төрлүүд->INTEGER, decimal/float->REAL, blob->BLOB, бусад->TEXT
+- **MySQL:** bigserial->bigint, serial->int, smallserial->smallint, timestamptz->timestamp
 
 ---
 

@@ -65,8 +65,8 @@ class LocalizedModelTest extends TestCase
                     'description' => 'English Description'
                 ],
                 'mn' => [
-                    'title' => 'Монгол Гарчиг',
-                    'description' => 'Монгол Тайлбар'
+                    'title' => 'Монгол гарчиг',
+                    'description' => 'Монгол тайлбар'
                 ]
             ]
         );
@@ -77,7 +77,7 @@ class LocalizedModelTest extends TestCase
         $this->assertArrayHasKey('en', $result['localized']);
         $this->assertArrayHasKey('mn', $result['localized']);
         $this->assertEquals('English Title', $result['localized']['en']['title']);
-        $this->assertEquals('Монгол Гарчиг', $result['localized']['mn']['title']);
+        $this->assertEquals('Монгол гарчиг', $result['localized']['mn']['title']);
     }
 
     public function testGetRow(): void

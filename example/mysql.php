@@ -11,8 +11,8 @@ namespace codesaur\DataObject\Example;
  *
  *  1. PDO ашиглан MySQL сервертэй холбогдох
  *  2. dataobject_example нэртэй хөгжүүлэлтийн database үүсгэх (локал орчинд)
- *  3. ExampleUserModel → хэрэглэгчийн хүснэгт үүсгэх, админ хэрэглэгч нэмэх
- *  4. ExampleTranslationModel → олон хэлний контент бүхий хүснэгтүүдийг үүсгэх
+ *  3. ExampleUserModel -> хэрэглэгчийн хүснэгт үүсгэх, админ хэрэглэгч нэмэх
+ *  4. ExampleTranslationModel -> олон хэлний контент бүхий хүснэгтүүдийг үүсгэх
  *  5. Insert / Update / Delete / Deactivate зэрэг CRUD жишээнүүд ажиллуулах
  *  6. LocalizedModel ашиглан олон хэл дээр хадгалсан өгөгдлийг харуулах
  *
@@ -84,7 +84,7 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     *  3. ExampleUserModel → хэрэглэгчийн хүснэгт үүсгэх
+     *  3. ExampleUserModel -> хэрэглэгчийн хүснэгт үүсгэх
      *     (хүснэгт байхгүй бол автоматаар үүсгэнэ)
      * ---------------------------------------------------------------------
      */
@@ -133,7 +133,7 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     *  6. ExampleTranslationModel → олон хэлтэй хүснэгтүүдийг ашиглах
+     *  6. ExampleTranslationModel -> олон хэлтэй хүснэгтүүдийг ашиглах
      * ---------------------------------------------------------------------
      */
     $translation = new ExampleTranslationModel($pdo);
@@ -178,7 +178,7 @@ try {
     $rows = $translation->getRows(['WHERE' => 'p.is_active=1', 'ORDER BY' => 'p.id']);
     $texts = [];
     foreach ($rows as $row) {
-        // localized[lang][column] → title-уудыг хэлээр цуглуулах
+        // localized[lang][column] -> title-уудыг хэлээр цуглуулах
         $titleByLang = [];
         foreach ($row['localized'] ?? [] as $lang => $content) {
             if (isset($content['title'])) {

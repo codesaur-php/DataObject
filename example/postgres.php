@@ -10,14 +10,14 @@ namespace codesaur\DataObject\Example;
  * Энэ файл дараах ажлуудыг хийж гүйцэтгэнэ:
  *
  *  1. PostgreSQL сервертэй холбогдох (PDO pgsql)
- *  2. ExampleUserModel → хэрэглэгчийн хүснэгт үүсгэх, админ хэрэглэгч шалгах
- *  3. ExampleTranslationModel → олон хэл дээр контент хадгалах хүснэгтүүдийг
+ *  2. ExampleUserModel -> хэрэглэгчийн хүснэгт үүсгэх, админ хэрэглэгч шалгах
+ *  3. ExampleTranslationModel -> олон хэл дээр контент хадгалах хүснэгтүүдийг
  *     автоматаар үүсгэх (PRIMARY + CONTENT)
- *  4. CRUD жишээнүүд → insert, update, delete, deactivate
+ *  4. CRUD жишээнүүд -> insert, update, delete, deactivate
  *  5. LocalizedModel ашиглан олон хэлний struct бүхий өгөгдлийг харуулах
  *
  * PostgreSQL нь MySQL-тай харьцуулахад дараах давуу талтай:
- *  - SERIAL, BIGSERIAL төрөлтэй → AUTO_INCREMENT шаардлагагүй
+ *  - SERIAL, BIGSERIAL төрөлтэй -> AUTO_INCREMENT шаардлагагүй
  *  - RETURNING * маш хурдан, классик ORM аргачлалтай төгс нийцдэг
  *
  * @package codesaur\DataObject\Example
@@ -74,7 +74,7 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     * 2. ExampleUserModel → хэрэглэгчийн хүснэгт үүсгэх
+     * 2. ExampleUserModel -> хэрэглэгчийн хүснэгт үүсгэх
      *    (хүснэгт байхгүй бол автоматаар үүсгэнэ)
      * ---------------------------------------------------------------------
      */
@@ -107,7 +107,7 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     * 4. CRUD жишээнүүд → Delete, Deactivate, Update
+     * 4. CRUD жишээнүүд -> Delete, Deactivate, Update
      * ---------------------------------------------------------------------
      */
     debug($users->deleteById(3), 'Delete user 3');
@@ -125,7 +125,7 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     * 5. ExampleTranslationModel → олон хэлний хүснэгтүүд
+     * 5. ExampleTranslationModel -> олон хэлний хүснэгтүүд
      * ---------------------------------------------------------------------
      */
     $translation = new ExampleTranslationModel($pdo);
@@ -170,7 +170,7 @@ try {
     $rows = $translation->getRows(['WHERE' => 'p.is_active=1', 'ORDER BY' => 'p.id']);
     $texts = [];
     foreach ($rows as $row) {
-        // localized[lang][column] → title-уудыг хэлээр цуглуулах
+        // localized[lang][column] -> title-уудыг хэлээр цуглуулах
         $titleByLang = [];
         foreach ($row['localized'] ?? [] as $lang => $content) {
             if (isset($content['title'])) {

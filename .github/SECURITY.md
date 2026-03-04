@@ -10,7 +10,7 @@ If you discover a security vulnerability, please **do not** report it through pu
 
 Please report security issues privately via email:
 
-📧 **codesaur@gmail.com**
+**codesaur@gmail.com**
 
 When reporting, include:
 - A clear description of the issue
@@ -40,4 +40,4 @@ We kindly ask reporters to follow responsible disclosure practices and allow tim
 
 ---
 
-Thank you for helping keep the **codesaur ecosystem** secure 🔒
+Thank you for helping keep the **codesaur ecosystem** secure

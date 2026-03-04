@@ -9,12 +9,12 @@ namespace codesaur\DataObject;
  * 2 хүснэгтийн загварын суурь класс.
  *
  * Архитектур:
- *   - Үндсэн хүснэгт (primary table) → id, is_active, keyword, category гэх мэт universally shared баганууд
- *   - Контент хүснэгт (table_content) → title, content гэх мэт олон хэл дээр хадгалах талбарууд
+ *   - Үндсэн хүснэгт (primary table) -> id, is_active, keyword, category гэх мэт universally shared баганууд
+ *   - Контент хүснэгт (table_content) -> title, content гэх мэт олон хэл дээр хадгалах талбарууд
  *
  * Контент хүснэгт нь дараах бүтэцтэй:
  *   - id (primary)
- *   - parent_id (FK → primary table.id)
+ *   - parent_id (FK -> primary table.id)
  *   - code (хэлний код, ж: 'en', 'mn', 'jp')
  *   - бусад тухайн хэл дээр хадгалах талбарууд
  *
@@ -105,7 +105,7 @@ abstract class LocalizedModel
         } else {
             $this->createTable($contentTable, $this->getContentColumns());
             
-            // FK тохиргоо: parent_id → primary.id, CASCADE шинэчлэлт
+            // FK тохиргоо: parent_id -> primary.id, CASCADE шинэчлэлт
             $this->exec(
                 "ALTER TABLE $contentTable 
                  ADD FOREIGN KEY (parent_id) REFERENCES $table(id)
@@ -251,7 +251,7 @@ abstract class LocalizedModel
             $id = (int)($record['id'] ?? $this->pdo->lastInsertId($sequenceName));
         }
 
-        // Content table → олон хэл оруулах
+        // Content table -> олон хэл оруулах
         foreach ($content as $code => $data) {
             $content_field = $content_value = [];
             foreach (\array_keys($data) as $key) {
@@ -365,7 +365,7 @@ abstract class LocalizedModel
                 if (!$content_select->execute()
                     || $content_select->rowCount() < 1
                 ) {
-                    // Байхгүй → шинээр INSERT
+                    // Байхгүй -> шинээр INSERT
                     $column = ['code'];
                     $param = [':code'];
                     foreach (\array_keys($value) as $key) {
@@ -383,7 +383,7 @@ abstract class LocalizedModel
                         $content_stmt->bindValue(":$key", $var, $this->getContentColumn($key)->getDataType());
                     }
                 } else {
-                    // Байгаа → UPDATE хийнэ
+                    // Байгаа -> UPDATE хийнэ
                     $content_row = $content_select->fetch(\PDO::FETCH_ASSOC);
 
                     $content_set = [];
@@ -472,8 +472,8 @@ abstract class LocalizedModel
      *           'description' => 'English Description'
      *         ],
      *         'mn' => [
-     *           'title' => 'Монгол Гарчиг',
-     *           'description' => 'Монгол Тайлбар'
+     *           'title' => 'Монгол гарчиг',
+     *           'description' => 'Монгол тайлбар'
      *         ]
      *       ]
      *     ],
@@ -548,8 +548,8 @@ abstract class LocalizedModel
      *         'description' => 'English Description'
      *       ],
      *       'mn' => [
-     *         'title' => 'Монгол Гарчиг',
-     *         'description' => 'Монгол Тайлбар'
+     *         'title' => 'Монгол гарчиг',
+     *         'description' => 'Монгол тайлбар'
      *       ]
      *     ]
      *   ]

@@ -253,11 +253,11 @@ All single-language (non-localized) table models extend this class.
 
 Add data (INSERT).
 
-MySQL/SQLite → uses `lastInsertId()`  
-PostgreSQL → uses `RETURNING *`
+MySQL/SQLite -> uses `lastInsertId()`  
+PostgreSQL -> uses `RETURNING *`
 
 **Parameters:**
-- `$record` (array) - Key → value pairs for the row to add
+- `$record` (array) - Key -> value pairs for the row to add
 
 **Returns:** On success, full information of the new row (array with all columns), false on error
 
@@ -271,8 +271,8 @@ Update row by ID (UPDATE).
 
 `UPDATE table SET field=:value WHERE id=X`
 
-PostgreSQL → `RETURNING *`  
-MySQL/SQLite → `SELECT * WHERE id=...`
+PostgreSQL -> `RETURNING *`  
+MySQL/SQLite -> `SELECT * WHERE id=...`
 
 **Parameters:**
 - `$id` (int) - ID to update
@@ -324,12 +324,12 @@ Get row using WHERE key=:value syntax.
 **Description:** Base class for 2-table model pattern for storing localized content in multiple languages.
 
 **Architecture:**
-- Primary table → id, is_active, sort, etc. universally shared columns
-- Content table (table_content) → fields to store in multiple languages
+- Primary table -> id, is_active, sort, etc. universally shared columns
+- Content table (table_content) -> fields to store in multiple languages
 
 **Content table structure:**
 - `id` (primary)
-- `parent_id` (FK → primary table.id)
+- `parent_id` (FK -> primary table.id)
 - `code` (language code, e.g., 'en', 'mn', 'jp')
 - other fields to store in that language
 
@@ -472,8 +472,8 @@ Get multiple rows (with multiple languages).
                 'description' => 'English Description'
             ],
             'mn' => [
-                'title' => 'Монгол Гарчиг',
-                'description' => 'Монгол Тайлбар'
+                'title' => 'Монгол гарчиг',
+                'description' => 'Монгол тайлбар'
             ]
         ]
     ],
@@ -509,8 +509,8 @@ Get a single row with multiple languages.
             'description' => 'English Description'
         ],
         'mn' => [
-            'title' => 'Монгол Гарчиг',
-            'description' => 'Монгол Тайлбар'
+            'title' => 'Монгол гарчиг',
+            'description' => 'Монгол тайлбар'
         ]
     ]
 ]
@@ -693,9 +693,9 @@ Check if table exists in database.
 
 Enable/disable FOREIGN KEY constraints.
 
-- MySQL → `SET foreign_key_checks = 0|1`
-- PostgreSQL → `SET session_replication_role = 'replica'|'origin'`
-- SQLite → `PRAGMA foreign_keys = ON|OFF`
+- MySQL -> `SET foreign_key_checks = 0|1`
+- PostgreSQL -> `SET session_replication_role = 'replica'|'origin'`
+- SQLite -> `PRAGMA foreign_keys = ON|OFF`
 
 **Parameters:**
 - `$enable` (bool) - TRUE=enable, FALSE=disable
@@ -848,8 +848,8 @@ Delete row by ID.
 Deactivate row by ID (soft delete).
 
 To prevent UNIQUE column value conflicts, uses following method:
-- Numeric unique → converts to -value
-- Text unique → adds [uniqid] prefix
+- Numeric unique -> converts to -value
+- Text unique -> adds [uniqid] prefix
 
 **Parameters:**
 - `$id` (int) - ID to deactivate
@@ -920,9 +920,9 @@ Converts types adapted for MySQL/PGSQL/SQLite.
 **Returns:** SQL format (example: `id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY`)
 
 **Type conversions:**
-- **PostgreSQL:** int8→bigint, integer→int, tinyint→smallint, datetime→timestamp, tinytext→text, bigint+auto→bigserial, int+auto→serial
-- **SQLite:** All integer types→INTEGER, decimal/float→REAL, blob→BLOB, others→TEXT
-- **MySQL:** bigserial→bigint, serial→int, smallserial→smallint, timestamptz→timestamp
+- **PostgreSQL:** int8->bigint, integer->int, tinyint->smallint, datetime->timestamp, tinytext->text, bigint+auto->bigserial, int+auto->serial
+- **SQLite:** All integer types->INTEGER, decimal/float->REAL, blob->BLOB, others->TEXT
+- **MySQL:** bigserial->bigint, serial->int, smallserial->smallint, timestamptz->timestamp
 
 ---
 

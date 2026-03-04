@@ -28,10 +28,10 @@ abstract class Model
     /**
      * Өгөгдөл нэмэх (INSERT).
      *
-     * MySQL/SQLite → lastInsertId() ашиглана
-     * PostgreSQL → RETURNING * ашиглана
+     * MySQL/SQLite -> lastInsertId() ашиглана
+     * PostgreSQL -> RETURNING * ашиглана
      *
-     * @param array $record Нэмэх мөрийн түлхүүр → утга хослол
+     * @param array $record Нэмэх мөрийн түлхүүр -> утга хослол
      * @return array|false Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
      * @throws Exception
      */
@@ -51,7 +51,7 @@ abstract class Model
         $table = $this->getName();
         $query = "INSERT INTO $table($columns) VALUES($params)";
 
-        // PostgreSQL → RETURNING *
+        // PostgreSQL -> RETURNING *
         if ($driver == 'pgsql') {
             $query .= ' RETURNING *';
         }
@@ -65,12 +65,12 @@ abstract class Model
             return false;
         }
 
-        // PostgreSQL → шинэ мөрийг буцаана
+        // PostgreSQL -> шинэ мөрийг буцаана
         if ($driver == 'pgsql') {
             return $insert->fetch(\PDO::FETCH_ASSOC);
         }
 
-        // MySQL/SQLite → ID багана байгаа бол retrive хийнэ
+        // MySQL/SQLite -> ID багана байгаа бол retrive хийнэ
         if ($this->hasColumn('id') && $this->getColumn('id')->isPrimary()) {
             // SQLite дээр lastInsertId() нь sequence name шаардлагагүй
             $sequenceName = ($driver == 'sqlite') ? null : 'id';
@@ -93,8 +93,8 @@ abstract class Model
      *
      * UPDATE table SET field=:value WHERE id=X
      *
-     * PostgreSQL → RETURNING *
-     * MySQL/SQLite → SELECT * WHERE id=...
+     * PostgreSQL -> RETURNING *
+     * MySQL/SQLite -> SELECT * WHERE id=...
      *
      * @param int $id Шинэчлэх ID
      * @param array $record Шинэчлэх талбарууд ['column' => value, ...]
@@ -126,7 +126,7 @@ abstract class Model
         }
         $sets = \implode(', ', $set);
         $query = "UPDATE $table SET $sets WHERE id=$id";
-        // PostgreSQL → RETURNING *
+        // PostgreSQL -> RETURNING *
         if ($driver == 'pgsql') {
             $query .= ' RETURNING *';
         }        
@@ -139,12 +139,12 @@ abstract class Model
             return false;
         }
 
-        // PostgreSQL → Бүрэн мөрийг буцаах
+        // PostgreSQL -> Бүрэн мөрийг буцаах
         if ($driver == 'pgsql') {
             return $update->fetch(\PDO::FETCH_ASSOC);
         }
 
-        // MySQL/SQLite → Шинэчилсэн мөрийг сонгон бүрнээр буцаах
+        // MySQL/SQLite -> Шинэчилсэн мөрийг сонгон бүрнээр буцаах
         return $this->getRowWhere(['id' => $record['id'] ?? $id]) ?? false;
     }
 

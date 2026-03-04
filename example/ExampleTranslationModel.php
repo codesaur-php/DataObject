@@ -13,10 +13,10 @@ use codesaur\DataObject\LocalizedModel;
  *
  * Архитектур:
  *  - PRIMARY TABLE: example_translation
- *    → keyword, is_active, timestamps
+ *    -> keyword, is_active, timestamps
  *
  *  - CONTENT TABLE: example_translation_content
- *    → parent_id, code(mn/en…), title
+ *    -> parent_id, code(mn/en…), title
  *
  * @package codesaur\DataObject\Example
  */
@@ -71,7 +71,7 @@ class ExampleTranslationModel extends LocalizedModel
         // SQLite нь ALTER TABLE ... ADD CONSTRAINT дэмжихгүй
         // MySQL/PostgreSQL дээр л FK constraint нэмнэ
         if ($this->getDriverName() != 'sqlite') {
-            // created_by → FK example_user.id
+            // created_by -> FK example_user.id
             $this->setForeignKeyChecks(false);
             $this->exec(
                 "ALTER TABLE $table 
@@ -80,7 +80,7 @@ class ExampleTranslationModel extends LocalizedModel
                  ON DELETE SET NULL ON UPDATE CASCADE"
             );
 
-            // updated_by → FK example_user.id
+            // updated_by -> FK example_user.id
             $this->exec(
                 "ALTER TABLE $table 
                  ADD CONSTRAINT {$table}_fk_updated_by 

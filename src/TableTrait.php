@@ -191,8 +191,8 @@ trait TableTrait
      * ID-р мөрийг идэвхгүй болгох (soft delete).
      *
      * UNIQUE багануудын утгыг зөрчилгүй болгохын тулд дараах арга хэрэглэнэ:
-     *  - Тоон unique → -value болгон хөрвүүлнэ
-     *  - Текстэн unique → [uniqid] prefix нэмнэ
+     *  - Тоон unique -> -value болгон хөрвүүлнэ
+     *  - Текстэн unique -> [uniqid] prefix нэмнэ
      *
      * @param int $id
      * @param array $record Нэмэлт update талбарууд
@@ -301,7 +301,7 @@ trait TableTrait
         }
         $create .= ')';
 
-        // MySQL → Collation тохируулах
+        // MySQL -> Collation тохируулах
         if ($this->getDriverName() == 'mysql') {
             $stmt = $this->query('SELECT @@collation_connection, @@collation_connection;');
             $collation = $stmt->fetchColumn();
@@ -378,7 +378,7 @@ trait TableTrait
     {
         $str = $column->getName();
 
-        // PRIMARY → NOT NULL + AUTO
+        // PRIMARY -> NOT NULL + AUTO
         if ($column->isPrimary()) {
             $column->notNull()->auto();
         }

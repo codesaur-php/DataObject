@@ -1,6 +1,6 @@
 # Contributing to codesaur/dataobject
 
-First of all, thank you for taking the time to contribute ❤️  
+First of all, thank you for taking the time to contribute!
 Contributions of any kind are welcome.
 
 ---
@@ -95,4 +95,4 @@ For security-related issues, please follow the instructions in
 
 ---
 
-Thank you for helping improve the **codesaur ecosystem** 🦖
+Thank you for helping improve the **codesaur ecosystem**

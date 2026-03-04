@@ -64,13 +64,13 @@ class ExampleUserModel extends Model
         // SQLite нь ALTER TABLE ... ADD CONSTRAINT дэмжихгүй
         // MySQL/PostgreSQL дээр л FK constraint нэмнэ
         if ($this->getDriverName() != 'sqlite') {
-            // created_by → FK (self reference)
+            // created_by -> FK (self reference)
             $this->exec("ALTER TABLE $table 
                 ADD CONSTRAINT {$table}_fk_created_by 
                 FOREIGN KEY (created_by) REFERENCES $table(id) 
                 ON DELETE SET NULL ON UPDATE CASCADE");
 
-            // updated_by → FK (self reference)
+            // updated_by -> FK (self reference)
             $this->exec("ALTER TABLE $table 
                 ADD CONSTRAINT {$table}_fk_updated_by 
                 FOREIGN KEY (updated_by) REFERENCES $table(id) 

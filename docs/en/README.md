@@ -1,4 +1,4 @@
-# 🧱 codesaur/dataobject  
+# codesaur/dataobject
 
 **PDO-based data model and table management component (MySQL / PostgreSQL / SQLite, PHP 8.2.1+)**
 
@@ -14,7 +14,7 @@ Core idea:
 
 ---
 
-## ⚙ Requirements
+## Requirements
 
 - PHP **8.2.1+** with `ext-pdo` extension
 - Composer
@@ -22,13 +22,13 @@ Core idea:
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 composer require codesaur/dataobject
 ```
 
-## 🧪 Running Tests
+## Running Tests
 
 ### Composer Test Commands
 
@@ -86,7 +86,7 @@ vendor/bin/phpunit --coverage-html coverage
 
 ---
 
-## 🧩 Core Classes
+## Core Classes
 
 # **Column**
 
@@ -116,10 +116,10 @@ $columns = [
 
 Base class for simple (non-localized) tables.
 
-✔ Table name and columns via `setTable()` / `setColumns()`  
-✔ CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`  
-✔ `deleteById()`, `deactivateById()`  
-✔ Automatically handles MySQL / PostgreSQL / SQLite differences
+-Table name and columns via `setTable()` / `setColumns()`  
+-CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`  
+-`deleteById()`, `deactivateById()`  
+-Automatically handles MySQL / PostgreSQL / SQLite differences
 
 ```php
 use codesaur\DataObject\Model;
@@ -175,20 +175,20 @@ Base class for tables that need to store content in multiple languages.
 
 ## Architecture:
 
-🔶 PRIMARY table: `tablename`  
-🔶 CONTENT table: `tablename_content`  
+-PRIMARY table: `tablename`  
+-CONTENT table: `tablename_content`  
 
 Inside CONTENT table:
 
-- `parent_id` → FK → primary.id (CASCADE update)  
-- `code` → language code (mn, en, jp …)  
+- `parent_id` -> FK -> primary.id (CASCADE update)  
+- `code` -> language code (mn, en, jp …)  
 - other fields (`title`, `description`, …)
 
 ## Core Functions:
 
-✔ **CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
-✔ **Read:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`  
-✔ Automatically handles MySQL / PostgreSQL / SQLite differences
+-**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
+-**Read:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`  
+-Automatically handles MySQL / PostgreSQL / SQLite differences
 
 ## Return Value Structure:
 
@@ -205,7 +205,7 @@ Inside CONTENT table:
             'body' => 'English content...'
         ],
         'mn' => [
-            'title' => 'Монгол Гарчиг',
+            'title' => 'Монгол гарчиг',
             'body' => 'Монгол агуулга...'
         ]
     ]
@@ -326,7 +326,7 @@ class ArticleModel extends LocalizedModel
   - **MySQL:** `SET foreign_key_checks = 0|1`  
   - **PostgreSQL:** `SET session_replication_role = 'replica'|'origin'`
 
-👉 This way, `Model` / `LocalizedModel` on top knows **not PDO code**, only their **business logic**.
+This way, `Model` / `LocalizedModel` on top knows **not PDO code**, only their **business logic**.
 
 ---
 
@@ -344,15 +344,15 @@ class ArticleModel extends LocalizedModel
 - `setTable(string $name)`  
   - cleans table name (uses `A-z 0-9 _-`)  
   - checks if columns are properly defined  
-  - if table doesn't exist → calls `createTable()` to **automatically create**  
+  - if table doesn't exist -> calls `createTable()` to **automatically create**  
   - then runs model's `__initial()` **once**  
 - `getColumns()` / `getColumn($name)` / `hasColumn($name)` - schema introspection  
 - `deleteById($id)` - deletes row using primary key  
 - `deactivateById($id, array $record = [])`  
   - sets `is_active` column to `0`  
   - prevents UNIQUE conflicts:  
-    - numeric → **negates** value (`-value`)  
-    - string → changes to `"[uniqid] original_value"`  
+    - numeric -> **negates** value (`-value`)  
+    - string -> changes to `"[uniqid] original_value"`  
 - `selectStatement($fromTable, $selection='*', array $condition=[])`  
   - All of JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET  
     ```php
@@ -365,36 +365,36 @@ class ArticleModel extends LocalizedModel
   - PRIMARY, UNIQUE, AUTO_INCREMENT, DEFAULT, NULL/NOT NULL  
     all automatically assembled into **clean SQL**
 
-👉 Finally, `Model` / `LocalizedModel` **"just declare columns, and when setTable() is called"** the table creates itself.
+Finally, `Model` / `LocalizedModel` **"just declare columns, and when setTable() is called"** the table creates itself.
 
 ---
 
-## 🏃 Example Runner UI
+## Example Runner UI
 
 Example code models are fully included in the Example directory.
 
 - `example/index.php` - UI to choose MySQL/PostgreSQL/SQLite
 
-## ✅ Tests and CI/CD
+## Tests and CI/CD
 
 The project is fully tested:
 
-- ✅ **PHPUnit** - Unit and Integration tests
-- ✅ **GitHub Actions** - Automated CI/CD pipeline
+-**PHPUnit** - Unit and Integration tests
+-**GitHub Actions** - Automated CI/CD pipeline
   - Automatically runs on Push and Pull Request
   - Triggers on `main`, `master`, `develop` branches
-- ✅ **Code Coverage** - 68.77% coverage (447/650 lines)
+-**Code Coverage** - 68.77% coverage (447/650 lines)
   - HTML coverage report: `coverage/` directory
   - Stored on Codecov (Clover XML format)
-- ✅ **Multi-version** - Tested on PHP 8.2, 8.3
-- ✅ **Multi-OS** - Tested on Ubuntu, Windows
-- ✅ **Database Extensions** - Installs PDO, PDO_SQLite, PDO_MySQL, PDO_PgSQL
+-**Multi-version** - Tested on PHP 8.2, 8.3
+-**Multi-OS** - Tested on Ubuntu, Windows
+-**Database Extensions** - Installs PDO, PDO_SQLite, PDO_MySQL, PDO_PgSQL
 
 CI/CD workflow file: `.github/workflows/ci.yml`
 
 ---
 
-## 📚 Additional Documentation
+## Additional Documentation
 
 - **[API](api.md)** - Full API documentation (automatically generated from PHPDoc using Cursor AI)
 - **[REVIEW](review.md)** - Code review results, found issues, improvement suggestions (generated using Cursor AI)
@@ -402,18 +402,18 @@ CI/CD workflow file: `.github/workflows/ci.yml`
 
 ---
 
-# 📄 License
+# License
 
 This project is licensed under MIT.
 
-# 👨‍💻 Author
+# Author
 
 **Narankhuu**  
 https://github.com/codesaur  
 
 ---
 
-# 🎯 Conclusion
+# Conclusion
 
 `codesaur/dataobject` is:
 

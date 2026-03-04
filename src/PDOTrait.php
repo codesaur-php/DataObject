@@ -173,9 +173,9 @@ trait PDOTrait
     /**
      * FOREIGN KEY constraints-г асаах/унтраах.
      * 
-     * MySQL → SET foreign_key_checks  
-     * PostgreSQL → SET session_replication_role
-     * SQLite → PRAGMA foreign_keys
+     * MySQL -> SET foreign_key_checks  
+     * PostgreSQL -> SET session_replication_role
+     * SQLite -> PRAGMA foreign_keys
      *
      * @param bool $enable TRUE=асаах, FALSE=унтраах
      * @return int|false
