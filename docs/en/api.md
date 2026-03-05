@@ -253,7 +253,7 @@ All single-language (non-localized) table models extend this class.
 
 Add data (INSERT).
 
-MySQL/SQLite -> uses `lastInsertId()`  
+MySQL/SQLite -> uses `lastInsertId()`
 PostgreSQL -> uses `RETURNING *`
 
 **Parameters:**
@@ -271,7 +271,7 @@ Update row by ID (UPDATE).
 
 `UPDATE table SET field=:value WHERE id=X`
 
-PostgreSQL -> `RETURNING *`  
+PostgreSQL -> `RETURNING *`
 MySQL/SQLite -> `SELECT * WHERE id=...`
 
 **Parameters:**
@@ -289,7 +289,7 @@ MySQL/SQLite -> `SELECT * WHERE id=...`
 Get multiple rows.
 
 **Parameters:**
-- `$condition` (array) - Conditions for SELECTStatement (JOIN, WHERE, ORDER, LIMIT…)
+- `$condition` (array) - Conditions for SELECTStatement (JOIN, WHERE, ORDER, LIMIT...)
 
 **Returns:** Array indexed by Primary ID (if ID exists), or simple array (if no ID)
 
@@ -634,7 +634,7 @@ Escape SQL string in driver-appropriate format.
 
 #### `prepare(string $statement, array $driver_options = []): \PDOStatement`
 
-Prepare SQL statement and return PDOStatement.  
+Prepare SQL statement and return PDOStatement.
 Throws standard Exception on failure.
 
 **Parameters:**
@@ -717,7 +717,7 @@ Including:
 - Automatic table creation logic (adapted for MySQL/PostgreSQL/SQLite)
 - PRIMARY, UNIQUE column validation
 - CRUD helper operations (deleteById, deactivateById)
-- SELECT statement builder (JOIN, WHERE, LIMIT…)
+- SELECT statement builder (JOIN, WHERE, LIMIT...)
 - Check if table exists
 
 This trait is the base foundation for Model and LocalizedModel.
@@ -736,7 +736,7 @@ SQL table name.
 
 #### `protected readonly array $columns`
 
-SQL table column definitions.  
+SQL table column definitions.
 Array of Column objects.
 
 ### Abstract Methods
@@ -911,7 +911,7 @@ $stmt = $model->selectStatement('users', '*', [
 
 #### `protected function getSyntax(Column $column): string`
 
-Generate SQL syntax for Column object.  
+Generate SQL syntax for Column object.
 Converts types adapted for MySQL/PGSQL/SQLite.
 
 **Parameters:**
@@ -931,7 +931,7 @@ Converts types adapted for MySQL/PGSQL/SQLite.
 ### Supported Databases
 
 - **MySQL** - Full support
-- **PostgreSQL** - Full support  
+- **PostgreSQL** - Full support
 - **SQLite** - Full support
 
 ### Driver-Specific Features

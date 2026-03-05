@@ -19,11 +19,11 @@ PDO суурьтай өгөгдлийн модель ба хүснэгтүүди
 
 Багц нь дараах үндсэн class-уудаас бүрдэнэ:
 
-- **Model** - нэг хүснэгтэд зориулсан загварын суурь класс  
-- **LocalizedModel** - олон хэл дээрх контент хадгалах зориулалттай загварын суурь класс  
-- **Column** - хүснэгтийн баганын бүтцийг тодорхойлох класс  
-- **PDOTrait** - PDO үйлдлүүдийг төвлөрүүлсэн trait  
-- **TableTrait** - хүснэгттэй ажиллах үндсэн боломжуудыг агуулсан trait  
+- **Model** - нэг хүснэгтэд зориулсан загварын суурь класс
+- **LocalizedModel** - олон хэл дээрх контент хадгалах зориулалттай загварын суурь класс
+- **Column** - хүснэгтийн баганын бүтцийг тодорхойлох класс
+- **PDOTrait** - PDO үйлдлүүдийг төвлөрүүлсэн trait
+- **TableTrait** - хүснэгттэй ажиллах үндсэн боломжуудыг агуулсан trait
 
 ### Дэлгэрэнгүй мэдээлэл
 
@@ -41,11 +41,11 @@ PDO-based data model and table management component. Works with the same code on
 
 The package consists of the following core classes:
 
-- **Model** - base class for models targeting a single table  
-- **LocalizedModel** - base class for models storing content in multiple languages  
-- **Column** - class for defining table column structure  
-- **PDOTrait** - trait centralizing PDO operations  
-- **TableTrait** - trait containing basic capabilities for working with tables  
+- **Model** - base class for models targeting a single table
+- **LocalizedModel** - base class for models storing content in multiple languages
+- **Column** - class for defining table column structure
+- **PDOTrait** - trait centralizing PDO operations
+- **TableTrait** - trait containing basic capabilities for working with tables
 
 ### Documentation
 
@@ -144,8 +144,8 @@ This project is licensed under the MIT License.
 
 ## Author
 
-**Narankhuu**  
-codesaur@gmail.com  
+**Narankhuu**
+codesaur@gmail.com
 https://github.com/codesaur
 
 **codesaur ecosystem:** https://codesaur.net

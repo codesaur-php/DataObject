@@ -38,7 +38,7 @@ class ModelTest extends TestCase
         // SQLite in-memory database for testing
         $this->pdo = new PDO('sqlite::memory:');
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
+
         $this->model = new TestModel($this->pdo);
     }
 
@@ -69,9 +69,9 @@ class ModelTest extends TestCase
     public function testGetRowWhere(): void
     {
         $this->model->insert(['name' => 'Test']);
-        
+
         $row = $this->model->getRowWhere(['name' => 'Test']);
-        
+
         $this->assertIsArray($row);
         $this->assertEquals('Test', $row['name']);
     }
@@ -82,9 +82,9 @@ class ModelTest extends TestCase
         $this->assertIsArray($inserted);
         $id = $inserted['id'] ?? null;
         $this->assertNotNull($id);
-        
+
         $updated = $this->model->updateById($id, ['name' => 'Updated']);
-        
+
         $this->assertIsArray($updated);
         $this->assertEquals('Updated', $updated['name']);
     }
@@ -95,11 +95,11 @@ class ModelTest extends TestCase
         $this->assertIsArray($inserted);
         $id = $inserted['id'] ?? null;
         $this->assertNotNull($id);
-        
+
         $deleted = $this->model->deleteById($id);
-        
+
         $this->assertTrue($deleted);
-        
+
         $row = $this->model->getRowWhere(['id' => $id]);
         $this->assertNull($row);
     }
@@ -108,9 +108,9 @@ class ModelTest extends TestCase
     {
         $this->model->insert(['name' => 'Row 1']);
         $this->model->insert(['name' => 'Row 2']);
-        
+
         $rows = $this->model->getRows();
-        
+
         $this->assertCount(2, $rows);
     }
 }

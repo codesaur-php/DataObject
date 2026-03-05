@@ -152,15 +152,15 @@ trait PDOTrait
                 return $this->query('SHOW TABLES LIKE ' . $this->quote($table))->rowCount() > 0;
 
             case 'pgsql':
-                return $this->query("SELECT tablename 
-                    FROM pg_tables 
-                    WHERE schemaname='public' 
+                return $this->query("SELECT tablename
+                    FROM pg_tables
+                    WHERE schemaname='public'
                     AND tablename=" . $this->quote($table))->rowCount() > 0;
 
             case 'sqlite': {
-                $stmt = $this->query("SELECT name 
-                    FROM sqlite_master 
-                    WHERE type='table' 
+                $stmt = $this->query("SELECT name
+                    FROM sqlite_master
+                    WHERE type='table'
                     AND name=" . $this->quote($table));
                 return $stmt->fetch() !== false;
             }
@@ -172,8 +172,8 @@ trait PDOTrait
 
     /**
      * FOREIGN KEY constraints-г асаах/унтраах.
-     * 
-     * MySQL -> SET foreign_key_checks  
+     *
+     * MySQL -> SET foreign_key_checks
      * PostgreSQL -> SET session_replication_role
      * SQLite -> PRAGMA foreign_keys
      *

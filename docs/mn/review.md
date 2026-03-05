@@ -6,7 +6,7 @@ codesaur/dataobject төслийн код review.
 
 ## Review Үр дүн
 
-**Review огноо:** 2025-12-17  
+**Review огноо:** 2025-12-17
 **Шалгасан файлууд:** `src/` directory-ийн бүх файлууд
 
 ### Сайн талууд
@@ -88,5 +88,5 @@ class DatabaseDriver {
 
 ---
 
-**Last Updated:** 2025-12-17  
+**Last Updated:** 2025-12-17
 **Maintainer:** codesaur (Narankhuu)

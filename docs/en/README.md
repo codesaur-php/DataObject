@@ -2,11 +2,11 @@
 
 **PDO-based data model and table management component (MySQL / PostgreSQL / SQLite, PHP 8.2.1+)**
 
-`codesaur/dataobject` is the core data layer component of the **codesaur-php** ecosystem.  
+`codesaur/dataobject` is the core data layer component of the **codesaur-php** ecosystem.
 Instead of using raw `PDO` directly, it:
 
-- defines table structures **using Column classes within PHP classes**,  
-- **automatically creates tables** on first use,  
+- defines table structures **using Column classes within PHP classes**,
+- **automatically creates tables** on first use,
 - works **with the same code** on MySQL / PostgreSQL / SQLite.
 
 Core idea:
@@ -42,7 +42,7 @@ composer test-coverage
 
 ### Command Descriptions
 
-- **`composer test`** 
+- **`composer test`**
   - Runs all tests (Unit and Integration)
   - Tests using PHPUnit
   - Displays test results in terminal
@@ -93,7 +93,7 @@ vendor/bin/phpunit --coverage-html coverage
 Metadata for a single column:
 
 - name (`name`)
-- type (`type` - int, varchar, datetime, …)
+- type (`type` - int, varchar, datetime, ...)
 - length (`length`)
 - NULL / NOT NULL
 - PRIMARY / UNIQUE / AUTO_INCREMENT
@@ -116,9 +116,9 @@ $columns = [
 
 Base class for simple (non-localized) tables.
 
--Table name and columns via `setTable()` / `setColumns()`  
--CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`  
--`deleteById()`, `deactivateById()`  
+-Table name and columns via `setTable()` / `setColumns()`
+-CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`
+-`deleteById()`, `deactivateById()`
 -Automatically handles MySQL / PostgreSQL / SQLite differences
 
 ```php
@@ -146,7 +146,7 @@ class UserModel extends Model
     {
         // Runs once when table is first created
     }
-    
+
     // Example: add user
     public function createUser(string $username, string $hashedPassword): array|false
     {
@@ -175,19 +175,19 @@ Base class for tables that need to store content in multiple languages.
 
 ## Architecture:
 
--PRIMARY table: `tablename`  
--CONTENT table: `tablename_content`  
+-PRIMARY table: `tablename`
+-CONTENT table: `tablename_content`
 
 Inside CONTENT table:
 
-- `parent_id` -> FK -> primary.id (CASCADE update)  
-- `code` -> language code (mn, en, jp …)  
-- other fields (`title`, `description`, …)
+- `parent_id` -> FK -> primary.id (CASCADE update)
+- `code` -> language code (mn, en, jp ...)
+- other fields (`title`, `description`, ...)
 
 ## Core Functions:
 
--**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
--**Read:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`  
+-**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`
+-**Read:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`
 -Automatically handles MySQL / PostgreSQL / SQLite differences
 
 ## Return Value Structure:
@@ -261,7 +261,7 @@ class ArticleModel extends LocalizedModel
 
         $this->setTable('article');
     }
-    
+
     // Example: add article (primary + localized)
     public function createArticle(string $slug, array $content): array|false
     {
@@ -273,20 +273,20 @@ class ArticleModel extends LocalizedModel
             $content // ['en' => ['title' => '...', 'body' => '...'], 'mn' => [...]]
         );
     }
-    
+
     // Example: update article content
     public function updateArticle(int $id, array $content, array $record = []): array|false
     {
         return $this->updateById($id, $record, $content);
     }
-    
+
     // Example: get article by language
     public function getArticleByLang(int $id, string $lang): array|null
     {
         $rows = $this->getRowsByCode($lang, ['WHERE' => "p.id=$id"]);
         return $rows[$id] ?? null;
     }
-    
+
     // Example: get all articles by language
     public function getAllArticlesByLang(string $lang, bool $activeOnly = true): array
     {
@@ -296,7 +296,7 @@ class ArticleModel extends LocalizedModel
         }
         return $this->getRowsByCode($lang, $condition);
     }
-    
+
     // Example: get article by slug and language (using WHERE + PARAM)
     public function getArticleBySlugAndLang(string $slug, string $lang): array|null
     {
@@ -317,13 +317,13 @@ class ArticleModel extends LocalizedModel
 
 **Core Capabilities:**
 
-- `setInstance(PDO $pdo)` - installs PDO from outside  
-- `getDriverName()` - returns driver name (cached) like `mysql`, `pgsql`, `sqlite`  
-- `quote()`, `prepare()`, `exec()`, `query()` - **safe wrapper** for PDO's core functions  
-  - `prepare()` / `query()` throws **Exception** when returning `false`  
-- `hasTable($name)` - checks if table exists using different SQL for MySQL / PostgreSQL / SQLite  
-- `setForeignKeyChecks(bool $enable)` - temporarily disable / enable FK constraints  
-  - **MySQL:** `SET foreign_key_checks = 0|1`  
+- `setInstance(PDO $pdo)` - installs PDO from outside
+- `getDriverName()` - returns driver name (cached) like `mysql`, `pgsql`, `sqlite`
+- `quote()`, `prepare()`, `exec()`, `query()` - **safe wrapper** for PDO's core functions
+  - `prepare()` / `query()` throws **Exception** when returning `false`
+- `hasTable($name)` - checks if table exists using different SQL for MySQL / PostgreSQL / SQLite
+- `setForeignKeyChecks(bool $enable)` - temporarily disable / enable FK constraints
+  - **MySQL:** `SET foreign_key_checks = 0|1`
   - **PostgreSQL:** `SET session_replication_role = 'replica'|'origin'`
 
 This way, `Model` / `LocalizedModel` on top knows **not PDO code**, only their **business logic**.
@@ -334,35 +334,35 @@ This way, `Model` / `LocalizedModel` on top knows **not PDO code**, only their *
 
 `TableTrait` handles **schema-level** operations using `PDOTrait`:
 
-- table name (`$name`)  
-- column definitions (`$columns`)  
-- table creation / checking / populating with initial data  
+- table name (`$name`)
+- column definitions (`$columns`)
+- table creation / checking / populating with initial data
 
 **Core Functions:**
 
-- `setColumns(array $columns)` - indexes and stores `Column` array by name  
-- `setTable(string $name)`  
-  - cleans table name (uses `A-z 0-9 _-`)  
-  - checks if columns are properly defined  
-  - if table doesn't exist -> calls `createTable()` to **automatically create**  
-  - then runs model's `__initial()` **once**  
-- `getColumns()` / `getColumn($name)` / `hasColumn($name)` - schema introspection  
-- `deleteById($id)` - deletes row using primary key  
-- `deactivateById($id, array $record = [])`  
-  - sets `is_active` column to `0`  
-  - prevents UNIQUE conflicts:  
-    - numeric -> **negates** value (`-value`)  
-    - string -> changes to `"[uniqid] original_value"`  
-- `selectStatement($fromTable, $selection='*', array $condition=[])`  
-  - All of JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET  
+- `setColumns(array $columns)` - indexes and stores `Column` array by name
+- `setTable(string $name)`
+  - cleans table name (uses `A-z 0-9 _-`)
+  - checks if columns are properly defined
+  - if table doesn't exist -> calls `createTable()` to **automatically create**
+  - then runs model's `__initial()` **once**
+- `getColumns()` / `getColumn($name)` / `hasColumn($name)` - schema introspection
+- `deleteById($id)` - deletes row using primary key
+- `deactivateById($id, array $record = [])`
+  - sets `is_active` column to `0`
+  - prevents UNIQUE conflicts:
+    - numeric -> **negates** value (`-value`)
+    - string -> changes to `"[uniqid] original_value"`
+- `selectStatement($fromTable, $selection='*', array $condition=[])`
+  - All of JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET
     ```php
     ['INNER JOIN' => '...', 'WHERE' => '...', 'PARAM' => [...]]
-    ```  
+    ```
     format to enable **dynamic SELECT** generation
-- `createTable($table, array $columns)` / `getSyntax(Column $column)`  
-  - MySQL / PostgreSQL / SQLite type mapping  
-    - `serial`, `bigserial`, `timestamptz`, `tinyint` vs `smallint`, …  
-  - PRIMARY, UNIQUE, AUTO_INCREMENT, DEFAULT, NULL/NOT NULL  
+- `createTable($table, array $columns)` / `getSyntax(Column $column)`
+  - MySQL / PostgreSQL / SQLite type mapping
+    - `serial`, `bigserial`, `timestamptz`, `tinyint` vs `smallint`, ...
+  - PRIMARY, UNIQUE, AUTO_INCREMENT, DEFAULT, NULL/NOT NULL
     all automatically assembled into **clean SQL**
 
 Finally, `Model` / `LocalizedModel` **"just declare columns, and when setTable() is called"** the table creates itself.
@@ -408,8 +408,8 @@ This project is licensed under MIT.
 
 # Author
 
-**Narankhuu**  
-https://github.com/codesaur  
+**Narankhuu**
+https://github.com/codesaur
 
 ---
 
@@ -420,7 +420,7 @@ https://github.com/codesaur
 - Defines tables and columns **using PHP code**
 - Works **with the same code** on MySQL / PostgreSQL / SQLite
 - **Automatically handles** CRUD and schema initialization
-- Makes data layer **clean and elegant**  
+- Makes data layer **clean and elegant**
 - Lightweight, flexible, easy to extend component
 
 If you want to use **standardized, reusable, clean data models** in your PHP project, this is the right choice!

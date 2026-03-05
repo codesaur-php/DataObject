@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [9.0.2] - 2026-03-05
+[9.0.2]: https://github.com/codesaur-php/DataObject/compare/v9.0.1...v9.0.2
+
+### Changed
+
+- Cleaned up all project files to follow old-school plain ASCII coding style
+- Replaced Unicode special characters with ASCII equivalents
+- Removed trailing whitespace from all files
+
+---
+
 ## [9.0.1] - 2026-03-04
 [9.0.1]: https://github.com/codesaur-php/DataObject/compare/v9.0.0...v9.0.1
 

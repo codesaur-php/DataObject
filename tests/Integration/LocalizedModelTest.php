@@ -42,10 +42,10 @@ class LocalizedModelTest extends TestCase
         // SQLite in-memory database for testing
         $this->pdo = new PDO('sqlite::memory:');
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
+
         // SQLite дээр FK-г идэвхжүүлэх
         $this->pdo->exec('PRAGMA foreign_keys = ON');
-        
+
         $this->model = new TestLocalizedModel($this->pdo);
     }
 

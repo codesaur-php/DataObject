@@ -69,9 +69,9 @@
     <h1>DataObject Example Runner</h1>
 
     <div class="links">
-        <a href="mysql.php">▶ Run MySQL Example</a>
-        <a href="postgres.php">▶ Run PostgreSQL Example</a>
-        <a href="sqlite.php">▶ Run SQLite Example</a>
+        <a href="mysql.php">> Run MySQL Example</a>
+        <a href="postgres.php">> Run PostgreSQL Example</a>
+        <a href="sqlite.php">> Run SQLite Example</a>
     </div>
 
     <div class="footer">

@@ -254,7 +254,7 @@ UNIQUE эсэх.
 
 Өгөгдөл нэмэх (INSERT).
 
-MySQL/SQLite -> `lastInsertId()` ашиглана  
+MySQL/SQLite -> `lastInsertId()` ашиглана
 PostgreSQL -> `RETURNING *` ашиглана
 
 **Параметрүүд:**
@@ -272,7 +272,7 @@ ID-р мөр шинэчлэх (UPDATE).
 
 `UPDATE table SET field=:value WHERE id=X`
 
-PostgreSQL -> `RETURNING *`  
+PostgreSQL -> `RETURNING *`
 MySQL/SQLite -> `SELECT * WHERE id=...`
 
 **Параметрүүд:**
@@ -290,7 +290,7 @@ MySQL/SQLite -> `SELECT * WHERE id=...`
 Олон мөрийг авах.
 
 **Параметрүүд:**
-- `$condition` (array) - SELECTStatement-д өгөх нөхцөл (JOIN, WHERE, ORDER, LIMIT…)
+- `$condition` (array) - SELECTStatement-д өгөх нөхцөл (JOIN, WHERE, ORDER, LIMIT...)
 
 **Буцаах утга:** Primary ID-р индексжсэн массив (ID байвал), эсвэл энгийн массив (ID байхгүй бол)
 
@@ -635,7 +635,7 @@ SQL string-ийг драйверт тохирсон хэлбэрээр escape х
 
 #### `prepare(string $statement, array $driver_options = []): \PDOStatement`
 
-SQL statement-г бэлтгэж (prepare) PDOStatement буцаана.  
+SQL statement-г бэлтгэж (prepare) PDOStatement буцаана.
 Амжилтгүй бол стандарт Exception шиднэ.
 
 **Параметрүүд:**
@@ -718,7 +718,7 @@ FOREIGN KEY constraints-г асаах/унтраах.
 - Хүснэгт автоматаар үүсгэх логик (MySQL/PostgreSQL/SQLite-д таарсан)
 - PRIMARY, UNIQUE багана баталгаажуулалт
 - CRUD-ийн туслах үйлдлүүд (deleteById, deactivateById)
-- SELECT statement builder (JOIN, WHERE, LIMIT…)
+- SELECT statement builder (JOIN, WHERE, LIMIT...)
 - Хүснэгт байгаа эсэхийг шалгах
 
 Энэ trait нь Model болон LocalizedModel-ийн үндсэн суурь юм.
@@ -737,7 +737,7 @@ SQL хүснэгтийн нэр.
 
 #### `protected readonly array $columns`
 
-SQL хүснэгтийн багануудын тодорхойлолт.  
+SQL хүснэгтийн багануудын тодорхойлолт.
 Column объектуудын массив.
 
 ### Abstract Methods
@@ -912,7 +912,7 @@ $stmt = $model->selectStatement('users', '*', [
 
 #### `protected function getSyntax(Column $column): string`
 
-Column объектын SQL синтаксыг үүсгэх.  
+Column объектын SQL синтаксыг үүсгэх.
 MySQL/PGSQL/SQLite-д тааруулж төрлийг хөрвүүлдэг.
 
 **Параметрүүд:**
@@ -932,7 +932,7 @@ MySQL/PGSQL/SQLite-д тааруулж төрлийг хөрвүүлдэг.
 ### Supported Databases
 
 - **MySQL** - Full support
-- **PostgreSQL** - Full support  
+- **PostgreSQL** - Full support
 - **SQLite** - Full support
 
 ### Driver-Specific Features
@@ -965,5 +965,5 @@ MIT License
 
 ## Author
 
-Narankhuu  
+Narankhuu
 https://github.com/codesaur

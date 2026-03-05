@@ -6,7 +6,7 @@ namespace codesaur\DataObject;
  * Class Column
  *
  * SQL хүснэгтийн нэг баганын бүтцийг тодорхойлох зориулалттай класс.
- * 
+ *
  * Энэ нь хүснэгт үүсгэх үеийн:
  *  - баганын нэр
  *  - өгөгдлийн төрөл
@@ -24,7 +24,7 @@ class Column
     /** @var string Баганын нэр */
     private readonly string $_name;
 
-    /** @var string Баганын төрөл (varchar, int, date…) */
+    /** @var string Баганын төрөл (varchar, int, date...) */
     private readonly string $_type;
 
     /** @var int|string|null Төрлийн урт, хэмжээ (VARCHAR(255) гэх мэт) */

@@ -13,7 +13,7 @@ namespace codesaur\DataObject;
  *  - Хүснэгт автоматаар үүсгэх логик (MySQL/PostgreSQL/SQLite-д таарсан)
  *  - PRIMARY, UNIQUE багана баталгаажуулалт
  *  - CRUD-ийн туслах үйлдлүүд (deleteById, deactivateById)
- *  - SELECT statement builder (JOIN, WHERE, LIMIT…)
+ *  - SELECT statement builder (JOIN, WHERE, LIMIT...)
  *  - Хүснэгт байгаа эсэхийг шалгах
  *
  * Энэ trait нь Model болон LocalizedModel-ийн үндсэн суурь юм.
@@ -78,7 +78,7 @@ trait TableTrait
 
     /**
      * Хүснэгтийн нэрийг тогтоож хүснэгтийг үүсгэнэ.
-     * 
+     *
      * @param string $name Зөвшөөрөгдөх тэмдэгтээр filter хийж нэр өгнө.
      * @return void
      * @throws \Exception
@@ -385,7 +385,7 @@ trait TableTrait
 
         $type = $column->getType();
         $driver = $this->getDriverName();
-        
+
         // PostgreSQL төрөл хөрвүүлэлт
         if ($driver == 'pgsql') {
             switch ($type) {

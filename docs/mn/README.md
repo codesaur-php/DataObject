@@ -2,15 +2,15 @@
 
 **PDO суурьтай өгөгдлийн модель ба хүснэгтүүдийг удирдагч компонент (MySQL / PostgreSQL / SQLite, PHP 8.2.1+)**
 
-`codesaur/dataobject` нь **codesaur-php** экосистемийн өгөгдлийн давхаргын үндсэн компонент.  
+`codesaur/dataobject` нь **codesaur-php** экосистемийн өгөгдлийн давхаргын үндсэн компонент.
 Энгийн `PDO`-г шууд ашиглахын оронд:
 
-- хүснэгтүүдийн бүтцийг **PHP класс дотор Column-оор тодорхойлж**,  
-- хүснэгтийг **анх удаа ажиллах үедээ автоматаар үүсгэж**,  
+- хүснэгтүүдийн бүтцийг **PHP класс дотор Column-оор тодорхойлж**,
+- хүснэгтийг **анх удаа ажиллах үедээ автоматаар үүсгэж**,
 - MySQL / PostgreSQL / SQLite бүгд дээр **адилхан кодоор** ажиллах боломжийг олгодог.
 
 Гол санаа нь:
-> _“Schema + CRUD логикоороо давтагдсан бүх кодуудыг дахин ашиглагдах Model / LocalizedModel дотор нуух”_
+> _"Schema + CRUD логикоороо давтагдсан бүх кодуудыг дахин ашиглагдах Model / LocalizedModel дотор нуух"_
 
 ---
 
@@ -42,7 +42,7 @@ composer test-coverage
 
 ### Command-уудын тайлбар
 
-- **`composer test`** 
+- **`composer test`**
   - Бүх тестүүдийг (Unit болон Integration) ажиллуулна
   - PHPUnit ашиглан тестлэх
   - Тестүүдийн үр дүнг terminal дээр харуулна
@@ -92,7 +92,7 @@ vendor/bin/phpunit --coverage-html coverage
 Нэг баганын мета мэдээлэл:
 
 - нэр (`name`)
-- төрөл (`type` - int, varchar, datetime, …)
+- төрөл (`type` - int, varchar, datetime, ...)
 - урт (`length`)
 - NULL / NOT NULL
 - PRIMARY / UNIQUE / AUTO_INCREMENT
@@ -114,9 +114,9 @@ $columns = [
 
 Энгийн (non-localized) хүснэгтийн суурь класс.
 
--Хүснэгтийн нэр, баганыг `setTable()` / `setColumns()`  
--CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`  
--`deleteById()`, `deactivateById()`  
+-Хүснэгтийн нэр, баганыг `setTable()` / `setColumns()`
+-CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`
+-`deleteById()`, `deactivateById()`
 -MySQL / PostgreSQL / SQLite ялгааг автоматаар зохицуулна
 
 ```php
@@ -144,7 +144,7 @@ class UserModel extends Model
     {
         // Хүснэгт анх удаа үүсгэгдэх үед ганц удаа ажиллана
     }
-    
+
     // Жишээ: хэрэглэгч нэмэх
     public function createUser(string $username, string $hashedPassword): array|false
     {
@@ -172,19 +172,19 @@ class UserModel extends Model
 
 ## Архитектур:
 
--PRIMARY хүснэгт: `tablename`  
--CONTENT хүснэгт: `tablename_content`  
+-PRIMARY хүснэгт: `tablename`
+-CONTENT хүснэгт: `tablename_content`
 
 CONTENT хүснэгт дотор:
 
-- `parent_id` -> FK -> primary.id (CASCADE шинэчлэлт)  
-- `code` -> хэлний код (mn, en, jp …)  
-- бусад талбарууд (`title`, `description`, …)
+- `parent_id` -> FK -> primary.id (CASCADE шинэчлэлт)
+- `code` -> хэлний код (mn, en, jp ...)
+- бусад талбарууд (`title`, `description`, ...)
 
 ## Үндсэн функцүүд:
 
--**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`  
--**Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`  
+-**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`
+-**Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`
 -MySQL / PostgreSQL / SQLite ялгааг автоматаар зохицуулна
 
 ## Буцаах утгын бүтэц:
@@ -258,7 +258,7 @@ class ArticleModel extends LocalizedModel
 
         $this->setTable('article');
     }
-    
+
     // Жишээ: нийтлэл нэмэх (primary + localized)
     public function createArticle(string $slug, array $content): array|false
     {
@@ -270,20 +270,20 @@ class ArticleModel extends LocalizedModel
             $content // ['en' => ['title' => '...', 'body' => '...'], 'mn' => [...]]
         );
     }
-    
+
     // Жишээ: нийтлэлийн контентыг шинэчлэх
     public function updateArticle(int $id, array $content, array $record = []): array|false
     {
         return $this->updateById($id, $record, $content);
     }
-    
+
     // Жишээ: тодорхой хэлээр нийтлэл авах
     public function getArticleByLang(int $id, string $lang): array|null
     {
         $rows = $this->getRowsByCode($lang, ['WHERE' => "p.id=$id"]);
         return $rows[$id] ?? null;
     }
-    
+
     // Жишээ: тодорхой хэлээр бүх нийтлэлүүд авах
     public function getAllArticlesByLang(string $lang, bool $activeOnly = true): array
     {
@@ -293,7 +293,7 @@ class ArticleModel extends LocalizedModel
         }
         return $this->getRowsByCode($lang, $condition);
     }
-    
+
     // Жишээ: slug болон хэлээр нийтлэл авах (WHERE + PARAM ашиглах)
     public function getArticleBySlugAndLang(string $slug, string $lang): array|null
     {
@@ -313,13 +313,13 @@ class ArticleModel extends LocalizedModel
 
 **Үндсэн боломжууд:**
 
-- `setInstance(PDO $pdo)` - гаднаас PDO-г суулгаж өгнө  
-- `getDriverName()` - `mysql`, `pgsql`, `sqlite` гэх мэт драйверийн нэрийг кештэйгээр буцаана  
-- `quote()`, `prepare()`, `exec()`, `query()` - PDO-гийн үндсэн функцуудын **safe wrapper**  
-  - `prepare()` / `query()` нь `false` буцсан үед **алдааны Exception** шиднэ  
-- `hasTable($name)` - хүснэгт байгаа эсэхийг MySQL / PostgreSQL / SQLite дээр тус бүр өөр SQL-аар шалгана  
-- `setForeignKeyChecks(bool $enable)` - FK constraint-уудыг түр унтраах / асаах  
-  - **MySQL:** `SET foreign_key_checks = 0|1`  
+- `setInstance(PDO $pdo)` - гаднаас PDO-г суулгаж өгнө
+- `getDriverName()` - `mysql`, `pgsql`, `sqlite` гэх мэт драйверийн нэрийг кештэйгээр буцаана
+- `quote()`, `prepare()`, `exec()`, `query()` - PDO-гийн үндсэн функцуудын **safe wrapper**
+  - `prepare()` / `query()` нь `false` буцсан үед **алдааны Exception** шиднэ
+- `hasTable($name)` - хүснэгт байгаа эсэхийг MySQL / PostgreSQL / SQLite дээр тус бүр өөр SQL-аар шалгана
+- `setForeignKeyChecks(bool $enable)` - FK constraint-уудыг түр унтраах / асаах
+  - **MySQL:** `SET foreign_key_checks = 0|1`
   - **PostgreSQL:** `SET session_replication_role = 'replica'|'origin'`
 
 Ингэснээр дээр нь суугаа `Model` / `LocalizedModel` нь **PDO код биш**, зөвхөн **бизнесс логик**-оо мэддэг болдог.
@@ -330,38 +330,38 @@ class ArticleModel extends LocalizedModel
 
 `TableTrait` нь `PDOTrait`-ыг ашиглан **schema-level** ажиллагааг хариуцдаг:
 
-- хүснэгтийн нэр (`$name`)  
-- багануудын тодорхойлолт (`$columns`)  
-- хүснэгт үүсгэх / шалгах / анхны өгөгдлөөр populate хийх  
+- хүснэгтийн нэр (`$name`)
+- багануудын тодорхойлолт (`$columns`)
+- хүснэгт үүсгэх / шалгах / анхны өгөгдлөөр populate хийх
 
 **Гол үүргүүд:**
 
-- `setColumns(array $columns)` - `Column` массивыг нэрээр нь индексжүүлж хадгална  
-- `setTable(string $name)`  
-  - хүснэгтийн нэрийг цэвэрлэнэ (`A-z 0-9 _-` ашиглана)  
-  - баганууд зөв тодорхойлогдсон эсэхийг шалгана  
-  - хүснэгт байхгүй бол -> `createTable()` дуудаж **автоматаар үүсгэнэ**  
-  - дараа нь моделийн `__initial()`-ийг **ганц удаа** ажиллуулна  
-- `getColumns()` / `getColumn($name)` / `hasColumn($name)` - schema introspection  
-- `deleteById($id)` - primary key ашиглан мөр устгана  
-- `deactivateById($id, array $record = [])`  
-  - `is_active` баганад `0` онооно  
-  - UNIQUE давхардлаас сэргийлэх:  
-    - numeric -> утгыг **сөргөлдүүлнэ** (`-value`)  
-    - string -> `"[uniqid] original_value"` болгон өөрчилнө  
-- `selectStatement($fromTable, $selection='*', array $condition=[])`  
-  - JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET бүхнийг  
+- `setColumns(array $columns)` - `Column` массивыг нэрээр нь индексжүүлж хадгална
+- `setTable(string $name)`
+  - хүснэгтийн нэрийг цэвэрлэнэ (`A-z 0-9 _-` ашиглана)
+  - баганууд зөв тодорхойлогдсон эсэхийг шалгана
+  - хүснэгт байхгүй бол -> `createTable()` дуудаж **автоматаар үүсгэнэ**
+  - дараа нь моделийн `__initial()`-ийг **ганц удаа** ажиллуулна
+- `getColumns()` / `getColumn($name)` / `hasColumn($name)` - schema introspection
+- `deleteById($id)` - primary key ашиглан мөр устгана
+- `deactivateById($id, array $record = [])`
+  - `is_active` баганад `0` онооно
+  - UNIQUE давхардлаас сэргийлэх:
+    - numeric -> утгыг **сөргөлдүүлнэ** (`-value`)
+    - string -> `"[uniqid] original_value"` болгон өөрчилнө
+- `selectStatement($fromTable, $selection='*', array $condition=[])`
+  - JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET бүхнийг
     ```php
     ['INNER JOIN' => '...', 'WHERE' => '...', 'PARAM' => [...]]
-    ```  
+    ```
     хэлбэрээр өгч, **динамик SELECT** үүсгэх боломж олгоно
-- `createTable($table, array $columns)` / `getSyntax(Column $column)`  
-  - MySQL / PostgreSQL / SQLite type mapping  
-    - `serial`, `bigserial`, `timestamptz`, `tinyint` vs `smallint`, …  
-  - PRIMARY, UNIQUE, AUTO_INCREMENT, DEFAULT, NULL/NOT NULL  
+- `createTable($table, array $columns)` / `getSyntax(Column $column)`
+  - MySQL / PostgreSQL / SQLite type mapping
+    - `serial`, `bigserial`, `timestamptz`, `tinyint` vs `smallint`, ...
+  - PRIMARY, UNIQUE, AUTO_INCREMENT, DEFAULT, NULL/NOT NULL
     бүгдийг **цэвэр SQL** болгон автоматаар угсарна
 
-Эцэст нь, `Model` / `LocalizedModel` нь **“зөвхөн баганаа зарлаад, setTable() дуудахад”** хүснэгт нь өөрөө үүсдэг.
+Эцэст нь, `Model` / `LocalizedModel` нь **"зөвхөн баганаа зарлаад, setTable() дуудахад"** хүснэгт нь өөрөө үүсдэг.
 
 ---
 
@@ -403,8 +403,8 @@ CI/CD workflow файл: `.github/workflows/ci.yml`
 
 # Зохиогч
 
-**Narankhuu**  
-https://github.com/codesaur  
+**Narankhuu**
+https://github.com/codesaur
 
 ---
 
@@ -415,7 +415,7 @@ https://github.com/codesaur
 - Хүснэгт, баганыг **PHP кодоор тодорхойлдог**
 - MySQL / PostgreSQL / SQLite бүгд дээр **адилхан кодоор ажилладаг**
 - CRUD болон schema initialization-ийг **автоматаар шийдсэн**
-- Өгөгдлийн давхаргыг **цэвэр, загварлаг** болгох  
+- Өгөгдлийн давхаргыг **цэвэр, загварлаг** болгох
 - Хөнгөн, уян хатан, өргөтгөхөд хялбар компонент
 
 PHP төсөлдөө **стандартчилсан, дахин ашиглагдах, цэвэр өгөгдлийн модель** ашиглахыг хүсвэл хамгийн зөв сонголт юм!

@@ -118,7 +118,7 @@ abstract class Model
         }
 
         $driver = $this->getDriverName();
-        
+
         // UPDATE SET синтакс бэлтгэх
         $set = [];
         foreach (\array_keys($record) as $name) {
@@ -129,7 +129,7 @@ abstract class Model
         // PostgreSQL -> RETURNING *
         if ($driver == 'pgsql') {
             $query .= ' RETURNING *';
-        }        
+        }
         $update = $this->prepare($query);
         // Bind values
         foreach ($record as $name => $value) {
@@ -151,7 +151,7 @@ abstract class Model
     /**
      * Олон мөрийг авах.
      *
-     * @param array $condition SELECTStatement-д өгөх нөхцөл (JOIN, WHERE, ORDER, LIMIT…)
+     * @param array $condition SELECTStatement-д өгөх нөхцөл (JOIN, WHERE, ORDER, LIMIT...)
      * @return array
      */
     public function getRows(array $condition = []): array

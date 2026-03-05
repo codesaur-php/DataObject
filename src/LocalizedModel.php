@@ -73,25 +73,25 @@ abstract class LocalizedModel
 
         // Content table үүсгэе
         $contentTable = $this->getContentName();
-        
+
         // SQLite дээр FK-г CREATE TABLE-д шууд нэмэх хэрэгтэй
         if ($this->getDriverName() == 'sqlite') {
             $contentColumns = $this->getContentColumns();
             $columnSyntaxes = [];
-            $references = [];            
+            $references = [];
             foreach ($contentColumns as $key => $column) {
-                $columnSyntaxes[] = $this->getSyntax($column);                
+                $columnSyntaxes[] = $this->getSyntax($column);
                 if ($column->isUnique()) {
                     $references[] = "UNIQUE ($key)";
                 }
-            }            
+            }
             // FK constraint нэмэх
-            $references[] = "FOREIGN KEY (parent_id) REFERENCES $table(id) ON DELETE CASCADE ON UPDATE CASCADE";            
+            $references[] = "FOREIGN KEY (parent_id) REFERENCES $table(id) ON DELETE CASCADE ON UPDATE CASCADE";
             $create = "CREATE TABLE $contentTable (" . \implode(', ', $columnSyntaxes);
             if (!empty($references)) {
                 $create .= ', ' . \implode(', ', $references);
             }
-            $create .= ')';            
+            $create .= ')';
             if ($this->exec($create) === false) {
                 $error_info = $this->pdo->errorInfo();
                 $error_code = \is_numeric($error_info[1] ?? null)
@@ -104,10 +104,10 @@ abstract class LocalizedModel
             }
         } else {
             $this->createTable($contentTable, $this->getContentColumns());
-            
+
             // FK тохиргоо: parent_id -> primary.id, CASCADE шинэчлэлт
             $this->exec(
-                "ALTER TABLE $contentTable 
+                "ALTER TABLE $contentTable
                  ADD FOREIGN KEY (parent_id) REFERENCES $table(id)
                  ON DELETE CASCADE ON UPDATE CASCADE"
             );
@@ -217,7 +217,7 @@ abstract class LocalizedModel
                 __CLASS__ . "[$contentTable]: Can't insert record when localized content is empty!"
             );
         }
-        
+
         $driver = $this->getDriverName();
 
         // Primary table INSERT
@@ -228,7 +228,7 @@ abstract class LocalizedModel
         }
         $columns = \implode(', ', $column);
         $values = \implode(', ', $param);
-        
+
         $table = $this->getName();
         $query = "INSERT INTO $table($columns) VALUES($values)";
         if ($driver == 'pgsql') {
@@ -327,7 +327,7 @@ abstract class LocalizedModel
                 $set[] = "$name=:$name";
             }
             $sets = \implode(', ', $set);
-            
+
             $update_primary = $this->prepare("UPDATE $table SET $sets WHERE id=:old_id");
             $update_primary->bindValue(':old_id', $id, \PDO::PARAM_INT);
             foreach ($record as $name => $value) {
@@ -536,7 +536,7 @@ abstract class LocalizedModel
      *     - Эхний түвшин: хэлний код (жишээ: 'en', 'mn', 'ru' гэх мэт)
      *     - Хоёрдугаар түвшин: контент баганын нэр (жишээ: 'title', 'description' гэх мэт)
      *     - Утга: тухайн хэл дээрх контентын утга
-     * 
+     *
      * @example
      *   [
      *     'id' => 1,
@@ -577,7 +577,7 @@ abstract class LocalizedModel
             if (!isset($row['localized'][$langCode])) {
                 $row['localized'][$langCode] = [];
             }
-            
+
             foreach ($this->getContentColumns() as $ccolumn) {
                 $ccolumnName = $ccolumn->getName();
 
@@ -621,7 +621,7 @@ abstract class LocalizedModel
 
     /**
      * Олон мөрийг тодорхой хэлний кодоор авах.
-     * 
+     *
      * Энэ функц нь тухайн хэлний кодыг өгөхөд зөвхөн тухайн хэлний контентыг буцаана.
      *
      * @param string $code Хэлний код (жишээ: 'en', 'mn', 'ru')
@@ -629,7 +629,7 @@ abstract class LocalizedModel
      * @return array Массив [primary_id => rowStructure], rowStructure нь дараах бүтэцтэй:
      *   - Primary хүснэгтийн бүх багана утгууд шууд түвшинд
      *   - 'localized' түлхүүр дор зөвхөн тухайн хэлний контент (хэлний кодын түвшин байхгүй)
-     * 
+     *
      * @example code='en' бол:
      *   [
      *     1 => [
@@ -651,7 +651,7 @@ abstract class LocalizedModel
      *       ]
      *     ]
      *   ]
-     * 
+     *
      * @see getRows() Бүх хэлний контентыг авах функц
      * @see getRow() Нэг мөрийг авах функц
      */
@@ -660,21 +660,21 @@ abstract class LocalizedModel
         // WHERE clause-д хэлний кодыг нэмэх
         $existingWhere = $condition['WHERE'] ?? '';
         $codeWhere = 'c.code=:code';
-        
+
         if (!empty($existingWhere)) {
             $condition['WHERE'] = "($existingWhere) AND $codeWhere";
         } else {
             $condition['WHERE'] = $codeWhere;
         }
-        
+
         // PARAM-д code нэмэх
         $existingParams = $condition['PARAM'] ?? [];
         $existingParams[':code'] = $code;
         $condition['PARAM'] = $existingParams;
-        
+
         // Бүх мөрийг авах
         $rows = $this->getRows($condition);
-        
+
         // Зөвхөн тухайн хэлний контентыг буцаах
         $result = [];
         foreach ($rows as $p_id => $row) {
@@ -687,7 +687,7 @@ abstract class LocalizedModel
                 $result[$p_id]['localized'] = [];
             }
         }
-        
+
         return $result;
     }
 }

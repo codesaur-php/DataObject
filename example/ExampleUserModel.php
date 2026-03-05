@@ -65,15 +65,15 @@ class ExampleUserModel extends Model
         // MySQL/PostgreSQL дээр л FK constraint нэмнэ
         if ($this->getDriverName() != 'sqlite') {
             // created_by -> FK (self reference)
-            $this->exec("ALTER TABLE $table 
-                ADD CONSTRAINT {$table}_fk_created_by 
-                FOREIGN KEY (created_by) REFERENCES $table(id) 
+            $this->exec("ALTER TABLE $table
+                ADD CONSTRAINT {$table}_fk_created_by
+                FOREIGN KEY (created_by) REFERENCES $table(id)
                 ON DELETE SET NULL ON UPDATE CASCADE");
 
             // updated_by -> FK (self reference)
-            $this->exec("ALTER TABLE $table 
-                ADD CONSTRAINT {$table}_fk_updated_by 
-                FOREIGN KEY (updated_by) REFERENCES $table(id) 
+            $this->exec("ALTER TABLE $table
+                ADD CONSTRAINT {$table}_fk_updated_by
+                FOREIGN KEY (updated_by) REFERENCES $table(id)
                 ON DELETE SET NULL ON UPDATE CASCADE");
         }
 
@@ -82,7 +82,7 @@ class ExampleUserModel extends Model
         $password = $this->quote(password_hash('secret', \PASSWORD_BCRYPT));
 
         $query =
-            "INSERT INTO $table(created_at,username,password,first_name,email) 
+            "INSERT INTO $table(created_at,username,password,first_name,email)
              VALUES('$now','admin',$password,'Наранхүү','admin@example.com')";
 
         return $this->exec($query);

@@ -35,7 +35,7 @@ use codesaur\DataObject\Example\ExampleTranslationModel;
 
 /**
  * Human-readable debug output helper
- * 
+ *
  * @param mixed $data Хэвлэх өгөгдөл
  * @param string|null $label Шошго/гарчиг
  * @return void

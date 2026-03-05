@@ -10,38 +10,38 @@ jobs:
   test:
     name: PHP ${{ matrix.php-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         php-version: ['8.2', '8.3']
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: pdo, pdo_sqlite, pdo_mysql, pdo_pgsql
           coverage: xdebug
-      
+
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
-      
+
       - name: Run tests
         run: composer test
-      
+
       - name: Generate coverage (HTML)
         if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'
         run: composer test-coverage
-      
+
       - name: Generate coverage (Clover XML for Codecov)
         if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'
         run: vendor/bin/phpunit --coverage-clover coverage/clover.xml
-      
+
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'
         uses: codecov/codecov-action@v4

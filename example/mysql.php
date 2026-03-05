@@ -20,7 +20,7 @@ namespace codesaur\DataObject\Example;
  *  - DataObject багц хэрхэн ажилладагийг бүрэн харуулах бодит жишээ
  *  - codesaur-php проектуудын model/database abstraction-ийг турших
  *
- * PHP ≥ 8.2.1 шаардлагатай.
+ * PHP >= 8.2.1 шаардлагатай.
  *
  * @package codesaur\DataObject\Example
  */
@@ -37,7 +37,7 @@ use codesaur\DataObject\Example\ExampleTranslationModel;
 
 /**
  * Human-readable debug output helper
- * 
+ *
  * @param mixed $data Хэвлэх өгөгдөл
  * @param string|null $label Шошго/гарчиг
  * @return void

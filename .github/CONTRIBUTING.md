@@ -7,7 +7,7 @@ Contributions of any kind are welcome.
 
 ## Ways to Contribute
 
-PRs, issues, and improvement suggestions are always welcome!  
+PRs, issues, and improvement suggestions are always welcome!
 Since the goal is to make web systems in Mongolian language with clean architecture and reusable code, you can contribute by:
 
 - **Reporting bugs** - Help us identify and fix issues
@@ -83,14 +83,14 @@ If your change affects usage or public API:
 
 ## Code of Conduct
 
-Be respectful and constructive.  
+Be respectful and constructive.
 This project follows a friendly, inclusive open-source culture.
 
 ---
 
 ## Security Issues
 
-For security-related issues, please follow the instructions in  
+For security-related issues, please follow the instructions in
 [SECURITY.md](SECURITY.md).
 
 ---
