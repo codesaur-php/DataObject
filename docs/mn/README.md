@@ -403,7 +403,7 @@ CI/CD workflow файл: `.github/workflows/ci.yml`
 
 # Зохиогч
 
-**Narankhuu**
+**Narankhuu**  
 https://github.com/codesaur
 
 ---
