@@ -56,10 +56,9 @@ composer test-coverage
 
 ### Тестүүдийн мэдээлэл
 
-- **Unit Tests**: Column, Model классуудын тест (18 тест, 42 assertion)
-- **Integration Tests**: LocalizedModel-ийн бүрэн тест (7 тест, 48 assertion)
-- **Нийт**: 25 тест, 90 assertion
-- **Coverage**: 68.77% code coverage (447/650 lines)
+- **Unit Tests**: Column, PDOTrait, TableTrait, Model классуудын тест
+- **Integration Tests**: LocalizedModel-ийн бүрэн тест
+- **Нийт**: 107 тест, 279 assertion
 
 ### PHPUnit шууд ашиглах
 
@@ -86,6 +85,31 @@ vendor/bin/phpunit --coverage-html coverage
 ---
 
 ## Гол классууд
+
+# **Constants**
+
+Кодбааз даяар ашиглагдах бүх тогтмол утгуудыг төвлөрүүлсэн класс:
+
+- **Driver нэрс:** `DRIVER_MYSQL`, `DRIVER_PGSQL`, `DRIVER_SQLITE`
+- **Error кодууд:** `ERR_TABLE_NAME_MISSING`, `ERR_COLUMNS_NOT_DEFINED`, `ERR_COLUMN_NOT_FOUND`
+- **Баганын нэрс:** `COL_ID`, `COL_IS_ACTIVE`, `COL_PARENT_ID`, `COL_CODE`
+- **Localized model:** `CONTENT_TABLE_SUFFIX`, `CONTENT_KEY_COLUMNS`, `LOCALIZED_KEY`, `PRIMARY_ALIAS_PREFIX`, `CONTENT_ALIAS_PREFIX`, `DEFAULT_CODE_LENGTH`
+- **Тохиргоо:** `TABLE_NAME_PATTERN`, `MYSQL_ENGINE`
+
+```php
+use codesaur\DataObject\Constants;
+
+// Driver шалгалт
+if ($driver == Constants::DRIVER_MYSQL) { ... }
+
+// Баганын нэр ашиглах
+$this->hasColumn(Constants::COL_ID);
+
+// Content хүснэгтийн нэр
+$contentTable = $tableName . Constants::CONTENT_TABLE_SUFFIX;
+```
+
+---
 
 # **Column**
 
@@ -116,6 +140,7 @@ $columns = [
 
 -Хүснэгтийн нэр, баганыг `setTable()` / `setColumns()`
 -CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`
+-`getById()`, `existsById()`, `countRows()`
 -`deleteById()`, `deactivateById()`
 -MySQL / PostgreSQL / SQLite ялгааг автоматаар зохицуулна
 
@@ -146,7 +171,7 @@ class UserModel extends Model
     }
 
     // Жишээ: хэрэглэгч нэмэх
-    public function createUser(string $username, string $hashedPassword): array|false
+    public function createUser(string $username, string $hashedPassword): array
     {
         return $this->insert([
             'username'   => $username,
@@ -156,7 +181,7 @@ class UserModel extends Model
     }
 
     // Жишээ: хэрэглэгчийн идэвхжил шинэчлэх
-    public function setActive(int $id, bool $active): array|false
+    public function setActive(int $id, bool $active): array
     {
         return $this->updateById($id, [
             'is_active' => $active ? 1 : 0,
@@ -184,7 +209,7 @@ CONTENT хүснэгт дотор:
 ## Үндсэн функцүүд:
 
 -**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`
--**Унших:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`
+-**Унших:** `getById($id)`, `existsById($id)`, `countRows($condition)`, `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`
 -MySQL / PostgreSQL / SQLite ялгааг автоматаар зохицуулна
 
 ## Буцаах утгын бүтэц:
@@ -260,7 +285,7 @@ class ArticleModel extends LocalizedModel
     }
 
     // Жишээ: нийтлэл нэмэх (primary + localized)
-    public function createArticle(string $slug, array $content): array|false
+    public function createArticle(string $slug, array $content): array
     {
         return $this->insert(
             [
@@ -272,7 +297,7 @@ class ArticleModel extends LocalizedModel
     }
 
     // Жишээ: нийтлэлийн контентыг шинэчлэх
-    public function updateArticle(int $id, array $content, array $record = []): array|false
+    public function updateArticle(int $id, array $content, array $record = []): array
     {
         return $this->updateById($id, $record, $content);
     }
@@ -346,9 +371,7 @@ class ArticleModel extends LocalizedModel
 - `deleteById($id)` - primary key ашиглан мөр устгана
 - `deactivateById($id, array $record = [])`
   - `is_active` баганад `0` онооно
-  - UNIQUE давхардлаас сэргийлэх:
-    - numeric -> утгыг **сөргөлдүүлнэ** (`-value`)
-    - string -> `"[uniqid] original_value"` болгон өөрчилнө
+  - UNIQUE баганууд өөрчлөгдөхгүй
 - `selectStatement($fromTable, $selection='*', array $condition=[])`
   - JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET бүхнийг
     ```php
@@ -378,9 +401,7 @@ Project нь бүрэн тестжүүлсэн:
 -**GitHub Actions** - Автомат CI/CD pipeline
   - Push болон Pull Request үед автоматаар ажиллана
   - `main`, `master`, `develop` branch-ууд дээр trigger болно
--**Code Coverage** - 68.77% coverage (447/650 lines)
-  - HTML coverage report: `coverage/` directory
-  - Codecov дээр хадгална (Clover XML формат)
+-**Code Coverage** - HTML coverage report: `coverage/` directory
 -**Multi-version** - PHP 8.2, 8.3 дээр тестлэгдсэн
 -**Multi-OS** - Ubuntu, Windows дээр тестлэгдсэн
 -**Database Extensions** - PDO, PDO_SQLite, PDO_MySQL, PDO_PgSQL суурилуулна

@@ -250,7 +250,7 @@ UNIQUE эсэх.
 
 ### Methods
 
-#### `insert(array $record): array|false`
+#### `insert(array $record): array`
 
 Өгөгдөл нэмэх (INSERT).
 
@@ -260,13 +260,13 @@ PostgreSQL -> `RETURNING *` ашиглана
 **Параметрүүд:**
 - `$record` (array) - Нэмэх мөрийн түлхүүр -> утга хослол
 
-**Буцаах утга:** Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
+**Буцаах утга:** Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив). Алдаа гарвал Exception шиднэ
 
 **Exception:** `Exception`
 
 ---
 
-#### `updateById(int $id, array $record): array|false`
+#### `updateById(int $id, array $record): array`
 
 ID-р мөр шинэчлэх (UPDATE).
 
@@ -279,9 +279,42 @@ MySQL/SQLite -> `SELECT * WHERE id=...`
 - `$id` (int) - Шинэчлэх ID
 - `$record` (array) - Шинэчлэх талбарууд ['column' => value, ...]
 
-**Буцаах утга:** Шинэчилсэн мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
+**Буцаах утга:** Шинэчилсэн мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив). Алдаа гарвал Exception шиднэ
 
 **Exception:** `Exception` - Хүснэгтэд primary auto increment id багана байхгүй бол эсвэл шинэчлэх өгөгдөл хоосон бол
+
+---
+
+#### `existsById(int $id): bool`
+
+ID-р мөр байгаа эсэхийг шалгах. `SELECT 1 ... LIMIT 1` ашиглана.
+
+**Параметрүүд:**
+- `$id` (int) - Шалгах ID
+
+**Буцаах утга:** Мөр байгаа эсэх
+
+---
+
+#### `getById(int $id): array|null`
+
+ID-р мөр авах. `getRowWhere(['id' => $id])` гэсэн товчлол.
+
+**Параметрүүд:**
+- `$id` (int) - Авах ID
+
+**Буцаах утга:** Мөрийн мэдээлэл (массив), эсвэл null (олдохгүй бол)
+
+---
+
+#### `countRows(array $condition = []): int`
+
+Нөхцөлд тохирох мөрийн тоог тоолох. `COUNT(*)` query ашиглана.
+
+**Параметрүүд:**
+- `$condition` (array) - WHERE, JOIN нөхцөл (LIMIT, OFFSET, ORDER BY шаардлагагүй)
+
+**Буцаах утга:** Тохирох мөрийн тоо
 
 ---
 
@@ -402,7 +435,7 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
 
 ---
 
-#### `insert(array $record, array $content): array|false`
+#### `insert(array $record, array $content): array`
 
 Олон хэл дээрх контенттэй мөр нэмэх.
 
@@ -412,7 +445,7 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
 - `$content` (array) - Хэлээр бүлэглэсэн контент: ['mn' => [col => val], 'en' => [...], ...]
   - Жишээ: `['en' => ['title' => 'English', 'description' => '...'], 'mn' => [...]]`
 
-**Буцаах утга:** Шинэ мөрийг буцаана; амжилтгүй бол false
+**Буцаах утга:** Шинэ мөрийг буцаана. Алдаа гарвал Exception шиднэ
 
 **Exception:** `Exception`, `InvalidArgumentException` - Контент хоосон эсвэл алдаа гарвал
 
@@ -420,7 +453,7 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
 
 ---
 
-#### `updateById(int $id, array $record, array $content): array|false`
+#### `updateById(int $id, array $record, array $content): array`
 
 Олон хэл дээрх контенттэй мөрийг id багана барьж шинэчлэх.
 
@@ -431,11 +464,44 @@ WHERE key=:value хэлбэрийн синтаксаар мөр авах.
 - `$content` (array) - Хэлээр бүлэглэсэн контент шинэчлэл: ['mn' => [col => val], 'en' => [...], ...]
   - Жишээ: `['en' => ['title' => 'New title'], 'mn' => ['description' => 'Шинэ тайлбар']]`
 
-**Буцаах утга:** Шинэчлэгдсэн мөрийг буцаана; амжилтгүй бол false
+**Буцаах утга:** Шинэчлэгдсэн мөрийг буцаана. Алдаа гарвал Exception шиднэ
 
 **Exception:** `Exception` - Шинэчлэх өгөгдөл хоосон эсвэл алдаа гарвал
 
 **Буцаах утгын бүтэц:** `getRow()`-ийн буцаах утгын бүтэцтэй ижил
+
+---
+
+#### `existsById(int $id): bool`
+
+ID-р мөр байгаа эсэхийг шалгах. Primary хүснэгт дээр `SELECT 1 ... LIMIT 1` ашиглана.
+
+**Параметрүүд:**
+- `$id` (int) - Шалгах ID
+
+**Буцаах утга:** Мөр байгаа эсэх
+
+---
+
+#### `getById(int $id): array|null`
+
+ID-р мөр (олон хэлтэй) авах. `getRowWhere(['p.id' => $id])` гэсэн товчлол.
+
+**Параметрүүд:**
+- `$id` (int) - Авах ID
+
+**Буцаах утга:** Олон хэлтэй мөрийн мэдээлэл (массив), эсвэл null (олдохгүй бол)
+
+---
+
+#### `countRows(array $condition = []): int`
+
+Primary хүснэгт дээр мөрийн тоог тоолох. `COUNT(*)` query ашиглана. Content JOIN шаардлагагүй, `p.` prefix шаардлагагүй.
+
+**Параметрүүд:**
+- `$condition` (array) - WHERE нөхцөл
+
+**Буцаах утга:** Тохирох мөрийн тоо
 
 ---
 
@@ -618,6 +684,18 @@ PDO instance-г загварт оноож өгөх.
 Ашиглаж буй PDO драйверийн нэрийг буцаана.
 
 **Буцаах утга:** Драйверийн нэр (mysql, pgsql, sqlite)
+
+---
+
+#### `throwPdoError(string $message, \PDO|\PDOStatement $source): never`
+
+PDO/PDOStatement-ийн алдааны мэдээллээр Exception шидэх.
+
+**Параметрүүд:**
+- `$message` (string) - Алдааны тайлбар
+- `$source` (\PDO|\PDOStatement) - Алдааны эх үүсвэр
+
+**Exception:** `Exception` - Драйверийн алдааны код болон мэдээлэлтэйгээр заавал шиднэ
 
 ---
 
@@ -846,11 +924,7 @@ ID-р мөр устгах.
 
 #### `deactivateById(int $id, array $record = []): bool`
 
-ID-р мөрийг идэвхгүй болгох (soft delete).
-
-UNIQUE багануудын утгыг зөрчилгүй болгохын тулд дараах арга хэрэглэнэ:
-- Тоон unique -> -value болгон хөрвүүлнэ
-- Текстэн unique -> [uniqid] prefix нэмнэ
+ID-р мөрийг идэвхгүй болгох (soft delete). `is_active` баганыг 0 болгоно. UNIQUE баганууд өөрчлөгдөхгүй.
 
 **Параметрүүд:**
 - `$id` (int) - Идэвхгүй болгох ID

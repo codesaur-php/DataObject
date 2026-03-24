@@ -107,15 +107,29 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     * 4. CRUD жишээнүүд -> Delete, Deactivate, Update
+     * 4. getById, existsById, countRows жишээнүүд
+     * ---------------------------------------------------------------------
+     */
+    debug($users->getById($new_user['id']), 'getById(' . $new_user['id'] . ')');
+    debug($users->existsById($new_user['id']), 'existsById(' . $new_user['id'] . ')');
+    debug($users->existsById(999999), 'existsById(999999)');
+    debug($users->countRows(['WHERE' => 'is_active=1']), 'countRows (active users)');
+
+    /**
+     * ---------------------------------------------------------------------
+     * 5. CRUD жишээнүүд -> Delete, Deactivate, Update
      * ---------------------------------------------------------------------
      */
     debug($users->deleteById(3), 'Delete user 3');
 
-    debug($users->deactivateById(7, [
-        'updated_at' => \date('Y-m-d H:i:s'),
-        'updated_by' => $admin['id']
-    ]), 'Deactivate user 7');
+    try {
+        debug($users->deactivateById(7, [
+            'updated_at' => \date('Y-m-d H:i:s'),
+            'updated_by' => $admin['id']
+        ]), 'Deactivate user 7');
+    } catch (\Exception $e) {
+        debug($e->getMessage(), 'Deactivate user 7');
+    }
 
     debug($users->updateById(15, [
         'first_name' => 'Not so random',
@@ -125,10 +139,15 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     * 5. ExampleTranslationModel -> олон хэлний хүснэгтүүд
+     * 6. ExampleTranslationModel -> олон хэлний хүснэгтүүд
      * ---------------------------------------------------------------------
      */
     $translation = new ExampleTranslationModel($pdo);
+
+    // getById, existsById, countRows (LocalizedModel)
+    debug($translation->getById(1), 'translation->getById(1)');
+    debug($translation->existsById(1), 'translation->existsById(1)');
+    debug($translation->countRows(['WHERE' => 'is_active=1']), 'translation->countRows (active)');
 
     // Localized мөр авах
     debug($translation->getRowWhere(['p.id' => 1, 'p.is_active' => 1]), 'Get row (id=1, active)');
@@ -139,10 +158,14 @@ try {
     // Delete / deactivate
     debug($translation->deleteById(7), 'Delete translation 7');
 
-    debug($translation->deactivateById(8, [
-        'updated_at' => \date('Y-m-d H:i:s'),
-        'updated_by' => $admin['id']
-    ]), 'Deactivate translation 8');
+    try {
+        debug($translation->deactivateById(8, [
+            'updated_at' => \date('Y-m-d H:i:s'),
+            'updated_by' => $admin['id']
+        ]), 'Deactivate translation 8');
+    } catch (\Exception $e) {
+        debug($e->getMessage(), 'Deactivate translation 8');
+    }
 
     // Олон хэл дээр шинэчлэх (mn + en + de)
     debug($translation->updateById(

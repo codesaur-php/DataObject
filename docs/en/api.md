@@ -249,7 +249,7 @@ All single-language (non-localized) table models extend this class.
 
 ### Methods
 
-#### `insert(array $record): array|false`
+#### `insert(array $record): array`
 
 Add data (INSERT).
 
@@ -259,13 +259,13 @@ PostgreSQL -> uses `RETURNING *`
 **Parameters:**
 - `$record` (array) - Key -> value pairs for the row to add
 
-**Returns:** On success, full information of the new row (array with all columns), false on error
+**Returns:** Full information of the new row (array with all columns). Throws Exception on error
 
 **Exception:** `Exception`
 
 ---
 
-#### `updateById(int $id, array $record): array|false`
+#### `updateById(int $id, array $record): array`
 
 Update row by ID (UPDATE).
 
@@ -278,9 +278,42 @@ MySQL/SQLite -> `SELECT * WHERE id=...`
 - `$id` (int) - ID to update
 - `$record` (array) - Fields to update ['column' => value, ...]
 
-**Returns:** Full information of updated row (array with all columns), false on error
+**Returns:** Full information of updated row (array with all columns). Throws Exception on error
 
 **Exception:** `Exception` - If table doesn't have primary auto increment id column or update data is empty
+
+---
+
+#### `existsById(int $id): bool`
+
+Check if row exists by ID. Lightweight query using `SELECT 1 ... LIMIT 1`.
+
+**Parameters:**
+- `$id` (int) - ID to check
+
+**Returns:** Whether row exists
+
+---
+
+#### `getById(int $id): array|null`
+
+Get row by ID. Shortcut for `getRowWhere(['id' => $id])`.
+
+**Parameters:**
+- `$id` (int) - ID to retrieve
+
+**Returns:** Row data (array), or null (if not found)
+
+---
+
+#### `countRows(array $condition = []): int`
+
+Count rows matching condition. Uses `COUNT(*)` query.
+
+**Parameters:**
+- `$condition` (array) - WHERE, JOIN conditions (LIMIT, OFFSET, ORDER BY not needed)
+
+**Returns:** Number of matching rows
 
 ---
 
@@ -401,7 +434,7 @@ Set content table columns.
 
 ---
 
-#### `insert(array $record, array $content): array|false`
+#### `insert(array $record, array $content): array`
 
 Add row with multi-language content.
 
@@ -411,7 +444,7 @@ Add row with multi-language content.
 - `$content` (array) - Content grouped by language: ['mn' => [col => val], 'en' => [...], ...]
   - Example: `['en' => ['title' => 'English', 'description' => '...'], 'mn' => [...]]`
 
-**Returns:** Returns new row; false on failure
+**Returns:** Returns new row. Throws Exception on failure
 
 **Exception:** `Exception`, `InvalidArgumentException` - If content is empty or error occurs
 
@@ -419,7 +452,7 @@ Add row with multi-language content.
 
 ---
 
-#### `updateById(int $id, array $record, array $content): array|false`
+#### `updateById(int $id, array $record, array $content): array`
 
 Update row with multi-language content by id column.
 
@@ -430,11 +463,44 @@ Update row with multi-language content by id column.
 - `$content` (array) - Content update grouped by language: ['mn' => [col => val], 'en' => [...], ...]
   - Example: `['en' => ['title' => 'New title'], 'mn' => ['description' => 'Шинэ тайлбар']]`
 
-**Returns:** Returns updated row; false on failure
+**Returns:** Returns updated row. Throws Exception on failure
 
 **Exception:** `Exception` - If update data is empty or error occurs
 
 **Return value structure:** Same as `getRow()` return value structure
+
+---
+
+#### `existsById(int $id): bool`
+
+Check if row exists by ID. Lightweight query using `SELECT 1 ... LIMIT 1` on primary table.
+
+**Parameters:**
+- `$id` (int) - ID to check
+
+**Returns:** Whether row exists
+
+---
+
+#### `getById(int $id): array|null`
+
+Get row (with all languages) by ID. Shortcut for `getRowWhere(['p.id' => $id])`.
+
+**Parameters:**
+- `$id` (int) - ID to retrieve
+
+**Returns:** Row data with localized content (array), or null (if not found)
+
+---
+
+#### `countRows(array $condition = []): int`
+
+Count rows matching condition on primary table. Uses `COUNT(*)` query. No content JOIN needed, no `p.` prefix needed in WHERE.
+
+**Parameters:**
+- `$condition` (array) - WHERE conditions
+
+**Returns:** Number of matching rows
 
 ---
 
@@ -617,6 +683,18 @@ Set PDO instance to model.
 Return PDO driver name in use.
 
 **Returns:** Driver name (mysql, pgsql, sqlite)
+
+---
+
+#### `throwPdoError(string $message, \PDO|\PDOStatement $source): never`
+
+Throw Exception with PDO/PDOStatement error information.
+
+**Parameters:**
+- `$message` (string) - Error description
+- `$source` (\PDO|\PDOStatement) - Error source
+
+**Exception:** `Exception` - Always thrown with driver-specific error code and message
 
 ---
 
@@ -845,11 +923,7 @@ Delete row by ID.
 
 #### `deactivateById(int $id, array $record = []): bool`
 
-Deactivate row by ID (soft delete).
-
-To prevent UNIQUE column value conflicts, uses following method:
-- Numeric unique -> converts to -value
-- Text unique -> adds [uniqid] prefix
+Deactivate row by ID (soft delete). Sets `is_active` to 0. UNIQUE columns remain unchanged.
 
 **Parameters:**
 - `$id` (int) - ID to deactivate

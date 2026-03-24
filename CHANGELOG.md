@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [9.1.0] - 2026-03-24
+[9.1.0]: https://github.com/codesaur-php/DataObject/compare/v9.0.2...v9.1.0
+
+### Breaking Changes
+
+- **`insert()` return type changed** from `array|false` to `array` in both `Model` and `LocalizedModel`
+  - Now throws `Exception` instead of returning `false` on failure
+  - Callers checking `=== false` should use `try/catch` instead
+- **`updateById()` return type changed** from `array|false` to `array` in both `Model` and `LocalizedModel`
+  - Same behavior change as `insert()`
+- **`deactivateById()` now throws `Exception`** when row is already inactive (previously returned `false`)
+- **`deactivateById()` no longer modifies UNIQUE column values** on deactivation
+  - Previously negated numeric values and added `[uniqid]` prefix to text values
+  - UNIQUE columns now remain unchanged; handle conflicts at the business logic level
+
+### Added
+
+- **`Constants` class** - All magic values centralized into a single final class
+  - `DRIVER_MYSQL`, `DRIVER_PGSQL`, `DRIVER_SQLITE` - database driver names
+  - `ERR_TABLE_NAME_MISSING`, `ERR_COLUMNS_NOT_DEFINED`, `ERR_COLUMN_NOT_FOUND` - error codes
+  - `COL_ID`, `COL_IS_ACTIVE`, `COL_PARENT_ID`, `COL_CODE` - structural column names
+  - `CONTENT_TABLE_SUFFIX`, `CONTENT_KEY_COLUMNS`, `LOCALIZED_KEY` - localized model conventions
+  - `PRIMARY_ALIAS_PREFIX`, `CONTENT_ALIAS_PREFIX` - SQL alias prefixes
+  - `TABLE_NAME_PATTERN`, `DEFAULT_CODE_LENGTH` - configuration values
+- **`throwPdoError()` helper** in `PDOTrait` - Centralized PDO/PDOStatement error extraction and exception throwing
+  - Accepts `\PDO|\PDOStatement` as error source
+  - Uses `never` return type (PHP 8.1+)
+  - Replaced 11 duplicated error extraction blocks across all files
+- **`getById(int $id)`** method in both `Model` and `LocalizedModel`
+  - Shortcut for `getRowWhere(['id' => $id])`
+- **`existsById(int $id)`** method in both `Model` and `LocalizedModel`
+  - Lightweight check using `SELECT 1 ... LIMIT 1` without fetching full row
+- **`countRows(array $condition)`** method in both `Model` and `LocalizedModel`
+  - Efficient `COUNT(*)` query for pagination and statistics
+  - LocalizedModel counts on primary table only (no content JOIN)
+- **Comprehensive test suite** - 107 tests, 279 assertions
+  - New `PDOTraitTest` - tests for driver detection, table checking, FK controls
+  - New `TableTraitTest` - tests for column operations, deactivation, select statement builder
+  - Expanded `ModelTest` - countRows, existsById, getById, edge cases
+  - Expanded `LocalizedModelTest` - content columns, cascade delete, custom select, error cases
+
+### Changed
+
+- Replaced all hardcoded magic values with `Constants::*` across all source files
+- All `execute()` failures now throw `Exception` with PDO error details instead of returning `false`
+- Simplified error code extraction to `(int)($error_info[1] ?? 0)`
+- Updated example files to use new methods, return types, and Constants
+- Updated all documentation (EN/MN) to reflect API changes
+
+### Fixed
+
+- Error handling code duplication resolved via `throwPdoError()` helper (was flagged in code review)
+
+---
+
 ## [9.0.2] - 2026-03-05
 [9.0.2]: https://github.com/codesaur-php/DataObject/compare/v9.0.1...v9.0.2
 

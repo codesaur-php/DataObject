@@ -116,7 +116,17 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     *  4. Delete, Deactivate, Update гэх мэт CRUD жишээнүүд
+     *  4. getById, existsById, countRows жишээнүүд
+     * ---------------------------------------------------------------------
+     */
+    debug($users->getById($new_user['id']), 'getById(' . $new_user['id'] . ')');
+    debug($users->existsById($new_user['id']), 'existsById(' . $new_user['id'] . ')');
+    debug($users->existsById(999999), 'existsById(999999)');
+    debug($users->countRows(['WHERE' => 'is_active=1']), 'countRows (active users)');
+
+    /**
+     * ---------------------------------------------------------------------
+     *  5. Delete, Deactivate, Update гэх мэт CRUD жишээнүүд
      * ---------------------------------------------------------------------
      */
     // Delete жишээ (хэрэв ID байвал)
@@ -125,13 +135,14 @@ try {
         debug($users->deleteById(3), 'Delete user 3');
     }
 
-    // Deactivate жишээ (хэрэв ID байвал)
-    $testUser7 = $users->getRowWhere(['id' => 7]);
-    if ($testUser7) {
+    // Deactivate жишээ
+    try {
         debug($users->deactivateById(7, [
             'updated_at' => \date('Y-m-d H:i:s'),
             'updated_by' => $admin['id']
         ]), 'Deactivate user 7');
+    } catch (\Exception $e) {
+        debug($e->getMessage(), 'Deactivate user 7');
     }
 
     // Update жишээ
@@ -142,10 +153,18 @@ try {
 
     /**
      * ---------------------------------------------------------------------
-     *  5. ExampleTranslationModel -> олон хэлтэй хүснэгтүүдийг ашиглах
+     *  6. ExampleTranslationModel -> олон хэлтэй хүснэгтүүдийг ашиглах
      * ---------------------------------------------------------------------
      */
     $translation = new ExampleTranslationModel($pdo);
+
+    // getById, existsById, countRows (LocalizedModel)
+    $firstTranslation = $translation->getById(1);
+    if ($firstTranslation) {
+        debug($firstTranslation, 'translation->getById(1)');
+    }
+    debug($translation->existsById(1), 'translation->existsById(1)');
+    debug($translation->countRows(['WHERE' => 'is_active=1']), 'translation->countRows (active)');
 
     // Шинэ локалчилсан мөр нэмэх (keyword нь UNIQUE тул давхардлахаас сэргийлэх)
     $uniqueKeyword = 'hello_' . \uniqid();

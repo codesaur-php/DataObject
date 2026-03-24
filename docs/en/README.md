@@ -56,10 +56,9 @@ composer test-coverage
 
 ### Test Information
 
-- **Unit Tests**: Tests for Column, Model classes (18 tests, 42 assertions)
-- **Integration Tests**: Full tests for LocalizedModel (7 tests, 48 assertions)
-- **Total**: 25 tests, 90 assertions
-- **Coverage**: 68.77% code coverage (447/650 lines)
+- **Unit Tests**: Tests for Column, PDOTrait, TableTrait, Model classes
+- **Integration Tests**: Full tests for LocalizedModel
+- **Total**: 107 tests, 279 assertions
 
 ### Using PHPUnit Directly
 
@@ -87,6 +86,31 @@ vendor/bin/phpunit --coverage-html coverage
 ---
 
 ## Core Classes
+
+# **Constants**
+
+Centralized class for all constant values used across the codebase:
+
+- **Driver names:** `DRIVER_MYSQL`, `DRIVER_PGSQL`, `DRIVER_SQLITE`
+- **Error codes:** `ERR_TABLE_NAME_MISSING`, `ERR_COLUMNS_NOT_DEFINED`, `ERR_COLUMN_NOT_FOUND`
+- **Column names:** `COL_ID`, `COL_IS_ACTIVE`, `COL_PARENT_ID`, `COL_CODE`
+- **Localized model:** `CONTENT_TABLE_SUFFIX`, `CONTENT_KEY_COLUMNS`, `LOCALIZED_KEY`, `PRIMARY_ALIAS_PREFIX`, `CONTENT_ALIAS_PREFIX`, `DEFAULT_CODE_LENGTH`
+- **Configuration:** `TABLE_NAME_PATTERN`, `MYSQL_ENGINE`
+
+```php
+use codesaur\DataObject\Constants;
+
+// Driver check
+if ($driver == Constants::DRIVER_MYSQL) { ... }
+
+// Column name reference
+$this->hasColumn(Constants::COL_ID);
+
+// Content table name
+$contentTable = $tableName . Constants::CONTENT_TABLE_SUFFIX;
+```
+
+---
 
 # **Column**
 
@@ -118,6 +142,7 @@ Base class for simple (non-localized) tables.
 
 -Table name and columns via `setTable()` / `setColumns()`
 -CRUD: `insert()`, `updateById()`, `getRow()`, `getRows()`, `getRowWhere()`
+-`getById()`, `existsById()`, `countRows()`
 -`deleteById()`, `deactivateById()`
 -Automatically handles MySQL / PostgreSQL / SQLite differences
 
@@ -148,7 +173,7 @@ class UserModel extends Model
     }
 
     // Example: add user
-    public function createUser(string $username, string $hashedPassword): array|false
+    public function createUser(string $username, string $hashedPassword): array
     {
         return $this->insert([
             'username'   => $username,
@@ -158,7 +183,7 @@ class UserModel extends Model
     }
 
     // Example: update user activation status
-    public function setActive(int $id, bool $active): array|false
+    public function setActive(int $id, bool $active): array
     {
         return $this->updateById($id, [
             'is_active' => $active ? 1 : 0,
@@ -187,7 +212,7 @@ Inside CONTENT table:
 ## Core Functions:
 
 -**CRUD:** `insert($record, $content)`, `updateById($id, $record, $content)`
--**Read:** `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`
+-**Read:** `getById($id)`, `existsById($id)`, `countRows($condition)`, `getRow($condition)`, `getRows($condition)`, `getRowWhere($values)`, `getRowsByCode($code, $condition)`
 -Automatically handles MySQL / PostgreSQL / SQLite differences
 
 ## Return Value Structure:
@@ -263,7 +288,7 @@ class ArticleModel extends LocalizedModel
     }
 
     // Example: add article (primary + localized)
-    public function createArticle(string $slug, array $content): array|false
+    public function createArticle(string $slug, array $content): array
     {
         return $this->insert(
             [
@@ -275,7 +300,7 @@ class ArticleModel extends LocalizedModel
     }
 
     // Example: update article content
-    public function updateArticle(int $id, array $content, array $record = []): array|false
+    public function updateArticle(int $id, array $content, array $record = []): array
     {
         return $this->updateById($id, $record, $content);
     }
@@ -350,9 +375,7 @@ This way, `Model` / `LocalizedModel` on top knows **not PDO code**, only their *
 - `deleteById($id)` - deletes row using primary key
 - `deactivateById($id, array $record = [])`
   - sets `is_active` column to `0`
-  - prevents UNIQUE conflicts:
-    - numeric -> **negates** value (`-value`)
-    - string -> changes to `"[uniqid] original_value"`
+  - UNIQUE columns remain unchanged
 - `selectStatement($fromTable, $selection='*', array $condition=[])`
   - All of JOIN / WHERE / GROUP BY / ORDER / LIMIT / OFFSET
     ```php
@@ -383,9 +406,7 @@ The project is fully tested:
 -**GitHub Actions** - Automated CI/CD pipeline
   - Automatically runs on Push and Pull Request
   - Triggers on `main`, `master`, `develop` branches
--**Code Coverage** - 68.77% coverage (447/650 lines)
-  - HTML coverage report: `coverage/` directory
-  - Stored on Codecov (Clover XML format)
+-**Code Coverage** - HTML coverage report: `coverage/` directory
 -**Multi-version** - Tested on PHP 8.2, 8.3
 -**Multi-OS** - Tested on Ubuntu, Windows
 -**Database Extensions** - Installs PDO, PDO_SQLite, PDO_MySQL, PDO_PgSQL

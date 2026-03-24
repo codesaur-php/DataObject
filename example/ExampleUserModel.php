@@ -4,6 +4,7 @@ namespace codesaur\DataObject\Example;
 
 use codesaur\DataObject\Model;
 use codesaur\DataObject\Column;
+use codesaur\DataObject\Constants;
 
 /**
  * Class ExampleUserModel
@@ -63,7 +64,7 @@ class ExampleUserModel extends Model
 
         // SQLite нь ALTER TABLE ... ADD CONSTRAINT дэмжихгүй
         // MySQL/PostgreSQL дээр л FK constraint нэмнэ
-        if ($this->getDriverName() != 'sqlite') {
+        if ($this->getDriverName() != Constants::DRIVER_SQLITE) {
             // created_by -> FK (self reference)
             $this->exec("ALTER TABLE $table
                 ADD CONSTRAINT {$table}_fk_created_by
@@ -92,13 +93,11 @@ class ExampleUserModel extends Model
      * Insert хийх үед created_at автоматаар тавина.
      *
      * @param array $record
-     * @return array|false
+     * @return array
      */
-    public function insert(array $record): array|false
+    public function insert(array $record): array
     {
-        if (!isset($record['created_at'])) {
-            $record['created_at'] = \date('Y-m-d H:i:s');
-        }
+        $record['created_at'] ??= \date('Y-m-d H:i:s');
         return parent::insert($record);
     }
 
@@ -107,13 +106,11 @@ class ExampleUserModel extends Model
      *
      * @param int $id
      * @param array $record
-     * @return array|false
+     * @return array
      */
-    public function updateById(int $id, array $record): array|false
+    public function updateById(int $id, array $record): array
     {
-        if (!isset($record['updated_at'])) {
-            $record['updated_at'] = \date('Y-m-d H:i:s');
-        }
+        $record['updated_at'] ??= \date('Y-m-d H:i:s');
         return parent::updateById($id, $record);
     }
 }

@@ -30,7 +30,7 @@ trait PDOTrait
     protected \PDO $pdo;
 
     /**
-     * Ашиглаж буй драйверийн нэр (mysql | pgsql).
+     * Ашиглаж буй драйверийн нэр (mysql | pgsql | sqlite).
      * @var string|null
      */
     private ?string $_driver;
@@ -62,6 +62,20 @@ trait PDOTrait
     }
 
     /**
+     * PDO/PDOStatement-ийн алдааны мэдээллээр Exception шидэх.
+     *
+     * @param string $message Алдааны тайлбар
+     * @param \PDO|\PDOStatement $source Алдааны эх үүсвэр
+     * @throws \Exception
+     */
+    protected final function throwPdoError(string $message, \PDO|\PDOStatement $source): never
+    {
+        $error_info = $source->errorInfo();
+
+        throw new \Exception($message . \implode(': ', $error_info), (int)($error_info[1] ?? 0));
+    }
+
+    /**
      * SQL string-ийг драйверт тохирсон хэлбэрээр escape хийх.
      *
      * @param string $string SQL-д ашиглах текст
@@ -89,16 +103,7 @@ trait PDOTrait
             return $stmt;
         }
 
-        $error_info = $this->pdo->errorInfo();
-        if (\is_numeric($error_info[1] ?? null)) {
-            $error_code = (int) $error_info[1];
-        } elseif (\is_numeric($this->pdo->errorCode())) {
-            $error_code = (int) $this->pdo->errorCode();
-        } else {
-            $error_code = 0;
-        }
-
-        throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info), $error_code);
+        $this->throwPdoError(__CLASS__ . ': PDO prepare error! ', $this->pdo);
     }
 
     /**
@@ -126,16 +131,7 @@ trait PDOTrait
             return $stmt;
         }
 
-        $error_info = $this->pdo->errorInfo();
-        if (\is_numeric($error_info[1] ?? null)) {
-            $error_code = (int) $error_info[1];
-        } elseif (\is_numeric($this->pdo->errorCode())) {
-            $error_code = (int) $this->pdo->errorCode();
-        } else {
-            $error_code = 0;
-        }
-
-        throw new \Exception(__CLASS__ . ': PDO error! ' . \implode(': ', $error_info), $error_code);
+        $this->throwPdoError(__CLASS__ . ': PDO query error! ', $this->pdo);
     }
 
     /**
@@ -148,16 +144,16 @@ trait PDOTrait
     public final function hasTable(string $table): bool
     {
         switch ($this->getDriverName()) {
-            case 'mysql':
+            case Constants::DRIVER_MYSQL:
                 return $this->query('SHOW TABLES LIKE ' . $this->quote($table))->rowCount() > 0;
 
-            case 'pgsql':
+            case Constants::DRIVER_PGSQL:
                 return $this->query("SELECT tablename
                     FROM pg_tables
                     WHERE schemaname='public'
                     AND tablename=" . $this->quote($table))->rowCount() > 0;
 
-            case 'sqlite': {
+            case Constants::DRIVER_SQLITE: {
                 $stmt = $this->query("SELECT name
                     FROM sqlite_master
                     WHERE type='table'
@@ -184,13 +180,13 @@ trait PDOTrait
     public final function setForeignKeyChecks(bool $enable): int|false
     {
         switch ($this->getDriverName()) {
-            case 'mysql':
+            case Constants::DRIVER_MYSQL:
                 return $this->exec('SET foreign_key_checks=' . ($enable ? 1 : 0));
 
-            case 'pgsql':
+            case Constants::DRIVER_PGSQL:
                 return $this->exec('SET session_replication_role=' . $this->quote($enable ? 'origin' : 'replica'));
 
-            case 'sqlite':
+            case Constants::DRIVER_SQLITE:
                 return $this->exec('PRAGMA foreign_keys=' . ($enable ? 'ON' : 'OFF'));
 
             default:

@@ -70,7 +70,7 @@ trait TableTrait
     public function getName(): string
     {
         if (empty($this->name)) {
-            throw new \Exception(__CLASS__ . ': Table name must be provided', 1103);
+            throw new \Exception(__CLASS__ . ': Table name must be provided', Constants::ERR_TABLE_NAME_MISSING);
         }
 
         return $this->name;
@@ -86,12 +86,12 @@ trait TableTrait
     public function setTable(string $name)
     {
         // Хүснэгтийн нэрийг ариутган зөвшөөрөгдсөн тэмдэгтүүд үлдээнэ
-        $this->name = \preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+        $this->name = \preg_replace(Constants::TABLE_NAME_PATTERN, '', $name);
         $table = $this->getName();
 
         // Багана тодорхойлогдоогүй бол алдаа
         if (empty($this->columns)) {
-            throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
+            throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", Constants::ERR_COLUMNS_NOT_DEFINED);
         }
 
         // Хүснэгт бааз дээр байвал дахин үүсгэхгүй
@@ -151,7 +151,7 @@ trait TableTrait
             return $this->columns[$name];
         }
 
-        throw new \Exception(__CLASS__ . ": Table [$this->name] definition doesn't have column named [$name]", 1054);
+        throw new \Exception(__CLASS__ . ": Table [$this->name] definition doesn't have column named [$name]", Constants::ERR_COLUMN_NOT_FOUND);
     }
 
     /**
@@ -176,105 +176,84 @@ trait TableTrait
     {
         $table = $this->getName();
 
-        if (!$this->hasColumn('id')
-            || !$this->getColumn('id')->isInt()
-            || !$this->getColumn('id')->isPrimary()
+        $col_id = Constants::COL_ID;
+        if (!$this->hasColumn($col_id)
+            || !$this->getColumn($col_id)->isInt()
+            || !$this->getColumn($col_id)->isPrimary()
         ) {
             throw new \Exception("(deleteById): Table [$table] must have primary auto increment id column!");
         }
 
-        $delete = $this->prepare("DELETE FROM $table WHERE id=$id");
+        $delete = $this->prepare("DELETE FROM $table WHERE $col_id=$id");
         return $delete->execute() && $delete->rowCount() > 0;
     }
 
     /**
      * ID-р мөрийг идэвхгүй болгох (soft delete).
      *
-     * UNIQUE багануудын утгыг зөрчилгүй болгохын тулд дараах арга хэрэглэнэ:
-     *  - Тоон unique -> -value болгон хөрвүүлнэ
-     *  - Текстэн unique -> [uniqid] prefix нэмнэ
+     * is_active баганыг 0 болгоно.
+     * UNIQUE баганууд хэвээр үлдэнэ - ижил утгаар шинэ мөр нэмэх
+     * шаардлага гарвал хуучин мөрийг delete хийх эсвэл бизнес логик дээр шийднэ.
      *
      * @param int $id
      * @param array $record Нэмэлт update талбарууд
      * @return bool
-     * @throws \Exception
+     * @throws \Exception Мөр олдохгүй, аль хэдийн идэвхгүй, эсвэл update амжилтгүй бол
      */
     public function deactivateById(int $id, array $record = []): bool
     {
         $table = $this->getName();
 
         // id багана заавал байх
-        if (!$this->hasColumn('id')
-            || !$this->getColumn('id')->isInt()
-            || !$this->getColumn('id')->isPrimary()
+        $col_id = Constants::COL_ID;
+        if (!$this->hasColumn($col_id)
+            || !$this->getColumn($col_id)->isInt()
+            || !$this->getColumn($col_id)->isPrimary()
         ) {
             throw new \Exception("(deactivateById): Table [$table] must have primary auto increment id column!");
         }
 
         // is_active багана заавал байх
-        if (!$this->hasColumn('is_active')
-            || !$this->getColumn('is_active')->isInt()
+        $col_active = Constants::COL_IS_ACTIVE;
+        if (!$this->hasColumn($col_active)
+            || !$this->getColumn($col_active)->isInt()
         ) {
             throw new \Exception("(deactivateById): Table [$table] must have an is_active column!");
         }
 
-        // SELECT хийх баганууд
-        $selection = 'is_active';
-        $set = ['is_active=:is_active'];
-        $uniques = [];
-
-        // UNIQUE багануудыг цуглуулах
-        foreach ($this->getColumns() as $column) {
-            $uniqueName = $column->getName();
-            if ($column->isUnique() && $uniqueName !== 'id') {
-                $uniques[] = $column;
-                $selection .= ", $uniqueName";
-                $set[] = "$uniqueName=:$uniqueName";
-            }
-        }
-
-        // Нэмэлт update талбарууд
-        foreach (\array_keys($record) as $name) {
-            $selection .= ", $name";
-            $set[] = "$name=:$name";
-        }
-
         // Мөр унших
-        $select = $this->query("SELECT $selection FROM $table WHERE id=$id");
+        $select = $this->query("SELECT $col_active FROM $table WHERE $col_id=$id");
         $row = $select->fetch(\PDO::FETCH_ASSOC);
 
-        if (($row['is_active'] ?? 0) == 0) {
-            return false;
+        if (($row[$col_active] ?? 0) == 0) {
+            throw new \Exception("(deactivateById): Row id=$id in table [$table] is already inactive!");
         }
 
         // UPDATE statement
+        $set = ["$col_active=:$col_active"];
+        foreach (\array_keys($record) as $name) {
+            $set[] = "$name=:$name";
+        }
         $sets = \implode(', ', $set);
-        $update = $this->prepare("UPDATE $table SET $sets WHERE id=$id");
+        $update = $this->prepare("UPDATE $table SET $sets WHERE $col_id=$id");
 
         // is_active=0 болгоно
-        $update->bindValue(':is_active', 0, \PDO::PARAM_INT);
-
-        // UNIQUE багануудыг зөрчилгүй болгох
-        foreach ($uniques as $unique) {
-            $uniqueName = $unique->getName();
-            if ($unique->isNumeric()) {
-                $row[$uniqueName] = -$row[$uniqueName];
-            } else {
-                $row[$uniqueName] = '[' . \uniqid() . '] ' . $row[$uniqueName];
-            }
-            $update->bindValue(":$uniqueName", $row[$uniqueName], $unique->getDataType());
-        }
+        $update->bindValue(":$col_active", 0, \PDO::PARAM_INT);
 
         // Нэмэлт баганууд
         foreach ($record as $name => $value) {
             $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
 
-        return $update->execute() && $update->rowCount() > 0;
+        if (!$update->execute()) {
+            $this->throwPdoError(__CLASS__ . ": Deactivate failed on [$table] for id=$id! ", $update);
+        }
+
+        return $update->rowCount() > 0;
     }
 
     /**
-     * SQL хүснэгтийг үүсгэх (MySQL/PostgreSQL-д тааруулах).
+     * SQL хүснэгтийг үүсгэх (MySQL/PostgreSQL/SQLite).
      *
      * @param string $table
      * @param Column[] $columns
@@ -302,7 +281,7 @@ trait TableTrait
         $create .= ')';
 
         // MySQL -> Collation тохируулах
-        if ($this->getDriverName() == 'mysql') {
+        if ($this->getDriverName() == Constants::DRIVER_MYSQL) {
             $stmt = $this->query('SELECT @@collation_connection, @@collation_connection;');
             $collation = $stmt->fetchColumn();
             $create .= " ENGINE=InnoDB COLLATE=$collation";
@@ -310,15 +289,7 @@ trait TableTrait
 
         // Гүйцэтгэх
         if ($this->exec($create) === false) {
-            $error_info = $this->pdo->errorInfo();
-            $error_code = \is_numeric($error_info[1] ?? null)
-                ? (int)$error_info[1]
-                : (\is_numeric($this->pdo->errorCode())
-                    ? (int)$this->pdo->errorCode()
-                    : 0);
-
-            throw new \Exception(__CLASS__ . ": Table [$table] creation failed! "
-                . \implode(': ', $error_info), $error_code);
+            $this->throwPdoError(__CLASS__ . ": Table [$table] creation failed! ", $this->pdo);
         }
     }
 
@@ -356,15 +327,7 @@ trait TableTrait
             return $stmt;
         }
 
-        $error_info = $stmt->errorInfo();
-        $error_code = \is_numeric($error_info[1] ?? null)
-            ? (int)$error_info[1]
-            : (\is_numeric($stmt->errorCode())
-                ? (int)$stmt->errorCode()
-                : 0);
-
-        throw new \Exception(__CLASS__ . ": Can't select from [$fromTable]! "
-            . \implode(': ', $error_info), $error_code);
+        $this->throwPdoError(__CLASS__ . ": Can't select from [$fromTable]! ", $stmt);
     }
 
     /**
@@ -387,7 +350,7 @@ trait TableTrait
         $driver = $this->getDriverName();
 
         // PostgreSQL төрөл хөрвүүлэлт
-        if ($driver == 'pgsql') {
+        if ($driver == Constants::DRIVER_PGSQL) {
             switch ($type) {
                 case 'int8': $type = 'bigint'; break;
                 case 'integer':
@@ -405,7 +368,7 @@ trait TableTrait
                 elseif ($type === 'int') $type = 'serial';
                 elseif ($type === 'smallint') $type = 'smallserial';
             }
-        } elseif ($driver == 'sqlite') {
+        } elseif ($driver == Constants::DRIVER_SQLITE) {
             // SQLite төрөл хөрвүүлэлт
             switch ($type) {
                 case 'bigint':
@@ -451,7 +414,7 @@ trait TableTrait
         $str .= " $type";
 
         // Урт (SQLite дээр урт шаардлагагүй)
-        if (!empty($column->getLength()) && $driver != 'sqlite') {
+        if (!empty($column->getLength()) && $driver != Constants::DRIVER_SQLITE) {
             $str .= '(' . $column->getLength() . ')';
         }
 
@@ -476,9 +439,9 @@ trait TableTrait
 
         // AUTO_INCREMENT / AUTOINCREMENT
         if ($column->isAuto()) {
-            if ($driver == 'mysql') {
+            if ($driver == Constants::DRIVER_MYSQL) {
                 $str .= ' AUTO_INCREMENT';
-            } elseif ($driver == 'sqlite' && $column->isPrimary()) {
+            } elseif ($driver == Constants::DRIVER_SQLITE && $column->isPrimary()) {
                 $str .= ' AUTOINCREMENT';
             }
         }

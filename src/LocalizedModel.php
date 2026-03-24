@@ -45,20 +45,21 @@ abstract class LocalizedModel
      */
     public function setTable(string $name)
     {
-        $this->name = \preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+        $this->name = \preg_replace(Constants::TABLE_NAME_PATTERN, '', $name);
 
         $table = $this->getName();
         $columns = $this->getColumns();
 
         // Баганууд заавал тодорхойлогдсон байх
         if (empty($columns) || empty($this->getContentColumns())) {
-            throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", 1113);
+            throw new \Exception(__CLASS__ . ": Must define columns before table [$table] set", Constants::ERR_COLUMNS_NOT_DEFINED);
         }
 
         // Primary table-д id багана байх ёстой
-        if (!$this->hasColumn('id')
-            || !$this->getColumn('id')->isInt()
-            || !$this->getColumn('id')->isPrimary()
+        $col_id = Constants::COL_ID;
+        if (!$this->hasColumn($col_id)
+            || !$this->getColumn($col_id)->isInt()
+            || !$this->getColumn($col_id)->isPrimary()
         ) {
             throw new \Exception(__CLASS__ . ": Table [$table] must have primary auto increment id column!");
         }
@@ -75,7 +76,7 @@ abstract class LocalizedModel
         $contentTable = $this->getContentName();
 
         // SQLite дээр FK-г CREATE TABLE-д шууд нэмэх хэрэгтэй
-        if ($this->getDriverName() == 'sqlite') {
+        if ($this->getDriverName() == Constants::DRIVER_SQLITE) {
             $contentColumns = $this->getContentColumns();
             $columnSyntaxes = [];
             $references = [];
@@ -86,29 +87,24 @@ abstract class LocalizedModel
                 }
             }
             // FK constraint нэмэх
-            $references[] = "FOREIGN KEY (parent_id) REFERENCES $table(id) ON DELETE CASCADE ON UPDATE CASCADE";
+            $col_parent = Constants::COL_PARENT_ID;
+            $references[] = "FOREIGN KEY ($col_parent) REFERENCES $table($col_id) ON DELETE CASCADE ON UPDATE CASCADE";
             $create = "CREATE TABLE $contentTable (" . \implode(', ', $columnSyntaxes);
             if (!empty($references)) {
                 $create .= ', ' . \implode(', ', $references);
             }
             $create .= ')';
             if ($this->exec($create) === false) {
-                $error_info = $this->pdo->errorInfo();
-                $error_code = \is_numeric($error_info[1] ?? null)
-                    ? (int)$error_info[1]
-                    : (\is_numeric($this->pdo->errorCode())
-                        ? (int)$this->pdo->errorCode()
-                        : 0);
-                throw new \Exception(__CLASS__ . ": Table [$contentTable] creation failed! "
-                    . \implode(': ', $error_info), $error_code);
+                $this->throwPdoError(__CLASS__ . ": Table [$contentTable] creation failed! ", $this->pdo);
             }
         } else {
             $this->createTable($contentTable, $this->getContentColumns());
 
             // FK тохиргоо: parent_id -> primary.id, CASCADE шинэчлэлт
+            $col_parent = Constants::COL_PARENT_ID;
             $this->exec(
                 "ALTER TABLE $contentTable
-                 ADD FOREIGN KEY (parent_id) REFERENCES $table(id)
+                 ADD FOREIGN KEY ($col_parent) REFERENCES $table($col_id)
                  ON DELETE CASCADE ON UPDATE CASCADE"
             );
         }
@@ -123,7 +119,7 @@ abstract class LocalizedModel
      */
     public function getContentName(): string
     {
-        return $this->getName() . '_content';
+        return $this->getName() . Constants::CONTENT_TABLE_SUFFIX;
     }
 
     /**
@@ -153,7 +149,7 @@ abstract class LocalizedModel
 
         throw new \Exception(
             __CLASS__ . ": Table [{$this->getContentName()}] definition doesn't have localized content column named [$name]",
-            1054
+            Constants::ERR_COLUMN_NOT_FOUND
         );
     }
 
@@ -166,13 +162,16 @@ abstract class LocalizedModel
      */
     public function setContentColumns(array $columns)
     {
-        $id = $this->getColumn('id');
+        $col_id = Constants::COL_ID;
+        $col_parent = Constants::COL_PARENT_ID;
+        $col_code = Constants::COL_CODE;
+        $id = $this->getColumn($col_id);
 
         // Контент хүснэгтийн суурь баганууд
         $contentColumns = [
-            'id' => (new Column('id', $id->getType()))->primary(),
-            'parent_id' => (new Column('parent_id', $id->getType()))->notNull(),
-            'code' => new Column('code', 'varchar', 2)
+            $col_id => (new Column($col_id, $id->getType()))->primary(),
+            $col_parent => (new Column($col_parent, $id->getType()))->notNull(),
+            $col_code => new Column($col_code, 'varchar', Constants::DEFAULT_CODE_LENGTH)
         ];
 
         // Хэрэглэгчийн оруулсан баганууд
@@ -204,11 +203,11 @@ abstract class LocalizedModel
      * @param array $content
      *   - Хэлээр бүлэглэсэн контент: ['mn' => [col => val], 'en' => [...], ...]
      *   - Ж: ['en' => ['title' => 'English', 'description' => '...'], 'mn' => [...]]
-     * @return array|false Шинэ мөрийг буцаана; амжилтгүй бол false
+     * @return array Шинэ мөрийг буцаана
      * @throws Exception
      * @see getRow() Буцаах утгын бүтэц
      */
-    public function insert(array $record, array $content): array|false
+    public function insert(array $record, array $content): array
     {
         $contentTable = $this->getContentName();
 
@@ -231,24 +230,25 @@ abstract class LocalizedModel
 
         $table = $this->getName();
         $query = "INSERT INTO $table($columns) VALUES($values)";
-        if ($driver == 'pgsql') {
-            $query .= ' RETURNING id';
+        $col_id = Constants::COL_ID;
+        if ($driver == Constants::DRIVER_PGSQL) {
+            $query .= " RETURNING $col_id";
         }
         $insert = $this->prepare($query);
         foreach ($record as $name => $value) {
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
         if (!$insert->execute()) {
-            return false;
+            $this->throwPdoError(__CLASS__ . ": INSERT failed on [$table]! ", $insert);
         }
 
         // Шинэ ID
-        if ($driver == 'pgsql') {
-            $id = $insert->fetch(\PDO::FETCH_ASSOC)['id'];
+        if ($driver == Constants::DRIVER_PGSQL) {
+            $id = $insert->fetch(\PDO::FETCH_ASSOC)[$col_id];
         } else {
             // SQLite дээр lastInsertId() нь sequence name шаардлагагүй
-            $sequenceName = ($this->getDriverName() == 'sqlite') ? null : 'id';
-            $id = (int)($record['id'] ?? $this->pdo->lastInsertId($sequenceName));
+            $sequenceName = ($driver == Constants::DRIVER_SQLITE) ? null : $col_id;
+            $id = (int)($record[$col_id] ?? $this->pdo->lastInsertId($sequenceName));
         }
 
         // Content table -> олон хэл оруулах
@@ -259,14 +259,16 @@ abstract class LocalizedModel
                 $content_value[] = ":$key";
             }
 
-            $data['parent_id'] = $id;
-            $data['code'] = $code;
+            $col_parent = Constants::COL_PARENT_ID;
+            $col_code = Constants::COL_CODE;
+            $data[$col_parent] = $id;
+            $data[$col_code] = $code;
 
-            $content_field[] = 'parent_id';
-            $content_value[] = ':parent_id';
+            $content_field[] = $col_parent;
+            $content_value[] = ":$col_parent";
 
-            $content_field[] = 'code';
-            $content_value[] = ':code';
+            $content_field[] = $col_code;
+            $content_value[] = ":$col_code";
 
             $fields = \implode(', ', $content_field);
             $values = \implode(', ', $content_value);
@@ -280,18 +282,10 @@ abstract class LocalizedModel
 
             try {
                 if (!$content_stmt->execute()) {
-                    $error_info = $content_stmt->errorInfo();
-                    $error_code = \is_numeric($error_info[1] ?? null)
-                        ? (int)$error_info[1]
-                        : (\is_numeric($content_stmt->errorCode())
-                            ? (int)$content_stmt->errorCode()
-                            : 0);
-
-                    throw new \Exception(\implode(': ', $error_info), $error_code);
+                    $this->throwPdoError('', $content_stmt);
                 }
-
             } catch (\Throwable $e) {
-                $this->query("DELETE FROM $table WHERE id=$id");
+                $this->query("DELETE FROM $table WHERE $col_id=$id");
                 throw new \Exception(
                     __CLASS__ . ": Failed to insert content on table [$contentTable] " . $e->getMessage(),
                     $e->getCode()
@@ -299,7 +293,11 @@ abstract class LocalizedModel
             }
         }
 
-        return $this->getRowWhere(['p.id' => $id]) ?? false;
+        $row = $this->getRowWhere(["p.$col_id" => $id]);
+        if ($row === null) {
+            throw new \Exception(__CLASS__ . ": INSERT succeeded on [$table] but failed to retrieve the new row!");
+        }
+        return $row;
     }
 
     /**
@@ -312,11 +310,11 @@ abstract class LocalizedModel
      * @param array $content
      *   - Хэлээр бүлэглэсэн контент шинэчлэл: ['mn' => [col => val], 'en' => [...], ...]
      *   - Ж: ['en' => ['title' => 'New title'], 'mn' => ['description' => 'Шинэ тайлбар']]
-     * @return array|false Шинэчлэгдсэн мөрийг буцаана; амжилтгүй бол false
+     * @return array Шинэчлэгдсэн мөрийг буцаана
      * @throws Exception
      * @see getRow() Буцаах утгын бүтэц
      */
-    public function updateById(int $id, array $record, array $content): array|false
+    public function updateById(int $id, array $record, array $content): array
     {
         $table = $this->getName();
 
@@ -328,13 +326,14 @@ abstract class LocalizedModel
             }
             $sets = \implode(', ', $set);
 
-            $update_primary = $this->prepare("UPDATE $table SET $sets WHERE id=:old_id");
+            $col_id = Constants::COL_ID;
+            $update_primary = $this->prepare("UPDATE $table SET $sets WHERE $col_id=:old_id");
             $update_primary->bindValue(':old_id', $id, \PDO::PARAM_INT);
             foreach ($record as $name => $value) {
                 $update_primary->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
             }
             if (!$update_primary->execute()) {
-                return false;
+                $this->throwPdoError(__CLASS__ . ": UPDATE failed on [$table] for id=$id! ", $update_primary);
             }
         } elseif (empty($content)) {
             throw new \Exception(__CLASS__ . ': Failed to update by id! No data provided!');
@@ -342,15 +341,18 @@ abstract class LocalizedModel
 
         // Content table шинэчлэх
         $contentTable = $this->getContentName();
+        $col_id = $col_id ?? Constants::COL_ID;
+        $col_parent = Constants::COL_PARENT_ID;
+        $col_code = Constants::COL_CODE;
         $content_select = $this->prepare(
-            "SELECT id FROM $contentTable WHERE parent_id=:parent_id AND code=:code LIMIT 1"
+            "SELECT $col_id FROM $contentTable WHERE $col_parent=:$col_parent AND $col_code=:$col_code LIMIT 1"
         );
 
-        $parent_id = $record['id'] ?? $id;
+        $parent_id = $record[$col_id] ?? $id;
 
         foreach ($content as $code => $value) {
             foreach (\array_keys($value) as $key) {
-                if ($key === 'parent_id' || $key === 'code') {
+                if ($key === $col_parent || $key === $col_code) {
                     unset($value[$key]);
                 }
             }
@@ -360,14 +362,14 @@ abstract class LocalizedModel
 
             try {
                 // Хэлний content мөр байгаа эсэхийг шалгах
-                $content_select->bindValue(':parent_id', $parent_id, \PDO::PARAM_INT);
-                $content_select->bindValue(':code', $code, \PDO::PARAM_STR);
+                $content_select->bindValue(":$col_parent", $parent_id, \PDO::PARAM_INT);
+                $content_select->bindValue(":$col_code", $code, \PDO::PARAM_STR);
                 if (!$content_select->execute()
                     || $content_select->rowCount() < 1
                 ) {
                     // Байхгүй -> шинээр INSERT
-                    $column = ['code'];
-                    $param = [':code'];
+                    $column = [$col_code];
+                    $param = [":$col_code"];
                     foreach (\array_keys($value) as $key) {
                         $column[] = $key;
                         $param[] = ":$key";
@@ -376,9 +378,9 @@ abstract class LocalizedModel
                     $values = \implode(', ', $param);
 
                     $content_stmt = $this->prepare(
-                        "INSERT INTO $contentTable(parent_id,$columns) VALUES($parent_id,$values)"
+                        "INSERT INTO $contentTable($col_parent,$columns) VALUES($parent_id,$values)"
                     );
-                    $content_stmt->bindValue(":code", $code, \PDO::PARAM_STR);
+                    $content_stmt->bindValue(":$col_code", $code, \PDO::PARAM_STR);
                     foreach ($value as $key => $var) {
                         $content_stmt->bindValue(":$key", $var, $this->getContentColumn($key)->getDataType());
                     }
@@ -392,7 +394,7 @@ abstract class LocalizedModel
                     }
                     $content_sets = \implode(', ', $content_set);
                     $content_stmt = $this->prepare(
-                        "UPDATE $contentTable SET $content_sets WHERE id={$content_row['id']}"
+                        "UPDATE $contentTable SET $content_sets WHERE $col_id={$content_row[$col_id]}"
                     );
                     foreach ($value as $key => $var) {
                         $content_stmt->bindValue(":$key", $var, $this->getContentColumn($key)->getDataType());
@@ -400,14 +402,7 @@ abstract class LocalizedModel
                 }
 
                 if (!$content_stmt->execute()) {
-                    $error_info = $content_stmt->errorInfo();
-                    $error_code = \is_numeric($error_info[1] ?? null)
-                        ? (int)$error_info[1]
-                        : (\is_numeric($content_stmt->errorCode())
-                            ? (int)$content_stmt->errorCode()
-                            : 0);
-
-                    throw new \Exception(\implode(': ', $error_info), $error_code);
+                    $this->throwPdoError('', $content_stmt);
                 }
 
             } catch (\Throwable $e) {
@@ -420,7 +415,11 @@ abstract class LocalizedModel
         }
 
         // Шинэчлэгдсэн мөрийг getRow-ийн бүтэцтэй буцаах
-        return $this->getRowWhere(['p.id' => $parent_id]) ?? false;
+        $row = $this->getRowWhere(["p.$col_id" => $parent_id]);
+        if ($row === null) {
+            throw new \Exception(__CLASS__ . ": UPDATE succeeded on [$table] for id=$id but failed to retrieve the updated row!");
+        }
+        return $row;
     }
 
     /**
@@ -432,15 +431,17 @@ abstract class LocalizedModel
      */
     public function select(string $selection = '*', array $condition = []): \PDOStatement
     {
+        $p_ = Constants::PRIMARY_ALIAS_PREFIX;
+        $c_ = Constants::CONTENT_ALIAS_PREFIX;
         if ($selection === '*') {
             $fields = [];
 
             foreach (\array_keys($this->getColumns()) as $column) {
-                $fields[] = "p.$column as p_$column";
+                $fields[] = "p.$column as $p_$column";
             }
 
             foreach (\array_keys($this->getContentColumns()) as $column) {
-                $fields[] = "c.$column as c_$column";
+                $fields[] = "c.$column as $c_$column";
             }
 
             $selection = \implode(', ', $fields);
@@ -449,9 +450,26 @@ abstract class LocalizedModel
         $table = $this->getName();
         $contentTable = $this->getContentName();
 
-        $condition['INNER JOIN'] = "$contentTable c ON p.id=c.parent_id";
+        $col_id = Constants::COL_ID;
+        $col_parent = Constants::COL_PARENT_ID;
+        $condition['INNER JOIN'] = "$contentTable c ON p.$col_id=c.$col_parent";
 
         return $this->selectStatement("$table p", $selection, $condition);
+    }
+
+    /**
+     * Нөхцөлд тохирох мөрийн тоог буцаах.
+     *
+     * Primary хүснэгт дээр COUNT хийнэ (content JOIN шаардлагагүй).
+     * WHERE нөхцөлд 'p.' prefix ашиглах шаардлагагүй.
+     *
+     * @param array $condition WHERE гэх мэт нөхцөл
+     * @return int
+     */
+    public function countRows(array $condition = []): int
+    {
+        $stmt = $this->selectStatement($this->getName(), 'COUNT(*) as cnt', $condition);
+        return (int)$stmt->fetchColumn();
     }
 
     /**
@@ -493,31 +511,35 @@ abstract class LocalizedModel
         $rows = [];
         $pdostmt = $this->select('*', $condition);
 
-        $content_KeyColumns = ['id', 'parent_id', 'code'];
+        $p_ = Constants::PRIMARY_ALIAS_PREFIX;
+        $c_ = Constants::CONTENT_ALIAS_PREFIX;
+        $col_id = Constants::COL_ID;
+        $col_code = Constants::COL_CODE;
+        $localized = Constants::LOCALIZED_KEY;
 
         while ($data = $pdostmt->fetch(\PDO::FETCH_ASSOC)) {
-            $p_id = (int)$data['p_id'];
+            $p_id = (int)$data["$p_$col_id"];
 
             // Primary утгуудыг нэгтгэх
-            if (!isset($rows[$p_id]['id'])) {
+            if (!isset($rows[$p_id][$col_id])) {
                 foreach ($this->getColumns() as $column) {
                     $columnName = $column->getName();
-                    $rows[$p_id][$columnName] = $data["p_$columnName"];
+                    $rows[$p_id][$columnName] = $data["$p_$columnName"];
                 }
             }
 
             // Localized утгуудыг нэгтгэх
-            $langCode = $data['c_code'];
-            if (!isset($rows[$p_id]['localized'][$langCode])) {
-                $rows[$p_id]['localized'][$langCode] = [];
+            $langCode = $data["$c_$col_code"];
+            if (!isset($rows[$p_id][$localized][$langCode])) {
+                $rows[$p_id][$localized][$langCode] = [];
             }
 
             foreach ($this->getContentColumns() as $ccolumn) {
                 $ccolumnName = $ccolumn->getName();
 
-                if (!\in_array($ccolumnName, $content_KeyColumns)) {
-                    if (isset($data["c_$ccolumnName"])) {
-                        $rows[$p_id]['localized'][$langCode][$ccolumnName] = $data["c_$ccolumnName"];
+                if (!\in_array($ccolumnName, Constants::CONTENT_KEY_COLUMNS)) {
+                    if (isset($data["$c_$ccolumnName"])) {
+                        $rows[$p_id][$localized][$langCode][$ccolumnName] = $data["$c_$ccolumnName"];
                     }
                 }
             }
@@ -557,8 +579,10 @@ abstract class LocalizedModel
     public function getRow(array $condition): array|null
     {
         $row = [];
-        $c_codeName = 'c_code';
-        $content_KeyColumns = ['id', 'parent_id', 'code'];
+        $p_ = Constants::PRIMARY_ALIAS_PREFIX;
+        $c_ = Constants::CONTENT_ALIAS_PREFIX;
+        $col_code = Constants::COL_CODE;
+        $localized = Constants::LOCALIZED_KEY;
 
         $stmt = $this->select('*', $condition);
 
@@ -567,29 +591,55 @@ abstract class LocalizedModel
             foreach ($this->getColumns() as $column) {
                 $columnName = $column->getName();
 
-                if (isset($data["p_$columnName"])) {
-                    $row[$columnName] = $data["p_$columnName"];
+                if (isset($data["$p_$columnName"])) {
+                    $row[$columnName] = $data["$p_$columnName"];
                 }
             }
 
             // Localized
-            $langCode = $data[$c_codeName];
-            if (!isset($row['localized'][$langCode])) {
-                $row['localized'][$langCode] = [];
+            $langCode = $data["$c_$col_code"];
+            if (!isset($row[$localized][$langCode])) {
+                $row[$localized][$langCode] = [];
             }
 
             foreach ($this->getContentColumns() as $ccolumn) {
                 $ccolumnName = $ccolumn->getName();
 
-                if (!\in_array($ccolumnName, $content_KeyColumns)) {
-                    if (isset($data["c_$ccolumnName"])) {
-                        $row['localized'][$langCode][$ccolumnName] = $data["c_$ccolumnName"];
+                if (!\in_array($ccolumnName, Constants::CONTENT_KEY_COLUMNS)) {
+                    if (isset($data["$c_$ccolumnName"])) {
+                        $row[$localized][$langCode][$ccolumnName] = $data["$c_$ccolumnName"];
                     }
                 }
             }
         }
 
         return !empty($row) ? $row : null;
+    }
+
+    /**
+     * ID-р мөр байгаа эсэхийг шалгах.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function existsById(int $id): bool
+    {
+        $table = $this->getName();
+        $col_id = Constants::COL_ID;
+        $stmt = $this->prepare("SELECT 1 FROM $table WHERE $col_id=:$col_id LIMIT 1");
+        $stmt->execute([":$col_id" => $id]);
+        return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * ID-р мөр (олон хэлтэй) авах.
+     *
+     * @param int $id
+     * @return array|null
+     */
+    public function getById(int $id): array|null
+    {
+        return $this->getRowWhere(['p.' . Constants::COL_ID => $id]);
     }
 
     /**
@@ -658,8 +708,9 @@ abstract class LocalizedModel
     public function getRowsByCode(string $code, array $condition = []): array
     {
         // WHERE clause-д хэлний кодыг нэмэх
+        $col_code = Constants::COL_CODE;
         $existingWhere = $condition['WHERE'] ?? '';
-        $codeWhere = 'c.code=:code';
+        $codeWhere = "c.$col_code=:$col_code";
 
         if (!empty($existingWhere)) {
             $condition['WHERE'] = "($existingWhere) AND $codeWhere";
@@ -669,22 +720,23 @@ abstract class LocalizedModel
 
         // PARAM-д code нэмэх
         $existingParams = $condition['PARAM'] ?? [];
-        $existingParams[':code'] = $code;
+        $existingParams[":$col_code"] = $code;
         $condition['PARAM'] = $existingParams;
 
         // Бүх мөрийг авах
         $rows = $this->getRows($condition);
 
         // Зөвхөн тухайн хэлний контентыг буцаах
+        $localized = Constants::LOCALIZED_KEY;
         $result = [];
         foreach ($rows as $p_id => $row) {
-            if (isset($row['localized'][$code])) {
+            if (isset($row[$localized][$code])) {
                 $result[$p_id] = $row;
-                $result[$p_id]['localized'] = $row['localized'][$code];
+                $result[$p_id][$localized] = $row[$localized][$code];
             } else {
                 // Хэлний контент байхгүй ч primary утгууд байвал буцаана
                 $result[$p_id] = $row;
-                $result[$p_id]['localized'] = [];
+                $result[$p_id][$localized] = [];
             }
         }
 

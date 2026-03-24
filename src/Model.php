@@ -32,10 +32,10 @@ abstract class Model
      * PostgreSQL -> RETURNING * ашиглана
      *
      * @param array $record Нэмэх мөрийн түлхүүр -> утга хослол
-     * @return array|false Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
+     * @return array Амжилттай бол шинэ мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив)
      * @throws Exception
      */
-    public function insert(array $record): array|false
+    public function insert(array $record): array
     {
         $driver = $this->getDriverName();
 
@@ -52,7 +52,7 @@ abstract class Model
         $query = "INSERT INTO $table($columns) VALUES($params)";
 
         // PostgreSQL -> RETURNING *
-        if ($driver == 'pgsql') {
+        if ($driver == Constants::DRIVER_PGSQL) {
             $query .= ' RETURNING *';
         }
 
@@ -62,20 +62,25 @@ abstract class Model
             $insert->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
         if (!$insert->execute()) {
-            return false;
+            $this->throwPdoError(__CLASS__ . ": INSERT failed on [$table]! ", $insert);
         }
 
         // PostgreSQL -> шинэ мөрийг буцаана
-        if ($driver == 'pgsql') {
+        if ($driver == Constants::DRIVER_PGSQL) {
             return $insert->fetch(\PDO::FETCH_ASSOC);
         }
 
         // MySQL/SQLite -> ID багана байгаа бол retrive хийнэ
-        if ($this->hasColumn('id') && $this->getColumn('id')->isPrimary()) {
+        $col_id = Constants::COL_ID;
+        if ($this->hasColumn($col_id) && $this->getColumn($col_id)->isPrimary()) {
             // SQLite дээр lastInsertId() нь sequence name шаардлагагүй
-            $sequenceName = ($driver == 'sqlite') ? null : 'id';
-            $id = (int)($record['id'] ?? $this->pdo->lastInsertId($sequenceName));
-            return $this->getRowWhere(['id' => $id]) ?? false;
+            $sequenceName = ($driver == Constants::DRIVER_SQLITE) ? null : $col_id;
+            $id = (int)($record[$col_id] ?? $this->pdo->lastInsertId($sequenceName));
+            $row = $this->getRowWhere([$col_id => $id]);
+            if ($row === null) {
+                throw new \Exception(__CLASS__ . ": INSERT succeeded on [$table] but failed to retrieve the new row!");
+            }
+            return $row;
         }
 
         // ID байхгүй хүснэгтүүдийн хувьд нэмж өгөгдлийг автоматаар угсарна
@@ -98,17 +103,18 @@ abstract class Model
      *
      * @param int $id Шинэчлэх ID
      * @param array $record Шинэчлэх талбарууд ['column' => value, ...]
-     * @return array|false Шинэчилсэн мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив), алдаа бол false
+     * @return array Шинэчилсэн мөрийн бүрэн мэдээлэл (бүх багана агуулсан массив)
      * @throws Exception
      */
-    public function updateById(int $id, array $record): array|false
+    public function updateById(int $id, array $record): array
     {
         $table = $this->getName();
 
         // ID багана заавал байх
-        if (!$this->hasColumn('id')
-            || !$this->getColumn('id')->isInt()
-            || !$this->getColumn('id')->isPrimary()
+        $col_id = Constants::COL_ID;
+        if (!$this->hasColumn($col_id)
+            || !$this->getColumn($col_id)->isInt()
+            || !$this->getColumn($col_id)->isPrimary()
         ) {
             throw new \Exception("(updateById): Table [$table] must have primary auto increment id column!");
         }
@@ -125,9 +131,9 @@ abstract class Model
             $set[] = "$name=:$name";
         }
         $sets = \implode(', ', $set);
-        $query = "UPDATE $table SET $sets WHERE id=$id";
+        $query = "UPDATE $table SET $sets WHERE $col_id=$id";
         // PostgreSQL -> RETURNING *
-        if ($driver == 'pgsql') {
+        if ($driver == Constants::DRIVER_PGSQL) {
             $query .= ' RETURNING *';
         }
         $update = $this->prepare($query);
@@ -136,16 +142,32 @@ abstract class Model
             $update->bindValue(":$name", $value, $this->getColumn($name)->getDataType());
         }
         if (!$update->execute()) {
-            return false;
+            $this->throwPdoError(__CLASS__ . ": UPDATE failed on [$table] for id=$id! ", $update);
         }
 
         // PostgreSQL -> Бүрэн мөрийг буцаах
-        if ($driver == 'pgsql') {
+        if ($driver == Constants::DRIVER_PGSQL) {
             return $update->fetch(\PDO::FETCH_ASSOC);
         }
 
         // MySQL/SQLite -> Шинэчилсэн мөрийг сонгон бүрнээр буцаах
-        return $this->getRowWhere(['id' => $record['id'] ?? $id]) ?? false;
+        $row = $this->getRowWhere([$col_id => $record[$col_id] ?? $id]);
+        if ($row === null) {
+            throw new \Exception(__CLASS__ . ": UPDATE succeeded on [$table] for id=$id but failed to retrieve the updated row!");
+        }
+        return $row;
+    }
+
+    /**
+     * Нөхцөлд тохирох мөрийн тоог буцаах.
+     *
+     * @param array $condition WHERE, JOIN гэх мэт нөхцөл (LIMIT, OFFSET, ORDER BY хэрэггүй)
+     * @return int
+     */
+    public function countRows(array $condition = []): int
+    {
+        $stmt = $this->selectStatement($this->getName(), 'COUNT(*) as cnt', $condition);
+        return (int)$stmt->fetchColumn();
     }
 
     /**
@@ -156,16 +178,17 @@ abstract class Model
      */
     public function getRows(array $condition = []): array
     {
+        $col_id = Constants::COL_ID;
         $havePrimaryId =
-            $this->hasColumn('id') &&
-            $this->getColumn('id')->isPrimary();
+            $this->hasColumn($col_id) &&
+            $this->getColumn($col_id)->isPrimary();
 
         $rows = [];
         $stmt = $this->selectStatement($this->getName(), '*', $condition);
 
         while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             if ($havePrimaryId) {
-                $rows[$data['id']] = $data;
+                $rows[$data[$col_id]] = $data;
             } else {
                 $rows[] = $data;
             }
@@ -185,7 +208,7 @@ abstract class Model
         $stmt = $this->selectStatement($this->getName(), '*', $condition);
 
         // SQLite дээр rowCount() SELECT-д ажиллахгүй, fetch() ашиглана
-        if ($this->getDriverName() == 'sqlite') {
+        if ($this->getDriverName() == Constants::DRIVER_SQLITE) {
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
             if ($row !== false) {
                 // Зөвхөн нэг мөр байгаа эсэхийг шалгах (хоёр дахь мөр байвал null буцаана)
@@ -199,6 +222,32 @@ abstract class Model
         }
 
         return null;
+    }
+
+    /**
+     * ID-р мөр байгаа эсэхийг шалгах.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function existsById(int $id): bool
+    {
+        $table = $this->getName();
+        $col_id = Constants::COL_ID;
+        $stmt = $this->prepare("SELECT 1 FROM $table WHERE $col_id=:$col_id LIMIT 1");
+        $stmt->execute([":$col_id" => $id]);
+        return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * ID-р мөр авах.
+     *
+     * @param int $id
+     * @return array|null
+     */
+    public function getById(int $id): array|null
+    {
+        return $this->getRowWhere([Constants::COL_ID => $id]);
     }
 
     /**

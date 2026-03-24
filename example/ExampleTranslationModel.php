@@ -3,6 +3,7 @@
 namespace codesaur\DataObject\Example;
 
 use codesaur\DataObject\Column;
+use codesaur\DataObject\Constants;
 use codesaur\DataObject\LocalizedModel;
 
 /**
@@ -70,7 +71,7 @@ class ExampleTranslationModel extends LocalizedModel
 
         // SQLite нь ALTER TABLE ... ADD CONSTRAINT дэмжихгүй
         // MySQL/PostgreSQL дээр л FK constraint нэмнэ
-        if ($this->getDriverName() != 'sqlite') {
+        if ($this->getDriverName() != Constants::DRIVER_SQLITE) {
             // created_by -> FK example_user.id
             $this->setForeignKeyChecks(false);
             $this->exec(
@@ -112,13 +113,11 @@ class ExampleTranslationModel extends LocalizedModel
      *
      * @param array $record
      * @param array $content
-     * @return array|false
+     * @return array
      */
-    public function insert(array $record, array $content): array|false
+    public function insert(array $record, array $content): array
     {
-        if (!isset($record['created_at'])) {
-            $record['created_at'] = \date('Y-m-d H:i:s');
-        }
+        $record['created_at'] ??= \date('Y-m-d H:i:s');
         return parent::insert($record, $content);
     }
 
@@ -128,13 +127,11 @@ class ExampleTranslationModel extends LocalizedModel
      * @param int $id
      * @param array $record
      * @param array $content
-     * @return array|false
+     * @return array
      */
-    public function updateById(int $id, array $record, array $content): array|false
+    public function updateById(int $id, array $record, array $content): array
     {
-        if (!isset($record['updated_at'])) {
-            $record['updated_at'] = \date('Y-m-d H:i:s');
-        }
+        $record['updated_at'] ??= \date('Y-m-d H:i:s');
         return parent::updateById($id, $record, $content);
     }
 }

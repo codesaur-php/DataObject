@@ -22,6 +22,7 @@ PDO суурьтай өгөгдлийн модель ба хүснэгтүүди
 - **Model** - нэг хүснэгтэд зориулсан загварын суурь класс
 - **LocalizedModel** - олон хэл дээрх контент хадгалах зориулалттай загварын суурь класс
 - **Column** - хүснэгтийн баганын бүтцийг тодорхойлох класс
+- **Constants** - бүх тогтмол утгуудыг (driver, error code, column нэрс) төвлөрүүлсэн класс
 - **PDOTrait** - PDO үйлдлүүдийг төвлөрүүлсэн trait
 - **TableTrait** - хүснэгттэй ажиллах үндсэн боломжуудыг агуулсан trait
 
@@ -44,6 +45,7 @@ The package consists of the following core classes:
 - **Model** - base class for models targeting a single table
 - **LocalizedModel** - base class for models storing content in multiple languages
 - **Column** - class for defining table column structure
+- **Constants** - centralized class for all constant values (drivers, error codes, column names)
 - **PDOTrait** - trait centralizing PDO operations
 - **TableTrait** - trait containing basic capabilities for working with tables
 
@@ -112,7 +114,10 @@ $user = $userModel->insert([
 ]);
 
 // Унших / Read
+$user = $userModel->getById(1);
 $user = $userModel->getRowWhere(['username' => 'john']);
+$exists = $userModel->existsById(1);
+$total = $userModel->countRows(['WHERE' => 'is_active=1']);
 ```
 
 ### Running Tests
