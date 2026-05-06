@@ -86,14 +86,4 @@ class PDOTraitTest extends TestCase
         $stmt = $this->model->prepare("SELECT * FROM pdo_trait_test WHERE id=:id");
         $this->assertInstanceOf(\PDOStatement::class, $stmt);
     }
-
-    public function testSetForeignKeyChecks(): void
-    {
-        // SQLite дээр PRAGMA foreign_keys
-        $result = $this->model->setForeignKeyChecks(true);
-        $this->assertNotFalse($result);
-
-        $result = $this->model->setForeignKeyChecks(false);
-        $this->assertNotFalse($result);
-    }
 }

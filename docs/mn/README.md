@@ -58,7 +58,7 @@ composer test-coverage
 
 - **Unit Tests**: Column, PDOTrait, TableTrait, Model классуудын тест
 - **Integration Tests**: LocalizedModel-ийн бүрэн тест
-- **Нийт**: 107 тест, 279 assertion
+- **Нийт**: 106 тест, 277 assertion
 
 ### PHPUnit шууд ашиглах
 
@@ -343,9 +343,6 @@ class ArticleModel extends LocalizedModel
 - `quote()`, `prepare()`, `exec()`, `query()` - PDO-гийн үндсэн функцуудын **safe wrapper**
   - `prepare()` / `query()` нь `false` буцсан үед **алдааны Exception** шиднэ
 - `hasTable($name)` - хүснэгт байгаа эсэхийг MySQL / PostgreSQL / SQLite дээр тус бүр өөр SQL-аар шалгана
-- `setForeignKeyChecks(bool $enable)` - FK constraint-уудыг түр унтраах / асаах
-  - **MySQL:** `SET foreign_key_checks = 0|1`
-  - **PostgreSQL:** `SET session_replication_role = 'replica'|'origin'`
 
 Ингэснээр дээр нь суугаа `Model` / `LocalizedModel` нь **PDO код биш**, зөвхөн **бизнесс логик**-оо мэддэг болдог.
 

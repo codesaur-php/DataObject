@@ -79,9 +79,9 @@ Code has good structure, type-safe, good security protection. Main issues are co
 
 ### Testing
 - [x]Tests successful
-- [x]107 tests, 279 assertions
+- [x]106 tests, 277 assertions
 
 ---
 
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-05-06
 **Maintainer:** codesaur (Narankhuu)

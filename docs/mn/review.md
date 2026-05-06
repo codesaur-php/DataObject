@@ -79,9 +79,9 @@ codesaur/dataobject төслийн код review.
 
 ### Testing
 - [x]Tests амжилттай
-- [x]107 тест, 279 assertion
+- [x]106 тест, 277 assertion
 
 ---
 
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-05-06
 **Maintainer:** codesaur (Narankhuu)

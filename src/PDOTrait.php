@@ -16,7 +16,6 @@ namespace codesaur\DataObject;
  *  - SQL statement-үүдийг найдвартай бэлтгэнэ
  *  - Алдааг стандарт хэлбэрээр шиднэ
  *  - MySQL/PostgreSQL/SQLite драйверийг автоматаар танина
- *  - FOREIGN KEY CHECKS зэрэг тохиргоог удирдана
  *
  * @package codesaur\DataObject
  */
@@ -160,34 +159,6 @@ trait PDOTrait
                     AND name=" . $this->quote($table));
                 return $stmt->fetch() !== false;
             }
-
-            default:
-                throw new \RuntimeException("Driver not supported");
-        }
-    }
-
-    /**
-     * FOREIGN KEY constraints-г асаах/унтраах.
-     *
-     * MySQL -> SET foreign_key_checks
-     * PostgreSQL -> SET session_replication_role
-     * SQLite -> PRAGMA foreign_keys
-     *
-     * @param bool $enable TRUE=асаах, FALSE=унтраах
-     * @return int|false
-     * @throws RuntimeException
-     */
-    public final function setForeignKeyChecks(bool $enable): int|false
-    {
-        switch ($this->getDriverName()) {
-            case Constants::DRIVER_MYSQL:
-                return $this->exec('SET foreign_key_checks=' . ($enable ? 1 : 0));
-
-            case Constants::DRIVER_PGSQL:
-                return $this->exec('SET session_replication_role=' . $this->quote($enable ? 'origin' : 'replica'));
-
-            case Constants::DRIVER_SQLITE:
-                return $this->exec('PRAGMA foreign_keys=' . ($enable ? 'ON' : 'OFF'));
 
             default:
                 throw new \RuntimeException("Driver not supported");

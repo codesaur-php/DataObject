@@ -768,23 +768,6 @@ Query-г бэлтгэлгүйгээр шууд гүйцэтгэх.
 
 ---
 
-#### `setForeignKeyChecks(bool $enable): int|false`
-
-FOREIGN KEY constraints-г асаах/унтраах.
-
-- MySQL -> `SET foreign_key_checks = 0|1`
-- PostgreSQL -> `SET session_replication_role = 'replica'|'origin'`
-- SQLite -> `PRAGMA foreign_keys = ON|OFF`
-
-**Параметрүүд:**
-- `$enable` (bool) - TRUE=асаах, FALSE=унтраах
-
-**Буцаах утга:** Гүйцэтгэлтийн үр дүн (int), эсвэл false
-
-**Exception:** `RuntimeException` - Дэмжээгүй драйвер
-
----
-
 ## TableTrait
 
 **Namespace:** `codesaur\DataObject\TableTrait`
@@ -1014,19 +997,16 @@ MySQL/PGSQL/SQLite-д тааруулж төрлийг хөрвүүлдэг.
 #### MySQL
 - `AUTO_INCREMENT` for auto-increment columns
 - `SHOW TABLES` for table existence check
-- `SET foreign_key_checks` for FK control
 - Collation support
 
 #### PostgreSQL
 - `RETURNING *` clause for INSERT/UPDATE
 - `serial`, `bigserial` for auto-increment
 - `pg_tables` for table existence check
-- `SET session_replication_role` for FK control
 
 #### SQLite
 - `AUTOINCREMENT` for auto-increment primary keys
 - `sqlite_master` for table existence check
-- `PRAGMA foreign_keys` for FK control
 - Simplified type system (INTEGER, REAL, TEXT, BLOB)
 
 ---

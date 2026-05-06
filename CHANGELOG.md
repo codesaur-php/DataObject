@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [10.0.0] - 2026-05-06
+[10.0.0]: https://github.com/codesaur-php/DataObject/compare/v9.1.0...v10.0.0
+
+### Breaking Changes
+
+- **`setForeignKeyChecks(bool $enable)` removed** from `PDOTrait`
+  - The PostgreSQL branch (`SET session_replication_role`) required SUPERUSER privilege,
+    forcing applications to grant their DB user broad rights for what was usually a
+    redundant guard around `ALTER TABLE ADD CONSTRAINT FOREIGN KEY` on freshly created
+    (empty) tables - where FK validation cannot fail anyway.
+  - In the rare cases where toggling FK enforcement is genuinely required (bulk imports,
+    cyclic references, custom maintenance scripts), drivers expose this directly:
+    - MySQL: `SET foreign_key_checks = 0|1`
+    - PostgreSQL: `SET session_replication_role = 'replica'|'origin'` (still requires SUPERUSER)
+    - SQLite: `PRAGMA foreign_keys = ON|OFF`
+  - Migration: callers of `$this->setForeignKeyChecks(false/true)` should remove those
+    calls when they wrap only `ALTER TABLE ADD CONSTRAINT FOREIGN KEY` on empty tables,
+    or replace with the appropriate raw `exec()` SQL when toggling is genuinely needed.
+
+---
+
 ## [9.1.0] - 2026-03-24
 [9.1.0]: https://github.com/codesaur-php/DataObject/compare/v9.0.2...v9.1.0
 
@@ -43,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Efficient `COUNT(*)` query for pagination and statistics
   - LocalizedModel counts on primary table only (no content JOIN)
 - **Comprehensive test suite** - 107 tests, 279 assertions
-  - New `PDOTraitTest` - tests for driver detection, table checking, FK controls
+  - New `PDOTraitTest` - tests for driver detection, table checking
   - New `TableTraitTest` - tests for column operations, deactivation, select statement builder
   - Expanded `ModelTest` - countRows, existsById, getById, edge cases
   - Expanded `LocalizedModelTest` - content columns, cascade delete, custom select, error cases

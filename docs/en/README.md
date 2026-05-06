@@ -58,7 +58,7 @@ composer test-coverage
 
 - **Unit Tests**: Tests for Column, PDOTrait, TableTrait, Model classes
 - **Integration Tests**: Full tests for LocalizedModel
-- **Total**: 107 tests, 279 assertions
+- **Total**: 106 tests, 277 assertions
 
 ### Using PHPUnit Directly
 
@@ -347,9 +347,6 @@ class ArticleModel extends LocalizedModel
 - `quote()`, `prepare()`, `exec()`, `query()` - **safe wrapper** for PDO's core functions
   - `prepare()` / `query()` throws **Exception** when returning `false`
 - `hasTable($name)` - checks if table exists using different SQL for MySQL / PostgreSQL / SQLite
-- `setForeignKeyChecks(bool $enable)` - temporarily disable / enable FK constraints
-  - **MySQL:** `SET foreign_key_checks = 0|1`
-  - **PostgreSQL:** `SET session_replication_role = 'replica'|'origin'`
 
 This way, `Model` / `LocalizedModel` on top knows **not PDO code**, only their **business logic**.
 

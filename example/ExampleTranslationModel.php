@@ -73,7 +73,6 @@ class ExampleTranslationModel extends LocalizedModel
         // MySQL/PostgreSQL дээр л FK constraint нэмнэ
         if ($this->getDriverName() != Constants::DRIVER_SQLITE) {
             // created_by -> FK example_user.id
-            $this->setForeignKeyChecks(false);
             $this->exec(
                 "ALTER TABLE $table
                  ADD CONSTRAINT {$table}_fk_created_by
@@ -88,7 +87,6 @@ class ExampleTranslationModel extends LocalizedModel
                  FOREIGN KEY (updated_by) REFERENCES example_user(id)
                  ON DELETE SET NULL ON UPDATE CASCADE"
             );
-            $this->setForeignKeyChecks(true);
         }
 
         // Анхны олон хэлтэй түлхүүрүүдийг оруулна
