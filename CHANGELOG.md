@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [10.0.1] - 2026-06-09
+[10.0.1]: https://github.com/codesaur-php/DataObject/compare/v10.0.0...v10.0.1
+
+### Changed
+
+- **Private property names no longer use a leading underscore** (PSR-12 compliance)
+  - `Column`: `$_name`, `$_type`, `$_length`, `$_is_null`, `$_is_auto`, `$_is_unique`,
+    `$_is_primary`, `$_default` -> `$name`, `$type`, `$length`, `$is_null`, `$is_auto`,
+    `$is_unique`, `$is_primary`, `$default`
+  - `PDOTrait`: `$_driver` -> `$driver`
+  - Internal only - all properties are `private`, so the public API is unchanged.
+
+---
+
 ## [10.0.0] - 2026-05-06
 [10.0.0]: https://github.com/codesaur-php/DataObject/compare/v9.1.0...v10.0.0
 

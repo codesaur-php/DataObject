@@ -22,28 +22,28 @@ namespace codesaur\DataObject;
 class Column
 {
     /** @var string Баганын нэр */
-    private readonly string $_name;
+    private readonly string $name;
 
     /** @var string Баганын төрөл (varchar, int, date...) */
-    private readonly string $_type;
+    private readonly string $type;
 
     /** @var int|string|null Төрлийн урт, хэмжээ (VARCHAR(255) гэх мэт) */
-    private readonly int|string|null $_length;
+    private readonly int|string|null $length;
 
     /** @var bool NULL зөвшөөрөх эсэх */
-    private readonly bool $_is_null;
+    private readonly bool $is_null;
 
     /** @var bool AUTO_INCREMENT эсэх */
-    private bool $_is_auto;
+    private bool $is_auto;
 
     /** @var bool UNIQUE багана эсэх */
-    private readonly bool $_is_unique;
+    private readonly bool $is_unique;
 
     /** @var bool PRIMARY KEY эсэх */
-    private readonly bool $_is_primary;
+    private readonly bool $is_primary;
 
     /** @var string|int|float|bool|null Анхдагч утга */
-    private string|int|float|bool|null $_default = null;
+    private string|int|float|bool|null $default = null;
 
     /**
      * Column constructor.
@@ -57,9 +57,9 @@ class Column
         string $type,
         int|string|null $length = null
     ) {
-        $this->_name = $name;
-        $this->_type = \strtolower($type);
-        $this->_length = $length;
+        $this->name = $name;
+        $this->type = \strtolower($type);
+        $this->length = $length;
     }
 
     /**
@@ -70,7 +70,7 @@ class Column
      */
     public function default(string|int|float|bool|null $default)
     {
-        $this->_default = $default;
+        $this->default = $default;
         return $this;
     }
 
@@ -82,7 +82,7 @@ class Column
      */
     public function auto(bool $auto = true): Column
     {
-        $this->_is_auto = $auto;
+        $this->is_auto = $auto;
         return $this;
     }
 
@@ -94,7 +94,7 @@ class Column
      */
     public function unique(bool $unique = true): Column
     {
-        $this->_is_unique = $unique;
+        $this->is_unique = $unique;
         return $this;
     }
 
@@ -106,7 +106,7 @@ class Column
      */
     public function primary(bool $primary = true): Column
     {
-        $this->_is_primary = $primary;
+        $this->is_primary = $primary;
         return $this;
     }
 
@@ -118,7 +118,7 @@ class Column
      */
     public function notNull(bool $not_null = true): Column
     {
-        $this->_is_null = !$not_null;
+        $this->is_null = !$not_null;
         return $this;
     }
 
@@ -129,7 +129,7 @@ class Column
      */
     public function getName(): string
     {
-        return $this->_name;
+        return $this->name;
     }
 
     /**
@@ -139,7 +139,7 @@ class Column
      */
     public function getType(): string
     {
-        return $this->_type;
+        return $this->type;
     }
 
     /**
@@ -158,7 +158,7 @@ class Column
      */
     public function getLength(): int|string|null
     {
-        return $this->_length;
+        return $this->length;
     }
 
     /**
@@ -168,7 +168,7 @@ class Column
      */
     public function getDefault(): string|int|float|bool|null
     {
-        return $this->_default;
+        return $this->default;
     }
 
     /**
@@ -178,7 +178,7 @@ class Column
      */
     public function isAuto(): bool
     {
-        return $this->_is_auto ?? false;
+        return $this->is_auto ?? false;
     }
 
     /**
@@ -282,7 +282,7 @@ class Column
      */
     public function isNull(): bool
     {
-        return $this->_is_null ?? true;
+        return $this->is_null ?? true;
     }
 
     /**
@@ -292,7 +292,7 @@ class Column
      */
     public function isPrimary(): bool
     {
-        return $this->_is_primary ?? false;
+        return $this->is_primary ?? false;
     }
 
     /**
@@ -302,6 +302,6 @@ class Column
      */
     public function isUnique(): bool
     {
-        return $this->_is_unique ?? false;
+        return $this->is_unique ?? false;
     }
 }

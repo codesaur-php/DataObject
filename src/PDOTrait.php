@@ -32,7 +32,7 @@ trait PDOTrait
      * Ашиглаж буй драйверийн нэр (mysql | pgsql | sqlite).
      * @var string|null
      */
-    private ?string $_driver;
+    private ?string $driver;
 
     /**
      * PDO instance-г загварт оноож өгөх.
@@ -53,11 +53,11 @@ trait PDOTrait
      */
     public final function getDriverName()
     {
-        if (empty($this->_driver)) {
-            $this->_driver = \strtolower($this->pdo?->getAttribute(\PDO::ATTR_DRIVER_NAME));
+        if (empty($this->driver)) {
+            $this->driver = \strtolower($this->pdo?->getAttribute(\PDO::ATTR_DRIVER_NAME));
         }
 
-        return $this->_driver;
+        return $this->driver;
     }
 
     /**

@@ -663,7 +663,7 @@ PDO instance.
 
 ---
 
-#### `private ?string $_driver`
+#### `private ?string $driver`
 
 Driver name in use (mysql | pgsql | sqlite).
 

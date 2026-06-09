@@ -664,7 +664,7 @@ PDO instance.
 
 ---
 
-#### `private ?string $_driver`
+#### `private ?string $driver`
 
 Ашиглаж буй драйверийн нэр (mysql | pgsql | sqlite).
 
