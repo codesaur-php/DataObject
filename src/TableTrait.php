@@ -347,6 +347,7 @@ trait TableTrait
         }
 
         $type = $column->getType();
+        $length = $column->getLength();
         $driver = $this->getDriverName();
 
         // PostgreSQL төрөл хөрвүүлэлт
@@ -361,6 +362,16 @@ trait TableTrait
                 case 'tinytext':
                 case 'mediumtext':
                 case 'longtext': $type = 'text'; break;
+
+                case 'double': $type = 'double precision'; break;
+                case 'float':  $type = 'real'; break;
+
+                case 'tinyblob':
+                case 'mediumblob':
+                case 'longblob':
+                case 'blob':
+                case 'binary':
+                case 'varbinary': $type = 'bytea'; break;
             }
 
             if ($column->isAuto()) {
@@ -398,24 +409,41 @@ trait TableTrait
                 case 'longblob':
                 case 'binary':
                 case 'varbinary':
+                case 'bytea':
                     $type = 'BLOB';
+                    break;
+                case 'double precision':
+                    $type = 'REAL';
                     break;
                 default:
                     $type = 'TEXT';
             }
         } else { // MySQL хөрвүүлэлт
             switch ($type) {
-                case 'bigserial': $type = 'bigint'; break;
-                case 'serial': $type = 'int'; break;
-                case 'smallserial': $type = 'smallint'; break;
-                case 'timestamptz': $type = 'timestamp'; break;
+                case 'bigserial':        $type = 'bigint'; break;
+                case 'serial':           $type = 'int'; break;
+                case 'smallserial':      $type = 'smallint'; break;
+                case 'timestamptz':      $type = 'timestamp'; break;
+
+                case 'jsonb':            $type = 'json'; break;
+                case 'uuid':             $type = 'char';    $length = 36; break;
+                case 'inet':             $type = 'varchar'; $length = 45; break;
+                case 'cidr':             $type = 'varchar'; $length = 45; break;
+                case 'bytea':            $type = 'longblob'; break;
+                case 'double precision': $type = 'double'; break;
             }
         }
         $str .= " $type";
 
-        // Урт (SQLite дээр урт шаардлагагүй)
-        if (!empty($column->getLength()) && $driver != Constants::DRIVER_SQLITE) {
-            $str .= '(' . $column->getLength() . ')';
+        // Урт (SQLite дээр урт шаардлагагүй).
+        // Урт зөвшөөрдөггүй (bytea, real, double precision, json, longblob, text)
+        // төрөлд урт залгахгүй - runtime SQL алдаанаас сэргийлнэ.
+        $noLength = ['bytea', 'real', 'double precision', 'json', 'longblob', 'text'];
+        if (!empty($length)
+            && $driver != Constants::DRIVER_SQLITE
+            && !\in_array(\strtolower($type), $noLength, true)
+        ) {
+            $str .= '(' . $length . ')';
         }
 
         // NULL / NOT NULL

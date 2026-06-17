@@ -978,9 +978,9 @@ MySQL/PGSQL/SQLite-д тааруулж төрлийг хөрвүүлдэг.
 **Буцаах утга:** SQL хэлбэр (жишээ: `id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY`)
 
 **Төрөл хөрвүүлэлт:**
-- **PostgreSQL:** int8->bigint, integer->int, tinyint->smallint, datetime->timestamp, tinytext->text, bigint+auto->bigserial, int+auto->serial
-- **SQLite:** Бүх integer төрлүүд->INTEGER, decimal/float->REAL, blob->BLOB, бусад->TEXT
-- **MySQL:** bigserial->bigint, serial->int, smallserial->smallint, timestamptz->timestamp
+- **PostgreSQL:** int8->bigint, integer->int, tinyint->smallint, datetime->timestamp, tinytext/mediumtext/longtext->text, double->double precision, float->real, blob/tinyblob/mediumblob/longblob/binary/varbinary->bytea, bigint+auto->bigserial, int+auto->serial, smallint+auto->smallserial
+- **SQLite:** Бүх integer төрлүүд->INTEGER, decimal/float/double/double precision->REAL, blob/binary/bytea->BLOB, бусад->TEXT
+- **MySQL:** bigserial->bigint, serial->int, smallserial->smallint, timestamptz->timestamp, jsonb->json, uuid->char(36), inet/cidr->varchar(45), bytea->longblob, double precision->double
 
 ---
 

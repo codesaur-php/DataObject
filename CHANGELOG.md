@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [10.1.0] - 2026-06-17
+[10.1.0]: https://github.com/codesaur-php/DataObject/compare/v10.0.1...v10.1.0
+
+### Added
+
+- **Broader cross-driver column type conversion** in `TableTrait::getSyntax()`, so column
+  types declared for one database resolve to a valid native type on the others instead of
+  reaching the engine verbatim and raising a runtime SQL error.
+  - **PostgreSQL:** `double` -> `double precision`, `float` -> `real`,
+    `tinyblob`/`mediumblob`/`longblob`/`blob`/`binary`/`varbinary` -> `bytea`
+  - **MySQL:** `jsonb` -> `json`, `uuid` -> `char(36)`, `inet`/`cidr` -> `varchar(45)`,
+    `bytea` -> `longblob`, `double precision` -> `double`
+  - **SQLite:** `bytea` -> `BLOB`, `double precision` -> `REAL`
+    (`jsonb`/`uuid`/`inet`/`cidr`/`json` continue to fall through to `TEXT`)
+
+### Fixed
+
+- **Invalid `(length)` suffix on length-less types** no longer emitted. Types that do not
+  accept a length (`bytea`, `real`, `double precision`, `json`, `longblob`, `text`) are
+  skipped when appending the length, preventing malformed DDL such as `bytea(16)` when a
+  column like `varbinary(16)` is converted.
+
+---
+
 ## [10.0.1] - 2026-06-09
 [10.0.1]: https://github.com/codesaur-php/DataObject/compare/v10.0.0...v10.0.1
 
