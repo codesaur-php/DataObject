@@ -68,7 +68,7 @@ class Column
      * @param string|int|float|bool|null $default
      * @return $this
      */
-    public function default(string|int|float|bool|null $default)
+    public function default(string|int|float|bool|null $default): Column
     {
         $this->default = $default;
         return $this;

@@ -328,6 +328,28 @@ class LocalizedModelTest extends TestCase
         $this->assertEquals('New Title', $updated['localized']['en']['title']);
     }
 
+    public function testUpdateByIdDoesNotDuplicateContentRows(): void
+    {
+        $inserted = $this->model->insert(
+            ['slug' => 'dup-check'],
+            ['en' => ['title' => 'Original']]
+        );
+        $id = $inserted['id'];
+
+        // Байгаа хэлний контентыг хоёр удаа шинэчлэхэд шинэ мөр үүсэх ёсгүй
+        $this->model->updateById($id, [], ['en' => ['title' => 'Updated']]);
+        $this->model->updateById($id, [], ['en' => ['title' => 'Updated again']]);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM test_localized_content WHERE parent_id=:id AND code='en'"
+        );
+        $stmt->execute([':id' => $id]);
+        $this->assertEquals(1, (int)$stmt->fetchColumn());
+
+        $row = $this->model->getById($id);
+        $this->assertEquals('Updated again', $row['localized']['en']['title']);
+    }
+
     public function testUpdateByIdNoDataThrows(): void
     {
         $inserted = $this->model->insert(

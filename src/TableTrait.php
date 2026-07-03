@@ -282,7 +282,7 @@ trait TableTrait
 
         // MySQL -> Collation тохируулах
         if ($this->getDriverName() == Constants::DRIVER_MYSQL) {
-            $stmt = $this->query('SELECT @@collation_connection, @@collation_connection;');
+            $stmt = $this->query('SELECT @@collation_connection');
             $collation = $stmt->fetchColumn();
             $create .= " ENGINE=InnoDB COLLATE=$collation";
         }
@@ -341,10 +341,10 @@ trait TableTrait
     {
         $str = $column->getName();
 
-        // PRIMARY -> NOT NULL + AUTO
-        if ($column->isPrimary()) {
-            $column->notNull()->auto();
-        }
+        // PRIMARY -> NOT NULL + AUTO (Column объектыг өөрчлөхгүйгээр тооцно)
+        $isPrimary = $column->isPrimary();
+        $isNull = $isPrimary ? false : $column->isNull();
+        $isAuto = $isPrimary ? true : $column->isAuto();
 
         $type = $column->getType();
         $length = $column->getLength();
@@ -374,7 +374,7 @@ trait TableTrait
                 case 'varbinary': $type = 'bytea'; break;
             }
 
-            if ($column->isAuto()) {
+            if ($isAuto) {
                 if ($type === 'bigint') $type = 'bigserial';
                 elseif ($type === 'int') $type = 'serial';
                 elseif ($type === 'smallint') $type = 'smallserial';
@@ -447,7 +447,7 @@ trait TableTrait
         }
 
         // NULL / NOT NULL
-        $str .= $column->isNull() ? ' NULL' : ' NOT NULL';
+        $str .= $isNull ? ' NULL' : ' NOT NULL';
 
         // DEFAULT
         $default = $column->getDefault();
@@ -461,15 +461,15 @@ trait TableTrait
         }
 
         // PRIMARY KEY
-        if ($column->isPrimary()) {
+        if ($isPrimary) {
             $str .= ' PRIMARY KEY';
         }
 
         // AUTO_INCREMENT / AUTOINCREMENT
-        if ($column->isAuto()) {
+        if ($isAuto) {
             if ($driver == Constants::DRIVER_MYSQL) {
                 $str .= ' AUTO_INCREMENT';
-            } elseif ($driver == Constants::DRIVER_SQLITE && $column->isPrimary()) {
+            } elseif ($driver == Constants::DRIVER_SQLITE && $isPrimary) {
                 $str .= ' AUTOINCREMENT';
             }
         }

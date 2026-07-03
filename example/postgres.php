@@ -27,7 +27,7 @@ namespace codesaur\DataObject\Example;
 \error_reporting(E_ALL);
 
 // Autoload болон жишээ namespace-ийн psr-4 автомаппинг
-$autoload = require_once '../vendor/autoload.php';
+$autoload = require_once __DIR__ . '/../vendor/autoload.php';
 $autoload->addPsr4(__NAMESPACE__ . '\\', __DIR__);
 
 use codesaur\DataObject\Example\ExampleUserModel;

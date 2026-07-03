@@ -104,6 +104,30 @@ class TableTraitTest extends TestCase
         $model->setColumns(['not_a_column_object']);
     }
 
+    public function testTableCreationWithExplicitNotNullPrimary(): void
+    {
+        // primary()->notNull() гэж хамтад нь зарлахад
+        // хүснэгт үүсгэх үед readonly property алдаа гарах ёсгүй
+        $pdo = $this->pdo;
+        $model = new class($pdo) extends Model {
+            public function __construct(PDO $pdo)
+            {
+                $this->setInstance($pdo);
+                $this->setColumns([
+                   (new Column('id', 'bigint'))->primary()->notNull(),
+                    new Column('name', 'varchar', 255)
+                ]);
+                $this->setTable('explicit_not_null_test');
+            }
+            protected function __initial() {}
+        };
+
+        $this->assertTrue($model->hasTable('explicit_not_null_test'));
+
+        $inserted = $model->insert(['name' => 'test']);
+        $this->assertEquals('test', $inserted['name']);
+    }
+
     public function testDeleteById(): void
     {
         $model = new TableTraitTestModel($this->pdo);

@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [10.1.1] - 2026-07-03
+[10.1.1]: https://github.com/codesaur-php/DataObject/compare/v10.1.0...v10.1.1
+
+### Fixed
+
+- **`LocalizedModel::updateById()` no longer duplicates content rows on SQLite.**
+  The existing-content check relied on `PDOStatement::rowCount()`, which always
+  returns 0 for `SELECT` statements on SQLite, so every update of an existing
+  language inserted a new content row instead of updating it. The check now uses
+  `fetch()`, matching how `Model::getRow()` already handles this driver quirk.
+- **`TableTrait::getSyntax()` no longer mutates the `Column` object.** Declaring a
+  primary column with an explicit `->notNull()` (e.g. `(new Column('id', 'bigint'))
+  ->primary()->notNull()`) previously crashed table creation with
+  `Cannot modify readonly property Column::$is_null`, because `getSyntax()` called
+  `notNull()->auto()` on the column a second time. The PRIMARY -> NOT NULL + AUTO
+  rule is now computed locally without touching the column.
+
+### Changed
+
+- Removed the personal phone number from the author entry in `composer.json`.
+- `Column::default()` now declares its `Column` return type like the other
+  fluent setters.
+- Example scripts (`example/sqlite.php`, `mysql.php`, `postgres.php`) resolve the
+  Composer autoloader via `__DIR__`, so they run from any working directory.
+- Cleaned up a duplicated `@@collation_connection` selection in
+  `TableTrait::createTable()`.
+
+---
+
 ## [10.1.0] - 2026-06-17
 [10.1.0]: https://github.com/codesaur-php/DataObject/compare/v10.0.1...v10.1.0
 

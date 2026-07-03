@@ -364,9 +364,13 @@ abstract class LocalizedModel
                 // Хэлний content мөр байгаа эсэхийг шалгах
                 $content_select->bindValue(":$col_parent", $parent_id, \PDO::PARAM_INT);
                 $content_select->bindValue(":$col_code", $code, \PDO::PARAM_STR);
-                if (!$content_select->execute()
-                    || $content_select->rowCount() < 1
-                ) {
+                if (!$content_select->execute()) {
+                    $this->throwPdoError('', $content_select);
+                }
+                // SQLite дээр rowCount() SELECT-д ажиллахгүй, fetch() ашиглана
+                $content_row = $content_select->fetch(\PDO::FETCH_ASSOC);
+                $content_select->closeCursor();
+                if ($content_row === false) {
                     // Байхгүй -> шинээр INSERT
                     $column = [$col_code];
                     $param = [":$col_code"];
@@ -386,8 +390,6 @@ abstract class LocalizedModel
                     }
                 } else {
                     // Байгаа -> UPDATE хийнэ
-                    $content_row = $content_select->fetch(\PDO::FETCH_ASSOC);
-
                     $content_set = [];
                     foreach (\array_keys($value) as $n) {
                         $content_set[] = "$n=:$n";
